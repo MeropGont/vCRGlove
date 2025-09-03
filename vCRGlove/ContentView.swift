@@ -1,241 +1,225 @@
 import SwiftUI
-import BhapticsPlugin
+import Combine
 
-// MARK: - Helpers
-enum HandSide: String, CaseIterable, Identifiable {
-    case left = "Left", right = "Right"
-    var id: String { rawValue }
-    var devicePosition: String { self == .left ? "GloveL" : "GloveR" }
-    var label: String { self == .left ? "Left" : "Right" }
-    var pretty: String { self == .left ? "Glove Left" : "Glove Right" }
+// MARK: - Inline Logger
+final class Logger: ObservableObject {
+    static let shared = Logger()
+    @Published private(set) var entries: [Entry] = []
+
+    struct Entry: Identifiable {
+        let id = UUID()
+        let date: Date
+        let tag: String
+        let message: String
+        var line: String {
+            "\(Logger.df.string(from: date)) [\(tag.uppercased())] \(message)"
+        }
+    }
+
+    private static let df: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "HH:mm:ss.SSS"
+        return df
+    }()
+
+    func log(_ tag: String, _ message: String) {
+        DispatchQueue.main.async {
+            self.entries.append(.init(date: Date(), tag: tag, message: message))
+            if self.entries.count > 2000 {
+                self.entries.removeFirst(self.entries.count - 2000)
+            }
+        }
+    }
+
+    func clear() { entries.removeAll() }
 }
 
-struct LabeledSlider<T: BinaryFloatingPoint>: View where T.Stride: BinaryFloatingPoint {
-    let title: String
-    @Binding var value: T
-    let range: ClosedRange<T>
-    let step: T
-    let unit: String
-    let format: String
+// MARK: - Inline LogsPanel
+struct LogsPanel: View {
+    @ObservedObject var logger: Logger
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(title).font(.subheadline)
+                Label("Logs", systemImage: "doc.plaintext")
+                    .font(.subheadline.weight(.semibold))
                 Spacer()
-                Text(String(format: format, Double(value)) + " \(unit)")
-                    .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                Button {
+                    logger.clear()
+                } label: { Image(systemName: "trash") }
+                .buttonStyle(.plain)
             }
-            Slider(value: $value, in: range, step: T.Stride(step))
+
+            Divider().padding(.top, -2)
+
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 4) {
+                        ForEach(logger.entries) { e in
+                            Text(e.line)
+                                .font(.system(.footnote, design: .monospaced))
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    .padding(.vertical, 2)
+                    .id("bottom")
+                }
+                .onChange(of: logger.entries.count) { _ in
+                    withAnimation { proxy.scrollTo("bottom", anchor: .bottom) }
+                }
+            }
+        }
+        .padding(10)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+// MARK: - LabeledSlider
+struct LabeledSlider: View {
+    let title: String
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let step: Double
+    let unit: String
+    let format: String
+    var disabled: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundColor(disabled ? .gray : .primary)
+                Spacer()
+                Text(String(format: format, value) + " \(unit)")
+                    .font(.caption2)
+                    .foregroundStyle(disabled ? .gray : .secondary)
+                    .monospacedDigit()
+            }
+            Slider(value: $value, in: range, step: step)
+                .disabled(disabled)
         }
         .padding(.vertical, 2)
     }
 }
 
-// MARK: - Main iOS UI
+// MARK: - ContentView
 struct ContentView: View {
     @StateObject private var vm = GloveVM()
-
-    // vCR parameter controls
-    @State private var selectedSide: HandSide = .left
-    @State private var strength: Double = 70
-    @State private var cycleHz: Double = 1.5
-    @State private var burstMs: Double = 100
-    @State private var motorCount: Double = 4
-    @State private var pattern: BuzzPattern = .constant
-
-    private var motorsPerBurst: [Int] {
-        let N = max(1, min(20, Int(motorCount)))
-        return Array(0..<N)
-    }
-
-    private var strengthU8: UInt8 { UInt8(max(0, min(100, Int(strength)))) }
-    private var burstMsInt: Int { max(10, min(1000, Int(burstMs))) }
+    @StateObject private var logger = Logger.shared
 
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-
-                    // Header
-                    HStack(spacing: 12) {
-                        Image(systemName: "hand.raised.fill")
-                            .font(.title2)
-                            .foregroundStyle(.orange)
-                        Text("vCR Glove Control")
-                            .font(.title3).fontWeight(.semibold)
-                        Spacer()
-                        Picker("Side", selection: $selectedSide) {
-                            ForEach(HandSide.allCases) { s in Text(s.label).tag(s) }
-                        }
-                        .pickerStyle(.segmented)
-                        .frame(maxWidth: 200)
-                    }
-                    .padding(.horizontal)
-
-                    // Devices
-                    GroupBox {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack(spacing: 12) {
-                                Button(vm.scanning ? "Stop Scan" : "Start Scan") {
-                                    vm.scanning ? vm.stopScan() : vm.startScan()
-                                }
-                                .buttonStyle(.borderedProminent)
-
-                                Button("Disconnect All") { vm.disconnectAll() }
-                                    .buttonStyle(.bordered).tint(.red)
-
-                                Spacer()
-
-                                Button("Vibrate \(selectedSide.label)") {
-                                    if selectedSide == .left { vm.vibrateLeft(strength: strengthU8) }
-                                    else { vm.vibrateRight(strength: strengthU8) }
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .tint(.green)
-                            }
-
-                            if !vm.devices.isEmpty {
-                                Divider().padding(.vertical, 2)
-                                VStack(alignment: .leading, spacing: 8) {
-                                    ForEach(vm.devices, id: \.id) { d in
-                                        HStack {
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text(d.prettyName).font(.subheadline).fontWeight(.medium)
-                                                if d.isConnected == true {
-                                                    Text("Connected").font(.caption2).foregroundStyle(.green)
-                                                } else if d.isPaired == true {
-                                                    Text("Paired").font(.caption2).foregroundStyle(.orange)
-                                                } else {
-                                                    Text("Off / Not paired").font(.caption2).foregroundStyle(.secondary)
-                                                }
-                                            }
-                                            Spacer()
-                                            if d.isConnected == true {
-                                                Button("Disconnect") { vm.disconnect(device: d) }
-                                                    .buttonStyle(.bordered).tint(.red)
-                                            } else {
-                                                Button("Pair") { vm.pair(device: d) }
-                                                    .buttonStyle(.borderedProminent).tint(.blue)
-                                                    .disabled(d.isPaired == true)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .padding(8)
-                    } label: {
-                        Label("Devices", systemImage: "dot.radiowaves.left.and.right")
-                    }
-                    .padding(.horizontal)
-
-                    // vCR Parameters
-                    GroupBox {
-                        VStack(spacing: 10) {
-                            LabeledSlider(title: "Amplitude", value: $strength,
-                                          range: 0...100, step: 1, unit: "%", format: "%.0f")
-
-                            LabeledSlider(title: "Cycle Frequency", value: $cycleHz,
-                                          range: 0.5...6.0, step: 0.1, unit: "Hz", format: "%.1f")
-
-                            LabeledSlider(title: "Burst Duration", value: $burstMs,
-                                          range: 20...300, step: 5, unit: "ms", format: "%.0f")
-
-                            LabeledSlider(title: "Motors per Burst", value: $motorCount,
-                                          range: 1...8, step: 1, unit: "motors", format: "%.0f")
-
-                            HStack {
-                                Text("Pattern").font(.subheadline)
-                                Spacer()
-                                Picker("Pattern", selection: $pattern) {
-                                    ForEach(BuzzPattern.allCases, id: \.self) { p in
-                                        Text(p.rawValue).tag(p)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                                .frame(maxWidth: 260)
-                            }
-                            .padding(.top, 4)
-                        }
-                        .padding(8)
-                    } label: {
-                        Label("vCR Parameters", systemImage: "slider.horizontal.3")
-                    }
-                    .padding(.horizontal)
-
-                    // Actions
-                    GroupBox {
-                        VStack(spacing: 12) {
-                            HStack(spacing: 12) {
-                                Button("Start vCR on \(selectedSide.label)") {
-                                    vm.performVCRSequence(
-                                        position: selectedSide.devicePosition,
-                                        strength: strengthU8,
-                                        cycleHz: cycleHz,
-                                        burstMs: burstMsInt,
-                                        motorsPerBurst: motorsPerBurst
-                                    )
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .tint(.orange)
-
-                                Button("Stop vCR") {
-                                    vm.stopVCR(position: selectedSide.devicePosition)
-                                }
-                                .buttonStyle(.bordered).tint(.red)
-
-                                Spacer()
-                            }
-
-                            Divider().padding(.vertical, 2)
-
-                            HStack(spacing: 12) {
-                                Button(vm.isLongBuzzing(selectedSide.devicePosition)
-                                       ? "Stop Long Buzz"
-                                       : "Start Long Buzz (1h)") {
-                                    vm.toggleLongBuzz(position: selectedSide.devicePosition,
-                                                      seconds: 3600,
-                                                      pattern: pattern)
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .tint(.purple)
-
-                                if vm.isLongBuzzing(selectedSide.devicePosition),
-                                   let remaining = vm.countdowns[selectedSide.devicePosition] {
-                                    Text("⏱ \(remaining/60)m \(remaining%60)s left")
-                                        .font(.caption).foregroundStyle(.secondary).monospacedDigit()
-                                }
-
-                                Spacer()
-                            }
-                        }
-                        .padding(8)
-                    } label: {
-                        Label("Actions", systemImage: "playpause.circle")
-                    }
-                    .padding(.horizontal)
-
-                    // Logs
-                    GroupBox {
-                        if vm.log.isEmpty {
-                            Text("No logs yet").font(.caption).foregroundStyle(.secondary)
-                        } else {
-                            VStack(alignment: .leading, spacing: 4) {
-                                ForEach(vm.log.suffix(80), id: \.self) { line in
-                                    Text(line).font(.caption2).monospaced()
-                                }
-                            }
-                        }
-                    } label: {
-                        Label("Log", systemImage: "text.justify.leading")
-                    }
-                    .padding(.horizontal)
+        VStack(spacing: 12) {
+            // --- Bluetooth panel ---
+            HStack {
+                Button(vm.scanning ? "Stop Scan" : "Start Scan") {
+                    vm.scanning ? vm.stopScan() : vm.startScan()
                 }
-                .padding(.vertical, 12)
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+
+                Button("Disconnect All") { vm.disconnectAll() }
+                    .buttonStyle(.bordered)
+                    .tint(.red)
             }
-            .navigationBarTitleDisplayMode(.inline)
+
+            // --- Parameters ---
+            VStack(spacing: 8) {
+                Text("Vibration Parameters")
+                    .font(.headline)
+
+                LabeledSlider(title: "Amplitude", value: $vm.amplitude,
+                              range: 0...100, step: 1,
+                              unit: "%", format: "%.0f",
+                              disabled: vm.vcrMode)
+
+                LabeledSlider(title: "Frequency", value: $vm.frequency,
+                              range: 0.5...5, step: 0.1,
+                              unit: "Hz", format: "%.1f",
+                              disabled: vm.vcrMode)
+
+                LabeledSlider(title: "Pulse length", value: $vm.pulseMs,
+                              range: 20...500, step: 10,
+                              unit: "ms", format: "%.0f",
+                              disabled: vm.vcrMode)
+
+                LabeledSlider(title: "Fingers per cycle", value: Binding(
+                                get: { Double(vm.fingersPerCycle) },
+                                set: { vm.fingersPerCycle = Int($0) }),
+                              range: 1...4, step: 1,
+                              unit: "motors", format: "%.0f",
+                              disabled: vm.vcrMode)
+
+                LabeledSlider(title: "Total duration", value: Binding(
+                                get: { vm.totalSeconds / 60 },
+                                set: { vm.totalSeconds = $0 * 60 }),
+                              range: 1...60, step: 1,
+                              unit: "min", format: "%.0f")
+
+                Toggle("vCR Mode", isOn: $vm.vcrMode)
+                    .tint(.orange)
+                    .onChange(of: vm.vcrMode) { newValue in
+                        if newValue {
+                            vm.amplitude = VCRPreset.amplitude
+                            vm.frequency = VCRPreset.frequency
+                            vm.pulseMs   = Double(VCRPreset.pulseMs)
+                            vm.fingersPerCycle = VCRPreset.fingersPerCycle
+                        }
+                    }
+            }
+            .padding(10)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
+
+            // --- Devices list ---
+            List(vm.devices, id: \.id) { d in
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Text(d.prettyName).font(.subheadline)
+                        Spacer()
+                        if d.isConnected == true {
+                            if vm.countdowns[d.pos] ?? 0 > 0 {
+                                Button("Stop") { vm.stopVibration(position: d.pos) }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.red)
+                                    .font(.caption)
+                            } else {
+                                Button("Vibrate") { vm.startVibration(position: d.pos) }
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.green)
+                                    .font(.caption)
+                            }
+                        } else {
+                            Button("Pair") { vm.pair(device: d) }
+                                .buttonStyle(.borderedProminent)
+                                .tint(.blue)
+                                .disabled(d.isPaired == true)
+                                .font(.caption)
+                        }
+                    }
+
+                    if let remaining = vm.countdowns[d.pos], remaining > 0 {
+                        Text("⏱ \(remaining/60)m \(remaining%60)s left")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+
+                    if d.isConnected == true {
+                        Text("Status: Connected").font(.caption2).foregroundColor(.green)
+                    } else if d.isPaired == true {
+                        Text("Status: Paired").font(.caption2).foregroundColor(.orange)
+                    } else {
+                        Text("Status: Off / Not paired").font(.caption2).foregroundColor(.gray)
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+            .frame(minHeight: 150, maxHeight: 250)
+
+            // --- Logs ---
+            LogsPanel(logger: logger)
+                .frame(minHeight: 140, maxHeight: 220)
         }
-        .navigationViewStyle(.stack)
+        .padding()
     }
 }
