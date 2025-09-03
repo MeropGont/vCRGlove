@@ -7,10 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A9DAB74F2E682D3D0053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */; platformFilters = (ios, xros, ); };
+		A9DAB7512E682D590053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB7502E682D590053D51F /* WatchConnectivity.framework */; };
+		A9EFEB472E6309090081A6C7 /* vCRGloveWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A9FCFC382E58674F00BF28B1 /* Bhaptics in Frameworks */ = {isa = PBXBuildFile; productRef = A9FCFC372E58674F00BF28B1 /* Bhaptics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		A9EFEB342E6309090081A6C7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A9FCFC032E5866AF00BF28B1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A9EFEB262E6309070081A6C7;
+			remoteInfo = "vCRGloveWatch Watch App";
+		};
+		A9EFEB3E2E6309090081A6C7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A9FCFC032E5866AF00BF28B1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A9EFEB262E6309070081A6C7;
+			remoteInfo = "vCRGloveWatch Watch App";
+		};
+		A9EFEB452E6309090081A6C7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A9FCFC032E5866AF00BF28B1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A9EFEB262E6309070081A6C7;
+			remoteInfo = "vCRGloveWatch Watch App";
+		};
 		A9FCFC1A2E5866B100BF28B1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A9FCFC032E5866AF00BF28B1 /* Project object */;
@@ -27,7 +51,27 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		A9EFEB4B2E6309090081A6C7 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				A9EFEB472E6309090081A6C7 /* vCRGloveWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk/System/Library/Frameworks/WatchConnectivity.framework; sourceTree = DEVELOPER_DIR; };
+		A9DAB7502E682D590053D51F /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.5.sdk/System/Library/Frameworks/WatchConnectivity.framework; sourceTree = DEVELOPER_DIR; };
+		A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "vCRGloveWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A9EFEB332E6309090081A6C7 /* vCRGloveWatch Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "vCRGloveWatch Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A9EFEB3D2E6309090081A6C7 /* vCRGloveWatch Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "vCRGloveWatch Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A9EFEBA12E6825510081A6C7 /* vCRGlove.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = vCRGlove.xctestplan; sourceTree = "<group>"; };
 		A9FCFC0B2E5866AF00BF28B1 /* vCRGlove.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vCRGlove.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9FCFC192E5866B100BF28B1 /* vCRGloveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vCRGloveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9FCFC232E5866B100BF28B1 /* vCRGloveUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vCRGloveUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -44,6 +88,21 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		A9EFEB282E6309070081A6C7 /* vCRGloveWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "vCRGloveWatch Watch App";
+			sourceTree = "<group>";
+		};
+		A9EFEB362E6309090081A6C7 /* vCRGloveWatch Watch AppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "vCRGloveWatch Watch AppTests";
+			sourceTree = "<group>";
+		};
+		A9EFEB402E6309090081A6C7 /* vCRGloveWatch Watch AppUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "vCRGloveWatch Watch AppUITests";
+			sourceTree = "<group>";
+		};
 		A9FCFC0D2E5866AF00BF28B1 /* vCRGlove */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -65,11 +124,34 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		A9EFEB242E6309070081A6C7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A9EFEB302E6309090081A6C7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A9DAB7512E682D590053D51F /* WatchConnectivity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A9EFEB3A2E6309090081A6C7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A9FCFC082E5866AF00BF28B1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				A9FCFC382E58674F00BF28B1 /* Bhaptics in Frameworks */,
+				A9DAB74F2E682D3D0053D51F /* WatchConnectivity.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,12 +172,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A9DAB74D2E682D3D0053D51F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A9DAB7502E682D590053D51F /* WatchConnectivity.framework */,
+				A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		A9FCFC022E5866AF00BF28B1 = {
 			isa = PBXGroup;
 			children = (
+				A9EFEBA12E6825510081A6C7 /* vCRGlove.xctestplan */,
 				A9FCFC0D2E5866AF00BF28B1 /* vCRGlove */,
 				A9FCFC1C2E5866B100BF28B1 /* vCRGloveTests */,
 				A9FCFC262E5866B100BF28B1 /* vCRGloveUITests */,
+				A9EFEB282E6309070081A6C7 /* vCRGloveWatch Watch App */,
+				A9EFEB362E6309090081A6C7 /* vCRGloveWatch Watch AppTests */,
+				A9EFEB402E6309090081A6C7 /* vCRGloveWatch Watch AppUITests */,
+				A9DAB74D2E682D3D0053D51F /* Frameworks */,
 				A9FCFC0C2E5866AF00BF28B1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -106,6 +202,9 @@
 				A9FCFC0B2E5866AF00BF28B1 /* vCRGlove.app */,
 				A9FCFC192E5866B100BF28B1 /* vCRGloveTests.xctest */,
 				A9FCFC232E5866B100BF28B1 /* vCRGloveUITests.xctest */,
+				A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */,
+				A9EFEB332E6309090081A6C7 /* vCRGloveWatch Watch AppTests.xctest */,
+				A9EFEB3D2E6309090081A6C7 /* vCRGloveWatch Watch AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -113,6 +212,74 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		A9EFEB262E6309070081A6C7 /* vCRGloveWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A9EFEB482E6309090081A6C7 /* Build configuration list for PBXNativeTarget "vCRGloveWatch Watch App" */;
+			buildPhases = (
+				A9EFEB232E6309070081A6C7 /* Sources */,
+				A9EFEB242E6309070081A6C7 /* Frameworks */,
+				A9EFEB252E6309070081A6C7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A9EFEB282E6309070081A6C7 /* vCRGloveWatch Watch App */,
+			);
+			name = "vCRGloveWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "vCRGloveWatch Watch App";
+			productReference = A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A9EFEB322E6309090081A6C7 /* vCRGloveWatch Watch AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A9EFEB4C2E6309090081A6C7 /* Build configuration list for PBXNativeTarget "vCRGloveWatch Watch AppTests" */;
+			buildPhases = (
+				A9EFEB2F2E6309090081A6C7 /* Sources */,
+				A9EFEB302E6309090081A6C7 /* Frameworks */,
+				A9EFEB312E6309090081A6C7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A9EFEB352E6309090081A6C7 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A9EFEB362E6309090081A6C7 /* vCRGloveWatch Watch AppTests */,
+			);
+			name = "vCRGloveWatch Watch AppTests";
+			packageProductDependencies = (
+			);
+			productName = "vCRGloveWatch Watch AppTests";
+			productReference = A9EFEB332E6309090081A6C7 /* vCRGloveWatch Watch AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A9EFEB3C2E6309090081A6C7 /* vCRGloveWatch Watch AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A9EFEB4F2E6309090081A6C7 /* Build configuration list for PBXNativeTarget "vCRGloveWatch Watch AppUITests" */;
+			buildPhases = (
+				A9EFEB392E6309090081A6C7 /* Sources */,
+				A9EFEB3A2E6309090081A6C7 /* Frameworks */,
+				A9EFEB3B2E6309090081A6C7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A9EFEB3F2E6309090081A6C7 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A9EFEB402E6309090081A6C7 /* vCRGloveWatch Watch AppUITests */,
+			);
+			name = "vCRGloveWatch Watch AppUITests";
+			packageProductDependencies = (
+			);
+			productName = "vCRGloveWatch Watch AppUITests";
+			productReference = A9EFEB3D2E6309090081A6C7 /* vCRGloveWatch Watch AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		A9FCFC0A2E5866AF00BF28B1 /* vCRGlove */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A9FCFC2D2E5866B100BF28B1 /* Build configuration list for PBXNativeTarget "vCRGlove" */;
@@ -120,10 +287,12 @@
 				A9FCFC072E5866AF00BF28B1 /* Sources */,
 				A9FCFC082E5866AF00BF28B1 /* Frameworks */,
 				A9FCFC092E5866AF00BF28B1 /* Resources */,
+				A9EFEB4B2E6309090081A6C7 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A9EFEB462E6309090081A6C7 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A9FCFC0D2E5866AF00BF28B1 /* vCRGlove */,
@@ -192,6 +361,17 @@
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					A9EFEB262E6309070081A6C7 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					A9EFEB322E6309090081A6C7 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = A9EFEB262E6309070081A6C7;
+					};
+					A9EFEB3C2E6309090081A6C7 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = A9EFEB262E6309070081A6C7;
+					};
 					A9FCFC0A2E5866AF00BF28B1 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -225,11 +405,35 @@
 				A9FCFC0A2E5866AF00BF28B1 /* vCRGlove */,
 				A9FCFC182E5866B100BF28B1 /* vCRGloveTests */,
 				A9FCFC222E5866B100BF28B1 /* vCRGloveUITests */,
+				A9EFEB262E6309070081A6C7 /* vCRGloveWatch Watch App */,
+				A9EFEB322E6309090081A6C7 /* vCRGloveWatch Watch AppTests */,
+				A9EFEB3C2E6309090081A6C7 /* vCRGloveWatch Watch AppUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		A9EFEB252E6309070081A6C7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A9EFEB312E6309090081A6C7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A9EFEB3B2E6309090081A6C7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A9FCFC092E5866AF00BF28B1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -254,6 +458,27 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		A9EFEB232E6309070081A6C7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A9EFEB2F2E6309090081A6C7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A9EFEB392E6309090081A6C7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A9FCFC072E5866AF00BF28B1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -278,6 +503,21 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		A9EFEB352E6309090081A6C7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A9EFEB262E6309070081A6C7 /* vCRGloveWatch Watch App */;
+			targetProxy = A9EFEB342E6309090081A6C7 /* PBXContainerItemProxy */;
+		};
+		A9EFEB3F2E6309090081A6C7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A9EFEB262E6309070081A6C7 /* vCRGloveWatch Watch App */;
+			targetProxy = A9EFEB3E2E6309090081A6C7 /* PBXContainerItemProxy */;
+		};
+		A9EFEB462E6309090081A6C7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A9EFEB262E6309070081A6C7 /* vCRGloveWatch Watch App */;
+			targetProxy = A9EFEB452E6309090081A6C7 /* PBXContainerItemProxy */;
+		};
 		A9FCFC1B2E5866B100BF28B1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = A9FCFC0A2E5866AF00BF28B1 /* vCRGlove */;
@@ -291,6 +531,153 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		A9EFEB492E6309090081A6C7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
+				INFOPLIST_KEY_CFBundleDisplayName = vCRGloveWatch;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads Health data for monitoring";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Writes activity data to Health";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Uses motion data to monitor tremor";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.fatemeh.vcr.vCRGlove;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fatemeh.vcr.vCRGlove.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Debug;
+		};
+		A9EFEB4A2E6309090081A6C7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
+				INFOPLIST_KEY_CFBundleDisplayName = vCRGloveWatch;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads Health data for monitoring";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Writes activity data to Health";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Uses motion data to monitor tremor";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.fatemeh.vcr.vCRGlove;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fatemeh.vcr.vCRGlove.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+			};
+			name = Release;
+		};
+		A9EFEB4D2E6309090081A6C7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fatemeh.vcr.vCRGloveWatch-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/vCRGloveWatch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/vCRGloveWatch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Debug;
+		};
+		A9EFEB4E2E6309090081A6C7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fatemeh.vcr.vCRGloveWatch-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/vCRGloveWatch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/vCRGloveWatch Watch App";
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Release;
+		};
+		A9EFEB502E6309090081A6C7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fatemeh.vcr.vCRGloveWatch-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "vCRGloveWatch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Debug;
+		};
+		A9EFEB512E6309090081A6C7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.fatemeh.vcr.vCRGloveWatch-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "vCRGloveWatch Watch App";
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Release;
+		};
 		A9FCFC2B2E5866B100BF28B1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -419,6 +806,9 @@
 				INFOPLIST_FILE = vCRGlove/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads health data such as movement and activity for symptom tracking.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes health-related events such as glove stimulation sessions to HealthKit.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "This app uses motion data from your device and Apple Watch to analyze symptoms.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -460,6 +850,9 @@
 				INFOPLIST_FILE = vCRGlove/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads health data such as movement and activity for symptom tracking.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes health-related events such as glove stimulation sessions to HealthKit.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "This app uses motion data from your device and Apple Watch to analyze symptoms.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -493,6 +886,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
@@ -515,6 +909,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
@@ -536,6 +931,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
@@ -557,6 +953,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
@@ -576,6 +973,33 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		A9EFEB482E6309090081A6C7 /* Build configuration list for PBXNativeTarget "vCRGloveWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A9EFEB492E6309090081A6C7 /* Debug */,
+				A9EFEB4A2E6309090081A6C7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A9EFEB4C2E6309090081A6C7 /* Build configuration list for PBXNativeTarget "vCRGloveWatch Watch AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A9EFEB4D2E6309090081A6C7 /* Debug */,
+				A9EFEB4E2E6309090081A6C7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A9EFEB4F2E6309090081A6C7 /* Build configuration list for PBXNativeTarget "vCRGloveWatch Watch AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A9EFEB502E6309090081A6C7 /* Debug */,
+				A9EFEB512E6309090081A6C7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A9FCFC062E5866AF00BF28B1 /* Build configuration list for PBXProject "vCRGlove" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

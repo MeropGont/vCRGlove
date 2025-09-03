@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "B64F938B-6194-4B0A-82FA-08A3572B02FD",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:vCRGlove.xcodeproj",
+      "identifier" : "A9FCFC0A2E5866AF00BF28B1",
+      "name" : "vCRGlove"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:vCRGlove.xcodeproj",
+        "identifier" : "A9FCFC182E5866B100BF28B1",
+        "name" : "vCRGloveTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:vCRGlove.xcodeproj",
+        "identifier" : "A9FCFC222E5866B100BF28B1",
+        "name" : "vCRGloveUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

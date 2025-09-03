@@ -9,6 +9,59 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>vCRGloveTests.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
+		</dict>
+		<key>vCRGloveUITests.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
+		<key>vCRGloveWatch Extension Watch App.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
+		<key>vCRGloveWatch Watch App.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>A9EFEB262E6309070081A6C7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>A9EFEB322E6309090081A6C7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>A9EFEB3C2E6309090081A6C7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>A9FCFC0A2E5866AF00BF28B1</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>A9FCFC182E5866B100BF28B1</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>A9FCFC222E5866B100BF28B1</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 	</dict>
 </dict>
 </plist>
