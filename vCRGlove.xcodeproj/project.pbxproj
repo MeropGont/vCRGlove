@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A9AE5FDA2E794A6F009F0426 /* Bhaptics in Frameworks */ = {isa = PBXBuildFile; productRef = A9AE5FD92E794A6F009F0426 /* Bhaptics */; };
 		A9DAB74F2E682D3D0053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */; platformFilters = (ios, xros, ); };
 		A9DAB7512E682D590053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB7502E682D590053D51F /* WatchConnectivity.framework */; };
 		A9EFEB472E6309090081A6C7 /* vCRGloveWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A9FCFC382E58674F00BF28B1 /* Bhaptics in Frameworks */ = {isa = PBXBuildFile; productRef = A9FCFC372E58674F00BF28B1 /* Bhaptics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -150,7 +150,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A9FCFC382E58674F00BF28B1 /* Bhaptics in Frameworks */,
+				A9AE5FDA2E794A6F009F0426 /* Bhaptics in Frameworks */,
 				A9DAB74F2E682D3D0053D51F /* WatchConnectivity.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -299,7 +299,7 @@
 			);
 			name = vCRGlove;
 			packageProductDependencies = (
-				A9FCFC372E58674F00BF28B1 /* Bhaptics */,
+				A9AE5FD92E794A6F009F0426 /* Bhaptics */,
 			);
 			productName = vCRGlove;
 			productReference = A9FCFC0B2E5866AF00BF28B1 /* vCRGlove.app */;
@@ -395,7 +395,7 @@
 			mainGroup = A9FCFC022E5866AF00BF28B1;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A9FCFC362E58670900BF28B1 /* XCRemoteSwiftPackageReference "bhaptics-ios" */,
+				A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A9FCFC0C2E5866AF00BF28B1 /* Products */;
@@ -560,7 +560,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+				WATCHOS_DEPLOYMENT_TARGET = 10.6;
 			};
 			name = Debug;
 		};
@@ -594,7 +594,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				VALIDATE_PRODUCT = YES;
-				WATCHOS_DEPLOYMENT_TARGET = 11.0;
+				WATCHOS_DEPLOYMENT_TARGET = 10.6;
 			};
 			name = Release;
 		};
@@ -1038,21 +1038,17 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		A9FCFC362E58670900BF28B1 /* XCRemoteSwiftPackageReference "bhaptics-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/bhaptics/bhaptics-ios";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.2.0;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../Downloads/bhaptics-ios-0.2.0";
 		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A9FCFC372E58674F00BF28B1 /* Bhaptics */ = {
+		A9AE5FD92E794A6F009F0426 /* Bhaptics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A9FCFC362E58670900BF28B1 /* XCRemoteSwiftPackageReference "bhaptics-ios" */;
+			package = A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */;
 			productName = Bhaptics;
 		};
 /* End XCSwiftPackageProductDependency section */

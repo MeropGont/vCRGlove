@@ -159,11 +159,11 @@ struct ContentView: View {
 
                 Toggle("vCR Mode", isOn: $vm.vcrMode)
                     .tint(.orange)
-                    .onChange(of: vm.vcrMode) { newValue in
+                    .onChange(of: vm.vcrMode) { oldValue, newValue in
                         if newValue {
-                            vm.amplitude = VCRPreset.amplitude
-                            vm.frequency = VCRPreset.frequency
-                            vm.pulseMs   = Double(VCRPreset.pulseMs)
+                            vm.amplitude       = VCRPreset.amplitude
+                            vm.frequency       = VCRPreset.frequency
+                            vm.pulseMs         = Double(VCRPreset.pulseMs)
                             vm.fingersPerCycle = VCRPreset.fingersPerCycle
                         }
                     }

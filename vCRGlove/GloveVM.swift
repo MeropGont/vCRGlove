@@ -87,11 +87,16 @@ final class GloveVM: ObservableObject {
         Logger.shared.log("BLE", "Scanning…")
         scanning = true
         BhapticsPlugin_scan()
+
         pollTimer?.invalidate()
         pollTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { [weak self] _ in
-            self?.refreshDevices()
+            DispatchQueue.main.async {
+                self?.refreshDevices()
+            }
         }
     }
+
+
 
     func stopScan() {
         scanning = false
@@ -175,30 +180,28 @@ final class GloveVM: ObservableObject {
         let slotSpacing   = cycleInterval / Double(slots)
 
         vibTimers[position] = Timer.scheduledTimer(withTimeInterval: cycleInterval, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-
-            let indices = Array(0..<slots).shuffled()
-            for (i, motorIndex) in indices.enumerated() {
-                let when = Double(i) * slotSpacing
-                DispatchQueue.main.asyncAfter(deadline: .now() + when) {
-                    if self.vcrMode {
-                        self.sendBurst(position: position, motorIndex: motorIndex, strength: UInt8(amp), burstMs: pMs)
-                    } else {
-                        self.sendBurstAll(position: position, strength: UInt8(amp), burstMs: pMs)
+            Task { @MainActor in
+                guard let self = self else { return }
+                let indices = Array(0..<slots).shuffled()
+                for (i, motorIndex) in indices.enumerated() {
+                    let when = Double(i) * slotSpacing
+                    DispatchQueue.main.asyncAfter(deadline: .now() + when) {
+                        if self.vcrMode {
+                            self.sendBurst(position: position, motorIndex: motorIndex, strength: UInt8(amp), burstMs: pMs)
+                        } else {
+                            self.sendBurstAll(position: position, strength: UInt8(amp), burstMs: pMs)
+                        }
                     }
                 }
-            }
-
-            if let start = self.startedAt[position] {
-                let elapsed = Int(Date().timeIntervalSince(start))
-                let remaining = max(Int(self.totalSeconds) - elapsed, 0)
-                self.countdowns[position] = remaining
-                if remaining <= 0 {
-                    self.stopVibration(position: position)
+                if let start = self.startedAt[position] {
+                    let elapsed = Int(Date().timeIntervalSince(start))
+                    let remaining = max(Int(self.totalSeconds) - elapsed, 0)
+                    self.countdowns[position] = remaining
+                    if remaining <= 0 { self.stopVibration(position: position) }
                 }
             }
         }
-
+        
         Logger.shared.log("vCR", "Start vibration @ \(position) [amp=\(Int(amp))%, freq=\(String(format: "%.2f", freq))Hz, pulse=\(pMs)ms, fingers=\(fingers), total=\(Int(totalSeconds))s]")
     }
 
