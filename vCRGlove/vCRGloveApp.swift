@@ -24,9 +24,6 @@ enum Haptics {
 
 @main
 struct vCRGloveApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-    }
+    init() { _ = PhoneWC.shared }
+    var body: some Scene { WindowGroup { ContentView() } }
 }

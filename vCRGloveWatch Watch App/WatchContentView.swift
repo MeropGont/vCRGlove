@@ -19,6 +19,11 @@ struct ContentView: View {
                 .monospacedDigit()
 
             HStack {
+                Button("Ping iPhone") {
+                    WatchConnectivityManager.shared.sendPing()
+                }
+                .onAppear { _ = WatchConnectivityManager.shared } // ensure activation
+
                 Button(motion.isRecording ? "Stop" : "Start") {
                     motion.isRecording ? motion.stop() : motion.start()
                 }

@@ -1,10 +1,3 @@
-//
-//  WatchConnectivityManager.swift
-//  vCRGloveWatch Watch App
-//
-//  Created by Tactile Glove on 03.09.25.
-//
-
 import Foundation
 import WatchConnectivity
 
@@ -14,8 +7,23 @@ final class WatchConnectivityManager: NSObject, WCSessionDelegate {
     override init() {
         super.init()
         if WCSession.isSupported() {
-            WCSession.default.delegate = self
-            WCSession.default.activate()
+            let s = WCSession.default
+            s.delegate = self
+            s.activate()
+        }
+    }
+
+    // 🔹 Simple ping sender for Milestone A
+    func sendPing() {
+        let payload: [String: Any] = [
+            "type": "ping",
+            "ts_watch": ISO8601DateFormatter().string(from: Date())
+        ]
+        let s = WCSession.default
+        if s.isReachable {
+            s.sendMessage(payload, replyHandler: nil, errorHandler: nil)
+        } else {
+            s.transferUserInfo(payload) // queued & reliable
         }
     }
 
@@ -24,9 +32,12 @@ final class WatchConnectivityManager: NSObject, WCSessionDelegate {
         WCSession.default.transferFile(url, metadata: meta)
     }
 
-    // WCSessionDelegate stubs
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) { }
-#if os(watchOS)
+    // MARK: - WCSessionDelegate
+    func session(_ session: WCSession,
+                 activationDidCompleteWith activationState: WCSessionActivationState,
+                 error: Error?) { }
+
+    #if os(watchOS)
     func sessionReachabilityDidChange(_ session: WCSession) { }
-#endif
+    #endif
 }
