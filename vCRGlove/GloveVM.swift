@@ -86,6 +86,9 @@ final class GloveVM: ObservableObject {
     func startScan() {
         Logger.shared.log("BLE", "Scanning…")
         scanning = true
+        devices = []
+        localState = [:]
+        BhapticsPlugin_stopScan()
         BhapticsPlugin_scan()
 
         pollTimer?.invalidate()
@@ -99,10 +102,12 @@ final class GloveVM: ObservableObject {
 
 
     func stopScan() {
+        Logger.shared.log("BLE", "Scan stopped")
         scanning = false
         BhapticsPlugin_stopScan()
         pollTimer?.invalidate()
         pollTimer = nil
+        devices = []
         refreshDevices()
     }
 
@@ -159,7 +164,7 @@ final class GloveVM: ObservableObject {
             localState[d.id] = (connected: false, paired: false)
         }
         BhapticsPlugin_stop()
-        Logger.shared.log("BLE", "Disconnect all requested")
+        Logger.shared.log("BLE", "All gloves disconnect")
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { self.refreshDevices() }
     }
 
