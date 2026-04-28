@@ -24,6 +24,17 @@ enum Haptics {
 
 @main
 struct vCRGloveApp: App {
-    init() { _ = PhoneWC.shared }
-    var body: some Scene { WindowGroup { ContentView() } }
+    init() {
+        _ = PhoneWC.shared
+
+        if let url = EventStore.shared.fileURL() {
+            print("Event log file:", url.path)
+        }
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            MainTabView()
+        }
+    }
 }
