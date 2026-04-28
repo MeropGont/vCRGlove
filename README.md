@@ -69,12 +69,23 @@ This app explores how **consumer hardware** (bHaptics TactGlove + iPhone + Apple
 ---
 
 ## Roadmap
+- Test and improve Bluetooth connection stability between the iPhone app and bHaptics TactGlove DK2 during longer vCR sessions.
+- Harden stimulation-session logging, error handling, and recovery behavior for real-world home use.
 - Migrate Journal storage from a single JSON array to append-only JSONL for longer studies.
 - Add export tooling for journal, stimulation, and watch-motion datasets.
-- Add editing or replacement behavior for one-per-day Daily Check-In entries.
-- Add medication profile templates while keeping daily logging patient-friendly.
-- Integrate Apple Watch motion data into the Journal timeline.
-- Add summary/insight views for symptoms, OFF periods, medication timing, and stimulation sessions.
+- Refine and expand Journal features:
+  - medication profile templates while keeping daily logging patient-friendly
+  - simple motivational feedback, weekly streaks, and gentle adherence/reward cues
+  - summary views for symptoms, OFF periods, medication timing, notes, and stimulation sessions
+  - adding a long-term feeback system so the patients can monitor their symptom trajectories
+- Add an MDS-UPDRS-inspired task module for structured hand-movement recordings, including:
+  - pronation/supination
+  - hand opening/closing
+  - finger tapping
+  - task timing, repetition counts, and patient/task metadata
+- Explore camera-based hand-movement detection while patients wear the gloves.
+- Integrate Apple Watch motion recording into the task ecosystem with timestamped hand/wrist movement data.
+- Align iPhone, Apple Watch, stimulation, journal, and camera-derived events into a shared timeline for later analysis.
 - Continue UI simplification and accessibility improvements for patient use.
 
 ---
