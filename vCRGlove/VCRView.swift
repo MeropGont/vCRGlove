@@ -112,8 +112,80 @@ struct LabeledSlider: View {
 
 // MARK: - ContentView (changed to VCRView)
 struct VCRView: View {
-    @StateObject private var vm = GloveVM()
+    @ObservedObject var vm: GloveVM
     @StateObject private var logger = Logger.shared
+    
+    private var readyDevices: [HDevice] {
+        vm.devices.filter { $0.isReadyForStimulation && !$0.pos.isEmpty }
+    }
+
+    private var activePositions: [String] {
+        vm.countdowns
+            .filter { $0.value > 0 }
+            .map(\.key)
+    }
+
+    private var isResearchStimulating: Bool {
+        !activePositions.isEmpty
+    }
+
+    private var researchRemainingSeconds: Int {
+        activePositions
+            .compactMap { vm.countdowns[$0] }
+            .max() ?? 0
+    }
+    
+    private func startAllResearchStimulation() {
+        for device in readyDevices {
+            vm.startVibration(position: device.pos)
+        }
+    }
+
+    private func stopAllResearchStimulation() {
+        for position in activePositions {
+            vm.stopVibration(position: position)
+        }
+    }
+
+    private func timeText(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        let seconds = seconds % 60
+        return "\(minutes):\(String(format: "%02d", seconds))"
+    }
+    private var researchStimulationControl: some View {
+        HStack(spacing: 12) {
+            Button {
+                if isResearchStimulating {
+                    stopAllResearchStimulation()
+                } else {
+                    startAllResearchStimulation()
+                }
+            } label: {
+                Text(isResearchStimulating ? "STOP STIMULATION" : "START STIMULATION")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(isResearchStimulating ? .red : .green)
+            .disabled(!isResearchStimulating && readyDevices.isEmpty)
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(isResearchStimulating ? "Remaining" : "Ready")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text(isResearchStimulating ? timeText(researchRemainingSeconds) : "\(readyDevices.count) glove(s)")
+                    .font(.headline)
+                    .monospacedDigit()
+            }
+            .frame(width: 96, alignment: .trailing)
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
+    }
+
+    
+
 
     var body: some View {
         ScrollView {
@@ -161,7 +233,7 @@ struct VCRView: View {
                     LabeledSlider(title: "Total duration", value: Binding(
                         get: { vm.totalSeconds / 60 },
                         set: { vm.totalSeconds = $0 * 60 }),
-                                  range: 1...60, step: 1,
+                                  range: 1...120, step: 1,
                                   unit: "min", format: "%.0f")
                     
                     Toggle("vCR Mode", isOn: $vm.vcrMode)
@@ -178,56 +250,68 @@ struct VCRView: View {
                 .padding(10)
                 .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
                 
+                researchStimulationControl
+
+                
                 // --- Devices list ---
-                ForEach(vm.devices, id: \.id) { d in
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack {
-                            Text(d.prettyName).font(.subheadline)
-                            Spacer()
-                            if d.isConnected == true {
-                                if vm.countdowns[d.pos] ?? 0 > 0 {
-                                    Button("Stop") { vm.stopVibration(position: d.pos) }
+                VStack(spacing: 10) {
+                    ForEach(vm.devices, id: \.id) { d in
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(d.prettyName)
+                                        .font(.subheadline.weight(.semibold))
+
+                                    Text("Status: \(d.connectionStatusText)")
+                                        .font(.caption2)
+                                        .foregroundColor(d.isReadyForStimulation ? .green : .secondary)
+                                }
+
+                                Spacer()
+
+                                if let remaining = vm.countdowns[d.pos], remaining > 0 {
+                                    Text("\(remaining / 60)m \(remaining % 60)s")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                        .monospacedDigit()
+                                }
+                            }
+
+                            HStack {
+                                Button(d.isConnected == true ? "Reconnect" : "Pair / Connect") {
+                                    vm.pair(device: d)
+                                }
+                                .buttonStyle(.bordered)
+
+                                Spacer()
+
+                                if d.isConnected == true {
+                                    if vm.countdowns[d.pos] ?? 0 > 0 {
+                                        Button("Stop Test") {
+                                            vm.stopVibration(position: d.pos)
+                                        }
                                         .buttonStyle(.borderedProminent)
                                         .tint(.red)
-                                        .font(.caption)
-                                } else {
-                                    Button("Vibrate") { vm.startVibration(position: d.pos) }
+                                    } else {
+                                        Button("Start Test") {
+                                            vm.startVibration(position: d.pos)
+                                        }
                                         .buttonStyle(.borderedProminent)
                                         .tint(.green)
-                                        .font(.caption)
+                                    }
                                 }
-                            } else {
-                                Button("Pair") { vm.pair(device: d) }
-                                    .buttonStyle(.borderedProminent)
-                                    .tint(.blue)
-                                    .disabled(d.isPaired == true)
-                                    .font(.caption)
                             }
                         }
-                        
-                        if let remaining = vm.countdowns[d.pos], remaining > 0 {
-                            Text("⏱ \(remaining/60)m \(remaining%60)s left")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        if d.isConnected == true {
-                            Text("Status: Connected").font(.caption2).foregroundColor(.green)
-                        } else if d.isPaired == true {
-                            Text("Status: Paired").font(.caption2).foregroundColor(.orange)
-                        } else {
-                            Text("Status: Off / Not paired").font(.caption2).foregroundColor(.gray)
-                        }
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
                     }
-                    .padding(.vertical, 2)
-                    .padding(.horizontal, 10)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
                 }
-                .frame(minHeight: 150, maxHeight: 250)
+                .frame(minHeight: 150, maxHeight: 280)
+
                 
                 // --- Logs ---
                 LogsPanel(logger: logger)
-                    //.frame(minHeight: 140, maxHeight: 220)
+                    .frame(height: 220)
             }
             .padding()
             .padding(.top, 8)

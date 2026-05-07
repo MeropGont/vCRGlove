@@ -8,13 +8,22 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @StateObject private var gloveVM = GloveVM()
+
     var body: some View {
         TabView {
             NavigationStack {
-                VCRView()
+                PatientVCRView(vm: gloveVM)
             }
             .tabItem {
                 Label("vCR", systemImage: "waveform.path.ecg")
+            }
+
+            NavigationStack {
+                VCRView(vm: gloveVM)
+            }
+            .tabItem {
+                Label("Research", systemImage: "slider.horizontal.3")
             }
 
             NavigationStack {

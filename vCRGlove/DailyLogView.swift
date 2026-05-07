@@ -183,10 +183,13 @@ struct DailyLogView: View {
             return "waveform.path.ecg"
         case .note:
             return "note.text"
+        case .stimulation:
+            return "waveform.path.ecg"
         default:
             return "circle.fill"
         }
     }
+
 
     private func summary(for entry: JournalEntry) -> String {
         var parts: [String] = []
@@ -194,9 +197,13 @@ struct DailyLogView: View {
         if entry.type == .dailyCheckIn {
             parts.append("Daily check-in")
         }
-        
+
         if entry.type == .symptm {
             parts.append("Symptom episode")
+        }
+
+        if entry.type == .stimulation {
+            parts.append("vCR stimulation")
         }
 
         if let mood = entry.mood {
@@ -206,7 +213,7 @@ struct DailyLogView: View {
         if let severity = entry.symptomSeverity {
             parts.append(severity.label)
         }
-        
+
         if let medicationEvent = entry.medicationEvent {
             parts.append(medicationEvent.rawValue)
         }
@@ -229,4 +236,5 @@ struct DailyLogView: View {
 
         return parts.isEmpty ? "No details" : parts.joined(separator: " · ")
     }
+
 }

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UIKit
 import BhapticsPlugin
 
 // MARK: - Device Model
@@ -15,10 +16,17 @@ struct HDevice: Identifiable, Decodable, Equatable {
     var pos: String { position ?? "" }
 
     var isGlove: Bool {
-        let n = (name ?? "").lowercased()
-        let p = (position ?? "").lowercased()
-        return p.contains("glove") || n.contains("tactglove")
+        let text = "\(position ?? "") \(name ?? "") \(id)".lowercased()
+
+        return text.contains("tactglove")
+            || text.contains("glovel")
+            || text.contains("glover")
+            || text.contains("glove left")
+            || text.contains("glove right")
+            || text.contains("left glove")
+            || text.contains("right glove")
     }
+
     var prettyName: String {
         let p = (position ?? "").lowercased()
         if p.contains("glovel") { return "Glove Left" }
@@ -52,6 +60,39 @@ struct HDevice: Identifiable, Decodable, Equatable {
     static func == (lhs: HDevice, rhs: HDevice) -> Bool { lhs.id == rhs.id }
 }
 
+extension HDevice {
+    var isReadyForStimulation: Bool {
+        isConnected == true || isPaired == true
+    }
+
+    var connectionStatusText: String {
+        if isConnected == true || isPaired == true {
+            return "Ready"
+        }
+
+        return "Not ready"
+    }
+
+    var isLeftGlove: Bool {
+        let text = "\(position ?? "") \(name ?? "") \(id)".lowercased()
+        return text.contains("glovel")
+            || text.contains("glove left")
+            || text.contains("left glove")
+            || text.contains("left")
+    }
+
+    var isRightGlove: Bool {
+        let text = "\(position ?? "") \(name ?? "") \(id)".lowercased()
+        return text.contains("glover")
+            || text.contains("glove right")
+            || text.contains("right glove")
+            || text.contains("right")
+    }
+
+
+}
+
+
 // MARK: - vCR Preset
 enum VCRPreset {
     static let amplitude: Double = 70
@@ -71,7 +112,7 @@ final class GloveVM: ObservableObject {
     @Published var amplitude: Double = 70
     @Published var frequency: Double = 1.5
     @Published var pulseMs: Double = 100
-    @Published var totalSeconds: Double = 10
+    @Published var totalSeconds: Double = 2 * 60 * 60
     @Published var fingersPerCycle: Int = 4
 
     // vCR toggle
@@ -81,20 +122,42 @@ final class GloveVM: ObservableObject {
     private var pollTimer: Timer?
     private var vibTimers: [String: Timer] = [:]
     private var startedAt: [String: Date] = [:]
+    private var activeStimPositions: Set<String> = []
+    private var lastNoGloveCandidateLog: Date?
+
+    private func updateIdleTimerLock() {
+        UIApplication.shared.isIdleTimerDisabled = !activeStimPositions.isEmpty
+    }
+
 
     // MARK: - Scan
     func startScan() {
-        Logger.shared.log("BLE", "Scanning…")
+        Logger.shared.log("BLE", "Fresh scan started")
         scanning = true
-        devices = []
-        localState = [:]
-        BhapticsPlugin_stopScan()
-        BhapticsPlugin_scan()
 
         pollTimer?.invalidate()
-        pollTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.refreshDevices()
+        pollTimer = nil
+
+        devices = []
+        countdowns = [:]
+        localState = [:]
+
+        BhapticsPlugin_stopScan()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            BhapticsPlugin_scan()
+
+            let timer = Timer(timeInterval: 0.8, repeats: true) { [weak self] _ in
+                DispatchQueue.main.async {
+                    self?.refreshDevices()
+                }
+            }
+
+            RunLoop.main.add(timer, forMode: .common)
+            self.pollTimer = timer
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.refreshDevices()
             }
         }
     }
@@ -107,13 +170,15 @@ final class GloveVM: ObservableObject {
         BhapticsPlugin_stopScan()
         pollTimer?.invalidate()
         pollTimer = nil
-        devices = []
         refreshDevices()
     }
+
 
     func refreshDevices() {
         guard let cstr = BhapticsPlugin_getDevices() else { return }
         let raw = String(cString: cstr)
+        Logger.shared.log("BLE_RAW", raw)
+
 
         var newDevices: [HDevice] = []
         if let data = raw.data(using: .utf8) {
@@ -125,37 +190,68 @@ final class GloveVM: ObservableObject {
             }
         }
 
-        newDevices = newDevices.filter { $0.isGlove }
+        let gloveCandidates = newDevices.filter { $0.isGlove }
+        if gloveCandidates.count != newDevices.count {
+            let now = Date()
+            if lastNoGloveCandidateLog == nil || now.timeIntervalSince(lastNoGloveCandidateLog!) > 5 {
+                Logger.shared.log("BLE", "Showing \(newDevices.count) detected bHaptics device(s), \(gloveCandidates.count) clearly identified as glove(s)")
+                lastNoGloveCandidateLog = now
+            }
+        }
+        newDevices = gloveCandidates
+
+
         var byId: [String: HDevice] = [:]
         for d in newDevices { byId[d.id] = d }
         var unique = Array(byId.values)
-
-        unique = unique.map { dev in
-            var m = dev
-            if let override = localState[dev.id] {
-                if m.isConnected != true { m.isConnected = override.connected ?? m.isConnected }
-                if m.isPaired    != true { m.isPaired    = override.paired    ?? m.isPaired }
-            }
-            return m
-        }
 
         self.devices = unique.sorted { ($0.position ?? "") < ($1.position ?? "") }
     }
 
     func pair(device: HDevice) {
         device.id.withCString { BhapticsPlugin_pair($0) }
-        Logger.shared.log("BLE", "Pairing \(device.prettyName)")
-        localState[device.id] = (connected: true, paired: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { self.refreshDevices() }
+
+        Logger.shared.log("BLE", "Pair/connect requested for \(device.prettyName)")
+
+        localState[device.id] = (connected: device.isConnected, paired: true)
+        refreshDevices()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            self.refreshDevices()
+
+            if let updated = self.devices.first(where: { $0.id == device.id }) {
+                self.testBuzz(device: updated)
+            } else {
+                self.testBuzz(device: device)
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.refreshDevices()
+        }
     }
+
+    
+    func testBuzz(device: HDevice) {
+        guard !device.pos.isEmpty else {
+            Logger.shared.log("BLE", "Cannot buzz \(device.prettyName): missing position")
+            return
+        }
+
+        sendBurstAll(position: device.pos, strength: 70, burstMs: 120)
+        Logger.shared.log("BLE", "Test buzz sent to \(device.prettyName)")
+    }
+
 
     func disconnect(device: HDevice) {
         device.id.withCString { BhapticsPlugin_unpair($0) }
         stopVibration(position: device.pos)
-        localState[device.id] = (connected: false, paired: false)
         Logger.shared.log("BLE", "Disconnecting \(device.prettyName)")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { self.refreshDevices() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            self.refreshDevices()
+        }
     }
+
 
     func disconnectAll() {
         for d in devices {
@@ -164,6 +260,8 @@ final class GloveVM: ObservableObject {
             localState[d.id] = (connected: false, paired: false)
         }
         BhapticsPlugin_stop()
+        activeStimPositions.removeAll()
+        updateIdleTimerLock()
         Logger.shared.log("BLE", "All gloves disconnect")
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { self.refreshDevices() }
     }
@@ -184,7 +282,8 @@ final class GloveVM: ObservableObject {
         let slots         = max(1, fingers)
         let slotSpacing   = cycleInterval / Double(slots)
 
-        vibTimers[position] = Timer.scheduledTimer(withTimeInterval: cycleInterval, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: cycleInterval, repeats: true) { [weak self] _ in
+
             Task { @MainActor in
                 guard let self = self else { return }
                 let indices = Array(0..<slots).shuffled()
@@ -206,8 +305,14 @@ final class GloveVM: ObservableObject {
                 }
             }
         }
+
+        RunLoop.main.add(timer, forMode: .common)
+        vibTimers[position] = timer
+        activeStimPositions.insert(position)
+        updateIdleTimerLock()
         
         Logger.shared.log("vCR", "Start vibration @ \(position) [amp=\(Int(amp))%, freq=\(String(format: "%.2f", freq))Hz, pulse=\(pMs)ms, fingers=\(fingers), total=\(Int(totalSeconds))s]")
+
     }
 
     func stopVibration(position: String) {
@@ -215,9 +320,13 @@ final class GloveVM: ObservableObject {
         vibTimers[position] = nil
         countdowns[position] = 0
         startedAt[position] = nil
+        activeStimPositions.remove(position)
+        updateIdleTimerLock()
+
         BhapticsPlugin_stop()
         Logger.shared.log("vCR", "Stopped vibration @ \(position)")
     }
+
 
     // MARK: - Low-level motor helpers
     private func sendBurstAll(position: String, strength: UInt8, burstMs: Int) {
