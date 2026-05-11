@@ -12,10 +12,18 @@ struct PatientVCRView: View {
     @State private var stopProgress: Double = 0
     @State private var stopTimer: Timer? = nil
     @State private var autoPairAttemptedIDs: Set<String> = []
+    @State private var patientSessionActive = false
+    @State private var missingActivePositions: Set<String> = []
+    @State private var sessionMessage: String?
+    @State private var sessionMonitorTimer: Timer?
+    @State private var sessionWasStarted = false
+
 
 
     private var readyGloves: [HDevice] {
-        vm.devices.filter { $0.isReadyForStimulation && !$0.pos.isEmpty }
+        [leftGlove, rightGlove]
+            .compactMap { $0 }
+            .filter { $0.isReadyForStimulation && !$0.pos.isEmpty }
     }
 
 
@@ -28,6 +36,14 @@ struct PatientVCRView: View {
     private var isSessionRunning: Bool {
         !activePositions.isEmpty
     }
+    
+    private var pausedPositions: [String] {
+        activePositions.filter { vm.pausedPositions.contains($0) }
+    }
+
+    private var isSessionPaused: Bool {
+        !activePositions.isEmpty && activePositions.allSatisfy { vm.pausedPositions.contains($0) }
+    }
 
     private var remainingSeconds: Int {
         activePositions
@@ -36,12 +52,53 @@ struct PatientVCRView: View {
     }
 
     private var leftGlove: HDevice? {
-        vm.devices.first { $0.isLeftGlove }
+        bestGlove(from: vm.devices.filter { $0.isLeftGlove })
     }
 
     private var rightGlove: HDevice? {
-        vm.devices.first { $0.isRightGlove }
+        bestGlove(from: vm.devices.filter { $0.isRightGlove })
     }
+    
+    private func bestGlove(from gloves: [HDevice]) -> HDevice? {
+        gloves.sorted {
+            let lhsScore = gloveScore($0)
+            let rhsScore = gloveScore($1)
+
+            if lhsScore != rhsScore {
+                return lhsScore > rhsScore
+            }
+
+            return $0.displayName < $1.displayName
+        }
+        .first
+    }
+
+    private func gloveScore(_ glove: HDevice) -> Int {
+        var score = 0
+
+        if glove.isConnected == true {
+            score += 100
+        }
+
+        if glove.isPaired == true && glove.battery != nil && !glove.pos.isEmpty {
+            score += 80
+        }
+
+        if glove.battery != nil {
+            score += 20
+        }
+
+        if glove.isPaired == true {
+            score += 10
+        }
+
+        if !glove.pos.isEmpty {
+            score += 1
+        }
+
+        return score
+    }
+
 
     var body: some View {
         VStack(spacing: 18) {
@@ -53,11 +110,19 @@ struct PatientVCRView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+                
+                if let sessionMessage {
+                    Text(sessionMessage)
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .multilineTextAlignment(.center)
+                }
+
             }
 
-            gloveStatusGrid
-
             scanButton
+
+            gloveStatusGrid
 
             sessionCard
 
@@ -73,20 +138,87 @@ struct PatientVCRView: View {
         .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             applyPatientPreset()
+            startSessionMonitor()
         }
         .onChange(of: vm.devices) {
             autoPairDetectedGloves()
+            monitorPatientSession()
         }
     }
     
-    private func autoPairDetectedGloves() {
-        for glove in vm.devices {
-            guard glove.isLeftGlove || glove.isRightGlove else { continue }
-            guard !glove.isReadyForStimulation else { continue }
-            guard !autoPairAttemptedIDs.contains(glove.id) else { continue }
+    private func monitorPatientSession() {
+        if !isSessionRunning {
+            if sessionWasStarted && remainingSeconds == 0 {
+                sessionMessage = "Great job. Your vCR session is complete for today."
+                Logger.shared.log("vCR", "Patient session completed")
+                patientSessionActive = false
+                sessionWasStarted = false
+            }
 
-            autoPairAttemptedIDs.insert(glove.id)
-            vm.pair(device: glove)
+            return
+        }
+
+        let readyPositions = Set(readyGloves.map(\.pos))
+        let currentlyActive = Set(activePositions)
+
+        let stillActivePositions = currentlyActive.intersection(readyPositions)
+
+        if currentlyActive.isEmpty {
+            missingActivePositions.removeAll()
+        } else if stillActivePositions.isEmpty {
+            if missingActivePositions == currentlyActive {
+                sessionMessage = "Session interrupted because both gloves disconnected."
+                Logger.shared.log("vCR", "Patient session interrupted: no active gloves connected")
+                stopSession()
+                patientSessionActive = false
+                missingActivePositions.removeAll()
+                return
+            }
+
+            missingActivePositions = currentlyActive
+        } else {
+            missingActivePositions.removeAll()
+        }
+
+
+        let newReadyGloves = readyGloves.filter { !currentlyActive.contains($0.pos) }
+
+        for glove in newReadyGloves {
+            let remaining = max(remainingSeconds, 1)
+            vm.startVibration(position: glove.pos, durationSeconds: remaining)
+
+            if isSessionPaused {
+                vm.pauseVibration(position: glove.pos)
+                Logger.shared.log("vCR", "Added \(glove.prettyName) to paused patient session with \(remaining)s remaining")
+            } else {
+                Logger.shared.log("vCR", "Added \(glove.prettyName) to active patient session with \(remaining)s remaining")
+            }
+        }
+
+
+    }
+    
+    private func startSessionMonitor() {
+        guard sessionMonitorTimer == nil else { return }
+
+        let timer = Timer(timeInterval: 1.0, repeats: true) { _ in
+            monitorPatientSession()
+        }
+
+        RunLoop.main.add(timer, forMode: .common)
+        sessionMonitorTimer = timer
+    }
+
+
+    private func autoPairDetectedGloves() {
+        if let leftGlove, !leftGlove.isReadyForStimulation, !autoPairAttemptedIDs.contains("left") {
+            autoPairAttemptedIDs.insert("left")
+            vm.pair(device: leftGlove)
+        }
+
+        if let rightGlove, !rightGlove.isReadyForStimulation, !autoPairAttemptedIDs.contains("right") {
+            autoPairAttemptedIDs.insert("right")
+            vm.pair(device: rightGlove)
         }
     }
 
@@ -94,66 +226,123 @@ struct PatientVCRView: View {
     private var sessionCard: some View {
         VStack(spacing: 16) {
             if isSessionRunning {
-                Text("Session running")
-                    .font(.title2.bold())
-
-                Text(timeText(remainingSeconds))
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-
                 VStack(spacing: 8) {
-                    Text("Hold for 2 seconds to stop")
+                    HStack {
+                        Circle()
+                            .fill(isSessionPaused ? Color.orange : Color.indigo)
+                            .frame(width: 10, height: 10)
+
+                        Text(isSessionPaused ? "Paused" : "Stimulation running")
+                            .font(.headline)
+
+                        Spacer()
+                    }
+
+                    Text(durationText(remainingSeconds))
+                        .font(.system(size: 46, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text("Time remaining")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.red.opacity(0.25))
-                            .frame(height: 52)
+                    ProgressView(value: sessionProgress)
+                        .tint(isSessionPaused ? .orange : .indigo)
+                }
 
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.red)
-                            .frame(width: max(8, stopProgress * 320), height: 52)
-
-                        Text("HOLD TO STOP")
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
+                HStack(spacing: 12) {
+                    sessionActionButton(
+                        title: isSessionPaused ? "Resume" : "Pause",
+                        systemImage: isSessionPaused ? "play.fill" : "pause.fill",
+                        fill: isSessionPaused ? .green : .orange
+                    ) {
+                        togglePauseSession()
                     }
-                    .contentShape(RoundedRectangle(cornerRadius: 12))
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { _ in
-                                startStopHold()
-                            }
-                            .onEnded { _ in
-                                cancelStopHold()
-                            }
-                    )
+
+                    holdStopButton
                 }
 
             } else {
-                Text("Ready for stimulation")
-                    .font(.title2.bold())
+                VStack(spacing: 8) {
+                    Text("Ready")
+                        .font(.title2.bold())
+
+                    Text(readyGloves.isEmpty ? "Connect at least one glove to begin" : "4 h vCR session")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
 
                 Button {
                     startSession()
                 } label: {
-                    Text("START vCR SESSION")
-                        .font(.headline)
+                    Label("Start vCR", systemImage: "play.fill")
+                        .font(.title3.bold())
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
+                        .frame(height: 58)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(.green)
                 .disabled(readyGloves.isEmpty)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding()
+        .padding(18)
         .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+    
+    private func sessionActionButton(
+        title: String,
+        systemImage: String,
+        fill: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.headline)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(fill)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
     }
 
+    private var holdStopButton: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(.systemGray4))
+
+            GeometryReader { geo in
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.red.opacity(0.85))
+                    .frame(width: geo.size.width * stopProgress)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+
+            Label("Hold to Stop", systemImage: "stop.fill")
+                .font(.headline)
+                .foregroundStyle(stopProgress > 0.45 ? .white : .primary)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 56)
+        .contentShape(RoundedRectangle(cornerRadius: 14))
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    startStopHold()
+                }
+                .onEnded { _ in
+                    cancelStopHold()
+                }
+        )
+    }
+
+
+    
     private var scanButton: some View {
         Button {
             if vm.scanning {
@@ -172,6 +361,7 @@ struct PatientVCRView: View {
         }
         .buttonStyle(.bordered)
     }
+
     
     private func gloveStatusCard(title: String, assetName: String, glove: HDevice?) -> some View {
         let isReady = glove?.isReadyForStimulation == true
@@ -262,7 +452,7 @@ struct PatientVCRView: View {
             return "Not detected"
         }
 
-        return "Not ready"
+        return "Disconnected"
     }
 
     
@@ -289,7 +479,7 @@ struct PatientVCRView: View {
 
     private var statusText: String {
         if isSessionRunning {
-            return "Stimulation is active."
+            return ""
         }
 
         if readyGloves.isEmpty {
@@ -313,6 +503,11 @@ struct PatientVCRView: View {
         for glove in readyGloves {
             vm.startVibration(position: glove.pos)
         }
+        
+        patientSessionActive = true
+        sessionWasStarted = true
+        sessionMessage = nil
+        missingActivePositions.removeAll()
 
         let entry = JournalEntry(
             type: .stimulation,
@@ -320,11 +515,14 @@ struct PatientVCRView: View {
         )
 
         JournalStore.shared.add(entry)
+        
     }
 
     private func stopSession() {
         for position in activePositions {
             vm.stopVibration(position: position)
+            patientSessionActive = false
+            sessionWasStarted = false
         }
     }
     
@@ -360,4 +558,34 @@ struct PatientVCRView: View {
         let seconds = seconds % 60
         return "\(minutes):\(String(format: "%02d", seconds))"
     }
+    
+    private var sessionProgress: Double {
+        guard vm.totalSeconds > 0 else { return 0 }
+        let elapsed = max(vm.totalSeconds - Double(remainingSeconds), 0)
+        return min(max(elapsed / vm.totalSeconds, 0), 1)
+    }
+
+    private func togglePauseSession() {
+        if isSessionPaused {
+            for position in activePositions {
+                vm.resumeVibration(position: position)
+            }
+        } else {
+            for position in activePositions {
+                vm.pauseVibration(position: position)
+            }
+        }
+    }
+
+    private func durationText(_ seconds: Int) -> String {
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        }
+
+        return "\(minutes)m"
+    }
+
 }
