@@ -10,6 +10,8 @@ import SwiftUI
 struct MainTabView: View {
     @StateObject private var gloveVM = GloveVM()
     @AppStorage("showResearchTab") private var showResearchTab = false
+    @Environment(\.scenePhase) private var scenePhase
+
 
     var body: some View {
         TabView {
@@ -42,6 +44,9 @@ struct MainTabView: View {
             .tabItem {
                 Label("Settings", systemImage: "gearshape.fill")
             }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            gloveVM.handleScenePhaseChange(newPhase)
         }
     }
 }

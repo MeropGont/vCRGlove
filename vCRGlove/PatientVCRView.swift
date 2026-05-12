@@ -9,6 +9,9 @@ import SwiftUI
 
 struct PatientVCRView: View {
     @ObservedObject var vm: GloveVM
+    
+    @AppStorage("patientID") private var patientID = ""
+
     @State private var stopProgress: Double = 0
     @State private var stopTimer: Timer? = nil
     @State private var autoPairAttemptedIDs: Set<String> = []
@@ -119,12 +122,22 @@ struct PatientVCRView: View {
                 }
 
             }
+            
+            if let timingCompromiseMessage = vm.timingCompromiseMessage {
+                Text(timingCompromiseMessage)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .multilineTextAlignment(.center)
+            }
+
 
             scanButton
 
             gloveStatusGrid
 
             sessionCard
+            
+            troubleshootingLink
 
             Spacer()
 
@@ -154,7 +167,6 @@ struct PatientVCRView: View {
                 patientSessionActive = false
                 sessionWasStarted = false
             }
-
             return
         }
 
@@ -291,6 +303,17 @@ struct PatientVCRView: View {
         .padding(18)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+    
+    private var troubleshootingLink: some View {
+        NavigationLink {
+            SupportSettingsView(patientID: patientID, initialTopic: "Finger check")
+        } label: {
+            Label("Something not working?", systemImage: "questionmark.circle")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
     }
     
     private func sessionActionButton(
@@ -499,9 +522,10 @@ struct PatientVCRView: View {
 
     private func startSession() {
         applyPatientPreset()
+        vm.clearTimingCompromiseWarning()
 
         for glove in readyGloves {
-            vm.startVibration(position: glove.pos)
+            vm.startVibrationWithFingerCheck(positions: readyGloves.map(\.pos))
         }
         
         patientSessionActive = true

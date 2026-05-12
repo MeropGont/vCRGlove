@@ -145,6 +145,13 @@ final class GloveVM: ObservableObject {
     @Published var devices: [HDevice] = []
     @Published var countdowns: [String: Int] = [:]
     @Published var pausedPositions: Set<String> = []
+    
+    // deal with possible interruptions
+    @Published var timingCompromiseMessage: String?
+
+    private var backgroundedDuringStimulationAt: Date?
+    private var stimulationBackgroundTask: UIBackgroundTaskIdentifier = .invalid
+
 
     // Vibration params (manual mode)
     @Published var amplitude: Double = 70
@@ -163,10 +170,80 @@ final class GloveVM: ObservableObject {
     private var startedAt: [String: Date] = [:]
     private var activeStimPositions: Set<String> = []
     private var lastNoGloveCandidateLog: Date?
+    
 
     private func updateIdleTimerLock() {
         UIApplication.shared.isIdleTimerDisabled = !activeStimPositions.isEmpty
     }
+    
+    func handleScenePhaseChange(_ phase: ScenePhase) {
+        switch phase {
+        case .active:
+            handleAppReturnedToForeground()
+
+        case .background:
+            handleAppEnteredBackground()
+
+        case .inactive:
+            if !activeStimPositions.isEmpty {
+                Logger.shared.log("vCR", "App became inactive during active stimulation")
+            }
+
+        @unknown default:
+            break
+        }
+    }
+
+    func clearTimingCompromiseWarning() {
+        timingCompromiseMessage = nil
+    }
+
+    private func handleAppEnteredBackground() {
+        guard !activeStimPositions.isEmpty else { return }
+
+        if backgroundedDuringStimulationAt == nil {
+            backgroundedDuringStimulationAt = Date()
+        }
+
+        timingCompromiseMessage = "vCR timing may have been interrupted while the app was not open."
+        Logger.shared.log("vCR", "Timing compromised: app entered background during active stimulation")
+
+        beginStimulationBackgroundTaskIfNeeded()
+    }
+
+    private func handleAppReturnedToForeground() {
+        guard let backgroundedAt = backgroundedDuringStimulationAt else { return }
+
+        let duration = Date().timeIntervalSince(backgroundedAt)
+        let activeText = activeStimPositions.isEmpty ? "stimulation not active" : "stimulation still active"
+
+        Logger.shared.log(
+            "vCR",
+            "App returned to foreground after \(String(format: "%.1f", duration))s in background; \(activeText)"
+        )
+
+        backgroundedDuringStimulationAt = nil
+        endStimulationBackgroundTaskIfNeeded()
+    }
+
+    private func beginStimulationBackgroundTaskIfNeeded() {
+        guard stimulationBackgroundTask == .invalid else { return }
+
+        stimulationBackgroundTask = UIApplication.shared.beginBackgroundTask(withName: "vCR stimulation") { [weak self] in
+            Task { @MainActor in
+                Logger.shared.log("vCR", "Background grace time expired during active stimulation")
+                self?.endStimulationBackgroundTaskIfNeeded()
+            }
+        }
+    }
+
+    private func endStimulationBackgroundTaskIfNeeded() {
+        guard stimulationBackgroundTask != .invalid else { return }
+
+        UIApplication.shared.endBackgroundTask(stimulationBackgroundTask)
+        stimulationBackgroundTask = .invalid
+    }
+
 
 
     // MARK: - Scan
@@ -414,6 +491,11 @@ final class GloveVM: ObservableObject {
         }
 
         updateIdleTimerLock()
+        
+        if activeStimPositions.isEmpty {
+            endStimulationBackgroundTaskIfNeeded()
+        }
+
         Logger.shared.log("vCR", "Stopped vibration @ \(position)")
     }
 
@@ -443,6 +525,49 @@ final class GloveVM: ObservableObject {
         sendAllOff(position: position)
         Logger.shared.log("vCR", "Paused vibration @ \(position)")
     }
+    
+    func startVibrationWithFingerCheck(positions: [String], durationSeconds: Int? = nil) {
+        let cleaned = Array(Set(positions.filter { !$0.isEmpty }))
+        guard !cleaned.isEmpty else { return }
+
+        let sessionSeconds = durationSeconds ?? Int(totalSeconds)
+        let fingerIndices = [0, 1, 2, 3, 4]
+        let pulseMs: UInt64 = 450
+        let gapMs: UInt64 = 150
+        let strength: UInt8 = 70
+
+        for position in cleaned {
+            stopVibration(position: position)
+            countdowns[position] = sessionSeconds
+        }
+
+        let orderedPositions = cleaned.sorted { lhs, rhs in
+            if lhs.contains("GloveL") { return true }
+            if rhs.contains("GloveL") { return false }
+            return lhs < rhs
+        }
+
+        Task { @MainActor in
+            Logger.shared.log("vCR", "Finger check started before vCR for \(cleaned.joined(separator: ", "))")
+
+            for position in orderedPositions {
+                for motorIndex in fingerIndices {
+                    sendSingleMotorOn(position: position, motorIndex: motorIndex, strength: strength)
+
+                    try? await Task.sleep(nanoseconds: pulseMs * 1_000_000)
+
+                    sendAllOff(position: position)
+
+                    try? await Task.sleep(nanoseconds: gapMs * 1_000_000)
+                }
+            }
+
+            for position in cleaned {
+                startVibration(position: position, durationSeconds: sessionSeconds)
+            }
+        }
+    }
+
 
 
 
@@ -477,6 +602,23 @@ final class GloveVM: ObservableObject {
             self.sendAllOff(position: position)
         }
     }
+    
+    private func sendSingleMotorOn(position: String, motorIndex: Int, strength: UInt8) {
+        var motors = [UInt8](repeating: 0, count: 20)
+
+        if motorIndex >= 0 && motorIndex < motors.count {
+            motors[motorIndex] = strength
+        }
+
+        position.withCString { pstr in
+            motors.withUnsafeBufferPointer { buf in
+                if let base = buf.baseAddress {
+                    BhapticsPlugin_playMotors(pstr, motors.count, base)
+                }
+            }
+        }
+    }
+
 
     private func sendAllOff(position: String) {
         var off = [UInt8](repeating: 0, count: 20)

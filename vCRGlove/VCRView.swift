@@ -432,7 +432,7 @@ struct VCRView: View {
 
     private func startAll() {
         for device in readyDevices {
-            vm.startVibration(position: device.pos)
+            vm.startVibrationWithFingerCheck(positions: readyDevices.map(\.pos))
         }
     }
 
