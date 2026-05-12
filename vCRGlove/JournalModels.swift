@@ -97,8 +97,10 @@ enum JournalEntryType: String, Codable {
     case medication
     case symptm
     case note
+    case stimulation
     case pdq8
 }
+
 
 struct JournalEntry: Identifiable, Codable {
     let id: UUID

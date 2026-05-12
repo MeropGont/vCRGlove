@@ -11,8 +11,11 @@ final class Logger: ObservableObject {
         let date: Date
         let tag: String
         let message: String
+        var repeatCount: Int = 1
+
         var line: String {
-            "\(Logger.df.string(from: date)) [\(tag.uppercased())] \(message)"
+            let repeatText = repeatCount > 1 ? "  x\(repeatCount)" : ""
+            return "\(Logger.df.string(from: date)) [\(tag.uppercased())] \(message)\(repeatText)"
         }
     }
 
@@ -22,23 +25,63 @@ final class Logger: ObservableObject {
         return df
     }()
 
-    func log(_ tag: String, _ message: String) {
-        DispatchQueue.main.async {
-            self.entries.append(.init(date: Date(), tag: tag, message: message))
-            if self.entries.count > 2000 {
-                self.entries.removeFirst(self.entries.count - 2000)
-            }
-        }
+    private let hiddenVisibleTags: Set<String> = [
+        "BLE_RAW"
+    ]
 
+    private let hiddenVisibleMessageFragments: [String] = [
+        "Showing ",
+        "detected bHaptics device",
+        "Scan stopped"
+    ]
+
+    func log(_ tag: String, _ message: String) {
         EventStore.shared.append(
             type: "app_event",
             tag: tag,
             message: message
         )
+
+        guard shouldShowInVisibleLog(tag: tag, message: message) else {
+            return
+        }
+
+        DispatchQueue.main.async {
+            if let last = self.entries.last,
+               last.tag == tag,
+               last.message == message {
+                var updated = last
+                updated.repeatCount += 1
+                self.entries[self.entries.count - 1] = updated
+            } else {
+                self.entries.append(.init(date: Date(), tag: tag, message: message))
+            }
+
+            if self.entries.count > 300 {
+                self.entries.removeFirst(self.entries.count - 300)
+            }
+        }
     }
 
-    func clear() { entries.removeAll() }
+    func clear() {
+        entries.removeAll()
+    }
+
+    private func shouldShowInVisibleLog(tag: String, message: String) -> Bool {
+        if hiddenVisibleTags.contains(tag.uppercased()) {
+            return false
+        }
+
+        for fragment in hiddenVisibleMessageFragments {
+            if message.contains(fragment) {
+                return false
+            }
+        }
+
+        return true
+    }
 }
+
 
 // MARK: - Inline LogsPanel
 struct LogsPanel: View {
@@ -112,128 +155,382 @@ struct LabeledSlider: View {
 
 // MARK: - ContentView (changed to VCRView)
 struct VCRView: View {
-    @StateObject private var vm = GloveVM()
+    @ObservedObject var vm: GloveVM
     @StateObject private var logger = Logger.shared
+    @State private var stopProgress: Double = 0
+    @State private var stopTimer: Timer?
+
+    private var leftGlove: HDevice? {
+        bestGlove(from: vm.devices.filter { $0.isLeftGlove })
+    }
+
+    private var rightGlove: HDevice? {
+        bestGlove(from: vm.devices.filter { $0.isRightGlove })
+    }
+
+    private var readyDevices: [HDevice] {
+        [leftGlove, rightGlove]
+            .compactMap { $0 }
+            .filter { $0.isReadyForStimulation && !$0.pos.isEmpty }
+    }
+
+    private var activePositions: [String] {
+        vm.countdowns.filter { $0.value > 0 }.map(\.key)
+    }
+
+    private var isStimulating: Bool {
+        !activePositions.isEmpty
+    }
+
+    private var isPaused: Bool {
+        !activePositions.isEmpty && activePositions.allSatisfy { vm.pausedPositions.contains($0) }
+    }
+
+    private var remainingSeconds: Int {
+        activePositions.compactMap { vm.countdowns[$0] }.max() ?? 0
+    }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 12) {
-                // --- Bluetooth panel ---
-                HStack {
-                    Button(vm.scanning ? "Stop Scan" : "Start Scan") {
-                        vm.scanning ? vm.stopScan() : vm.startScan()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.blue)
-                    
-                    Button("Disconnect All") { vm.disconnectAll() }
-                        .buttonStyle(.bordered)
-                        .tint(.red)
-                }
-                
-                // --- Parameters ---
-                VStack(spacing: 8) {
-                    Text("Vibration Parameters")
-                        .font(.headline)
-                    
-                    LabeledSlider(title: "Amplitude", value: $vm.amplitude,
-                                  range: 0...100, step: 1,
-                                  unit: "%", format: "%.0f",
-                                  disabled: vm.vcrMode)
-                    
-                    LabeledSlider(title: "Frequency", value: $vm.frequency,
-                                  range: 0.5...5, step: 0.1,
-                                  unit: "Hz", format: "%.1f",
-                                  disabled: vm.vcrMode)
-                    
-                    LabeledSlider(title: "Pulse length", value: $vm.pulseMs,
-                                  range: 20...500, step: 10,
-                                  unit: "ms", format: "%.0f",
-                                  disabled: vm.vcrMode)
-                    
-                    LabeledSlider(title: "Fingers per cycle", value: Binding(
-                        get: { Double(vm.fingersPerCycle) },
-                        set: { vm.fingersPerCycle = Int($0) }),
-                                  range: 1...4, step: 1,
-                                  unit: "motors", format: "%.0f",
-                                  disabled: vm.vcrMode)
-                    
-                    LabeledSlider(title: "Total duration", value: Binding(
-                        get: { vm.totalSeconds / 60 },
-                        set: { vm.totalSeconds = $0 * 60 }),
-                                  range: 1...60, step: 1,
-                                  unit: "min", format: "%.0f")
-                    
-                    Toggle("vCR Mode", isOn: $vm.vcrMode)
-                        .tint(.orange)
-                        .onChange(of: vm.vcrMode) { oldValue, newValue in
-                            if newValue {
-                                vm.amplitude       = VCRPreset.amplitude
-                                vm.frequency       = VCRPreset.frequency
-                                vm.pulseMs         = Double(VCRPreset.pulseMs)
-                                vm.fingersPerCycle = VCRPreset.fingersPerCycle
-                            }
-                        }
-                }
-                .padding(10)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
-                
-                // --- Devices list ---
-                ForEach(vm.devices, id: \.id) { d in
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack {
-                            Text(d.prettyName).font(.subheadline)
-                            Spacer()
-                            if d.isConnected == true {
-                                if vm.countdowns[d.pos] ?? 0 > 0 {
-                                    Button("Stop") { vm.stopVibration(position: d.pos) }
-                                        .buttonStyle(.borderedProminent)
-                                        .tint(.red)
-                                        .font(.caption)
-                                } else {
-                                    Button("Vibrate") { vm.startVibration(position: d.pos) }
-                                        .buttonStyle(.borderedProminent)
-                                        .tint(.green)
-                                        .font(.caption)
-                                }
-                            } else {
-                                Button("Pair") { vm.pair(device: d) }
-                                    .buttonStyle(.borderedProminent)
-                                    .tint(.blue)
-                                    .disabled(d.isPaired == true)
-                                    .font(.caption)
-                            }
-                        }
-                        
-                        if let remaining = vm.countdowns[d.pos], remaining > 0 {
-                            Text("⏱ \(remaining/60)m \(remaining%60)s left")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        if d.isConnected == true {
-                            Text("Status: Connected").font(.caption2).foregroundColor(.green)
-                        } else if d.isPaired == true {
-                            Text("Status: Paired").font(.caption2).foregroundColor(.orange)
-                        } else {
-                            Text("Status: Off / Not paired").font(.caption2).foregroundColor(.gray)
-                        }
-                    }
-                    .padding(.vertical, 2)
-                    .padding(.horizontal, 10)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.systemGray6)))
-                }
-                .frame(minHeight: 150, maxHeight: 250)
-                
-                // --- Logs ---
+            VStack(spacing: 16) {
+                scanSection
+                gloveStatusGrid
+                stimulationParameters
+                stimulationControl
                 LogsPanel(logger: logger)
-                    //.frame(minHeight: 140, maxHeight: 220)
+                    .frame(height: 220)
             }
             .padding()
-            .padding(.top, 8)
             .padding(.bottom, 24)
         }
-        .navigationTitle("vCR")
+        .navigationTitle("Research")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var scanSection: some View {
+        VStack(spacing: 10) {
+            Button {
+                vm.scanning ? vm.stopScan() : vm.startScan(clearHistory: false)
+            } label: {
+                Label(
+                    vm.scanning ? "STOP SCAN" : "SCAN FOR GLOVES",
+                    systemImage: vm.scanning ? "stop.circle.fill" : "dot.radiowaves.left.and.right"
+                )
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+
+            Button("Clear History & Fresh Scan") {
+                vm.startScan(clearHistory: true)
+            }
+            .font(.caption)
+            .buttonStyle(.bordered)
+        }
+    }
+
+
+    private var gloveStatusGrid: some View {
+        HStack(spacing: 14) {
+            gloveStatusCard(title: "Left", assetName: "glove_L_icon", glove: leftGlove)
+            gloveStatusCard(title: "Right", assetName: "glove_R_icon", glove: rightGlove)
+        }
+    }
+
+    private func gloveStatusCard(title: String, assetName: String, glove: HDevice?) -> some View {
+        let isReady = glove?.isReadyForStimulation == true
+        let isActive = glove.flatMap { vm.countdowns[$0.pos] } ?? 0 > 0
+        let canBuzz = isReady && !isActive
+
+        return VStack(spacing: 10) {
+            Image(assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(height: 110)
+                .opacity(isReady ? 1.0 : 0.28)
+                .padding(12)
+                .frame(maxWidth: .infinity)
+                .background(Color(.systemBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(gloveFrameColor(isReady: isReady, isActive: isActive), lineWidth: 4)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .contentShape(RoundedRectangle(cornerRadius: 18))
+                .onTapGesture {
+                    guard canBuzz, let glove else { return }
+                    vm.testBuzz(device: glove)
+                }
+
+            Text("\(title) glove")
+                .font(.headline)
+
+            Text(statusText(for: glove, isActive: isActive))
+                .font(.caption)
+                .foregroundStyle(isActive ? .indigo : isReady ? .green : .secondary)
+
+            if let glove {
+                if isReady {
+                    Button(role: .destructive) {
+                        vm.disconnect(device: glove)
+                    } label: {
+                        Label("Disconnect", systemImage: "xmark.circle")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(isActive)
+                } else {
+                    Button {
+                        vm.pair(device: glove)
+                    } label: {
+                        Label("Reconnect", systemImage: "arrow.clockwise.circle")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+
+    private var stimulationParameters: some View {
+        VStack(spacing: 8) {
+            Text("Stimulation Parameters")
+                .font(.headline)
+
+            LabeledSlider(title: "Amplitude", value: $vm.amplitude,
+                          range: 0...100, step: 1,
+                          unit: "%", format: "%.0f",
+                          disabled: vm.vcrMode)
+
+            LabeledSlider(title: "Frequency", value: $vm.frequency,
+                          range: 0.5...5, step: 0.1,
+                          unit: "Hz", format: "%.1f",
+                          disabled: vm.vcrMode)
+
+            LabeledSlider(title: "Pulse length", value: $vm.pulseMs,
+                          range: 20...500, step: 10,
+                          unit: "ms", format: "%.0f",
+                          disabled: vm.vcrMode)
+
+            LabeledSlider(title: "Fingers per cycle", value: Binding(
+                get: { Double(vm.fingersPerCycle) },
+                set: { vm.fingersPerCycle = Int($0) }),
+                          range: 1...4, step: 1,
+                          unit: "motors", format: "%.0f",
+                          disabled: vm.vcrMode)
+
+            LabeledSlider(title: "Total duration", value: Binding(
+                get: { vm.totalSeconds / 60 },
+                set: { vm.totalSeconds = $0 * 60 }),
+                          range: 1...240, step: 1,
+                          unit: "min", format: "%.0f")
+
+            Toggle("vCR preset", isOn: $vm.vcrMode)
+                .tint(.orange)
+                .onChange(of: vm.vcrMode) { _, newValue in
+                    if newValue {
+                        vm.amplitude = VCRPreset.amplitude
+                        vm.frequency = VCRPreset.frequency
+                        vm.pulseMs = Double(VCRPreset.pulseMs)
+                        vm.fingersPerCycle = VCRPreset.fingersPerCycle
+                    }
+                }
+        }
+        .padding()
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var stimulationControl: some View {
+        VStack(spacing: 16) {
+            if isStimulating {
+                Text(isPaused ? "Paused" : "Stimulation running")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text(durationText(remainingSeconds))
+                    .font(.system(size: 42, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                ProgressView(value: sessionProgress)
+                    .tint(isPaused ? .orange : .indigo)
+
+                HStack(spacing: 12) {
+                    sessionActionButton(
+                        title: isPaused ? "Resume" : "Pause",
+                        systemImage: isPaused ? "play.fill" : "pause.fill",
+                        fill: isPaused ? .green : .orange
+                    ) {
+                        togglePause()
+                    }
+
+                    holdStopButton
+                }
+            } else {
+                Text("Ready")
+                    .font(.title2.bold())
+
+                Text(readyDevices.isEmpty ? "Connect at least one glove to begin" : "\(readyDevices.count) glove(s) ready")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                sessionActionButton(title: "Start Stimulation", systemImage: "play.fill", fill: .green) {
+                    startAll()
+                }
+                .disabled(readyDevices.isEmpty)
+                .opacity(readyDevices.isEmpty ? 0.45 : 1)
+            }
+        }
+        .padding(18)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func sessionActionButton(title: String, systemImage: String, fill: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.headline)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(fill)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var holdStopButton: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(.systemGray4))
+
+            GeometryReader { geo in
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.red.opacity(0.85))
+                    .frame(width: geo.size.width * stopProgress)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+
+            Label("Hold to Stop", systemImage: "stop.fill")
+                .font(.headline)
+                .foregroundStyle(stopProgress > 0.45 ? .white : .primary)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 56)
+        .contentShape(RoundedRectangle(cornerRadius: 14))
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in startStopHold() }
+                .onEnded { _ in cancelStopHold() }
+        )
+    }
+
+    private func startAll() {
+        for device in readyDevices {
+            vm.startVibration(position: device.pos)
+        }
+    }
+
+    private func stopAll() {
+        for position in activePositions {
+            vm.stopVibration(position: position)
+        }
+    }
+
+    private func togglePause() {
+        if isPaused {
+            for position in activePositions {
+                vm.resumeVibration(position: position)
+            }
+        } else {
+            for position in activePositions {
+                vm.pauseVibration(position: position)
+            }
+        }
+    }
+
+    private func startStopHold() {
+        guard stopTimer == nil else { return }
+        stopProgress = 0
+
+        let timer = Timer(timeInterval: 0.05, repeats: true) { timer in
+            stopProgress += 0.05 / 2.0
+
+            if stopProgress >= 1 {
+                timer.invalidate()
+                stopTimer = nil
+                stopProgress = 0
+                stopAll()
+            }
+        }
+
+        RunLoop.main.add(timer, forMode: .common)
+        stopTimer = timer
+    }
+
+    private func cancelStopHold() {
+        stopTimer?.invalidate()
+        stopTimer = nil
+        stopProgress = 0
+    }
+
+    private var sessionProgress: Double {
+        guard vm.totalSeconds > 0 else { return 0 }
+        let elapsed = max(vm.totalSeconds - Double(remainingSeconds), 0)
+        return min(max(elapsed / vm.totalSeconds, 0), 1)
+    }
+
+    private func durationText(_ seconds: Int) -> String {
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+        let seconds = seconds % 60
+
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        }
+
+        return "\(minutes)m \(seconds)s"
+    }
+
+    private func gloveFrameColor(isReady: Bool, isActive: Bool) -> Color {
+        if isActive { return .indigo }
+        if isReady { return .green }
+        return .gray.opacity(0.35)
+    }
+
+    private func statusText(for glove: HDevice?, isActive: Bool) -> String {
+        if isActive { return "Stimulating" }
+        if glove?.isReadyForStimulation == true { return "Ready" }
+        if glove == nil { return "Not detected" }
+        return "Disconnected"
+    }
+
+    private func bestGlove(from gloves: [HDevice]) -> HDevice? {
+        gloves.sorted {
+            let lhsScore = gloveScore($0)
+            let rhsScore = gloveScore($1)
+
+            if lhsScore != rhsScore {
+                return lhsScore > rhsScore
+            }
+
+            return $0.displayName < $1.displayName
+        }
+        .first
+    }
+
+    private func gloveScore(_ glove: HDevice) -> Int {
+        var score = 0
+        if glove.isConnected == true { score += 100 }
+        if glove.isPaired == true && glove.battery != nil && !glove.pos.isEmpty { score += 80 }
+        if glove.battery != nil { score += 20 }
+        if glove.isPaired == true { score += 10 }
+        if !glove.pos.isEmpty { score += 1 }
+        return score
     }
 }

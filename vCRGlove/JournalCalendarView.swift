@@ -64,15 +64,17 @@ struct JournalCalendarPanel: View {
                                     .foregroundStyle(isSelected(date) ? .white : .primary)
 
                                 Circle()
-                                    .fill(hasEntry(on: date) ? (isSelected(date) ? Color.white : Color.blue) : Color.clear)
+                                    .fill(markerColor(for: date))
                                     .frame(width: 5, height: 5)
+
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 42)
                             .background(
                                 Circle()
-                                    .fill(isSelected(date) ? Color.blue : Color(.systemGray6))
+                                    .fill(dayBackgroundColor(for: date))
                             )
+
                         }
                         .buttonStyle(.plain)
                     } else {
@@ -169,6 +171,35 @@ struct JournalCalendarPanel: View {
     private func hasEntry(on date: Date) -> Bool {
         !entries(on: date).isEmpty
     }
+    
+    private func hasStimulation(on date: Date) -> Bool {
+        entries(on: date).contains { $0.type == .stimulation }
+    }
+
+    private func dayBackgroundColor(for date: Date) -> Color {
+        if isSelected(date) {
+            return .blue
+        }
+
+        if hasStimulation(on: date) {
+            return Color.green.opacity(0.25)
+        }
+
+        return Color(.systemGray6)
+    }
+
+    private func markerColor(for date: Date) -> Color {
+        if hasStimulation(on: date) {
+            return isSelected(date) ? .white : .green
+        }
+
+        if hasEntry(on: date) {
+            return isSelected(date) ? .white : .blue
+        }
+
+        return .clear
+    }
+
 
     private func isSelected(_ date: Date) -> Bool {
         calendar.isDate(date, inSameDayAs: selectedDate)
@@ -176,6 +207,10 @@ struct JournalCalendarPanel: View {
 
     private func summary(for entry: JournalEntry) -> String {
         var parts: [String] = []
+        
+        if entry.type == .stimulation {
+            parts.append("vCR stimulation")
+        }
 
         if let mood = entry.mood {
             parts.append("Mood \(mood)/5")
@@ -188,6 +223,11 @@ struct JournalCalendarPanel: View {
         if !entry.symptoms.isEmpty {
             parts.append(entry.symptoms.joined(separator: ", "))
         }
+        
+        if let note = entry.note {
+            parts.append(note)
+        }
+
 
         return parts.isEmpty ? "No details" : parts.joined(separator: " · ")
     }
