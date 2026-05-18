@@ -7,6 +7,36 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A92985732FBB473200B0F0FB /* DailyCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929855F2FBB473200B0F0FB /* DailyCheckInView.swift */; };
+		A92985742FBB473200B0F0FB /* DailyLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985602FBB473200B0F0FB /* DailyLogView.swift */; };
+		A92985752FBB473200B0F0FB /* EventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985612FBB473200B0F0FB /* EventStore.swift */; };
+		A92985762FBB473200B0F0FB /* GloveVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985622FBB473200B0F0FB /* GloveVM.swift */; };
+		A92985772FBB473200B0F0FB /* JournalCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985642FBB473200B0F0FB /* JournalCalendarView.swift */; };
+		A92985782FBB473200B0F0FB /* JournalHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985652FBB473200B0F0FB /* JournalHomeView.swift */; };
+		A92985792FBB473200B0F0FB /* JournalModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985662FBB473200B0F0FB /* JournalModels.swift */; };
+		A929857A2FBB473200B0F0FB /* JournalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985672FBB473200B0F0FB /* JournalStore.swift */; };
+		A929857B2FBB473200B0F0FB /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985682FBB473200B0F0FB /* MainTabView.swift */; };
+		A929857C2FBB473200B0F0FB /* MedicationLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985692FBB473200B0F0FB /* MedicationLogView.swift */; };
+		A929857D2FBB473200B0F0FB /* NoteLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929856A2FBB473200B0F0FB /* NoteLogView.swift */; };
+		A929857E2FBB473200B0F0FB /* PatientVCRView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929856B2FBB473200B0F0FB /* PatientVCRView.swift */; };
+		A929857F2FBB473200B0F0FB /* PhoneWC.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929856C2FBB473200B0F0FB /* PhoneWC.swift */; };
+		A92985802FBB473200B0F0FB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929856D2FBB473200B0F0FB /* SettingsView.swift */; };
+		A92985812FBB473200B0F0FB /* SymptomEpisodeLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929856E2FBB473200B0F0FB /* SymptomEpisodeLogView.swift */; };
+		A92985822FBB473200B0F0FB /* vCRGloveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985702FBB473200B0F0FB /* vCRGloveApp.swift */; };
+		A92985832FBB473200B0F0FB /* VCRView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985712FBB473200B0F0FB /* VCRView.swift */; };
+		A92985842FBB473200B0F0FB /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = A929855D2FBB473200B0F0FB /* .gitignore */; };
+		A92985852FBB473200B0F0FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A929855E2FBB473200B0F0FB /* Assets.xcassets */; };
+		A92985892FBB473800B0F0FB /* vCRGloveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985872FBB473800B0F0FB /* vCRGloveTests.swift */; };
+		A929858D2FBB473C00B0F0FB /* vCRGloveUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929858A2FBB473C00B0F0FB /* vCRGloveUITests.swift */; };
+		A929858E2FBB473C00B0F0FB /* vCRGloveUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929858B2FBB473C00B0F0FB /* vCRGloveUITestsLaunchTests.swift */; };
+		A92985952FBB473D00B0F0FB /* MotionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985902FBB473D00B0F0FB /* MotionService.swift */; };
+		A92985962FBB473D00B0F0FB /* vCRGloveWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985912FBB473D00B0F0FB /* vCRGloveWatchApp.swift */; };
+		A92985972FBB473D00B0F0FB /* WatchConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985922FBB473D00B0F0FB /* WatchConnectivityManager.swift */; };
+		A92985982FBB473D00B0F0FB /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985932FBB473D00B0F0FB /* WatchContentView.swift */; };
+		A92985992FBB473D00B0F0FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A929858F2FBB473D00B0F0FB /* Assets.xcassets */; };
+		A929859C2FBB473F00B0F0FB /* vCRGloveWatch_Watch_AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929859A2FBB473F00B0F0FB /* vCRGloveWatch_Watch_AppTests.swift */; };
+		A92985A02FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929859D2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift */; };
+		A92985A12FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929859E2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift */; };
 		A9AE5FDA2E794A6F009F0426 /* Bhaptics in Frameworks */ = {isa = PBXBuildFile; productRef = A9AE5FD92E794A6F009F0426 /* Bhaptics */; };
 		A9DAB74F2E682D3D0053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */; platformFilters = (ios, xros, ); };
 		A9DAB7512E682D590053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB7502E682D590053D51F /* WatchConnectivity.framework */; };
@@ -66,6 +96,38 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A929855D2FBB473200B0F0FB /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		A929855E2FBB473200B0F0FB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A929855F2FBB473200B0F0FB /* DailyCheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyCheckInView.swift; sourceTree = "<group>"; };
+		A92985602FBB473200B0F0FB /* DailyLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyLogView.swift; sourceTree = "<group>"; };
+		A92985612FBB473200B0F0FB /* EventStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventStore.swift; sourceTree = "<group>"; };
+		A92985622FBB473200B0F0FB /* GloveVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GloveVM.swift; sourceTree = "<group>"; };
+		A92985632FBB473200B0F0FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A92985642FBB473200B0F0FB /* JournalCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalCalendarView.swift; sourceTree = "<group>"; };
+		A92985652FBB473200B0F0FB /* JournalHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalHomeView.swift; sourceTree = "<group>"; };
+		A92985662FBB473200B0F0FB /* JournalModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalModels.swift; sourceTree = "<group>"; };
+		A92985672FBB473200B0F0FB /* JournalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalStore.swift; sourceTree = "<group>"; };
+		A92985682FBB473200B0F0FB /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		A92985692FBB473200B0F0FB /* MedicationLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicationLogView.swift; sourceTree = "<group>"; };
+		A929856A2FBB473200B0F0FB /* NoteLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteLogView.swift; sourceTree = "<group>"; };
+		A929856B2FBB473200B0F0FB /* PatientVCRView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatientVCRView.swift; sourceTree = "<group>"; };
+		A929856C2FBB473200B0F0FB /* PhoneWC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWC.swift; sourceTree = "<group>"; };
+		A929856D2FBB473200B0F0FB /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A929856E2FBB473200B0F0FB /* SymptomEpisodeLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymptomEpisodeLogView.swift; sourceTree = "<group>"; };
+		A929856F2FBB473200B0F0FB /* vCRGlove.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = vCRGlove.entitlements; sourceTree = "<group>"; };
+		A92985702FBB473200B0F0FB /* vCRGloveApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveApp.swift; sourceTree = "<group>"; };
+		A92985712FBB473200B0F0FB /* VCRView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCRView.swift; sourceTree = "<group>"; };
+		A92985872FBB473800B0F0FB /* vCRGloveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveTests.swift; sourceTree = "<group>"; };
+		A929858A2FBB473C00B0F0FB /* vCRGloveUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveUITests.swift; sourceTree = "<group>"; };
+		A929858B2FBB473C00B0F0FB /* vCRGloveUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		A929858F2FBB473D00B0F0FB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A92985902FBB473D00B0F0FB /* MotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionService.swift; sourceTree = "<group>"; };
+		A92985912FBB473D00B0F0FB /* vCRGloveWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveWatchApp.swift; sourceTree = "<group>"; };
+		A92985922FBB473D00B0F0FB /* WatchConnectivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityManager.swift; sourceTree = "<group>"; };
+		A92985932FBB473D00B0F0FB /* WatchContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchContentView.swift; sourceTree = "<group>"; };
+		A929859A2FBB473F00B0F0FB /* vCRGloveWatch_Watch_AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveWatch_Watch_AppTests.swift; sourceTree = "<group>"; };
+		A929859D2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveWatch_Watch_AppUITests.swift; sourceTree = "<group>"; };
+		A929859E2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveWatch_Watch_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk/System/Library/Frameworks/WatchConnectivity.framework; sourceTree = DEVELOPER_DIR; };
 		A9DAB7502E682D590053D51F /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.5.sdk/System/Library/Frameworks/WatchConnectivity.framework; sourceTree = DEVELOPER_DIR; };
 		A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "vCRGloveWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -76,52 +138,6 @@
 		A9FCFC192E5866B100BF28B1 /* vCRGloveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vCRGloveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9FCFC232E5866B100BF28B1 /* vCRGloveUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vCRGloveUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A9FCFC3A2E586BC600BF28B1 /* Exceptions for "vCRGlove" folder in "vCRGlove" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = A9FCFC0A2E5866AF00BF28B1 /* vCRGlove */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		A9EFEB282E6309070081A6C7 /* vCRGloveWatch Watch App */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "vCRGloveWatch Watch App";
-			sourceTree = "<group>";
-		};
-		A9EFEB362E6309090081A6C7 /* vCRGloveWatch Watch AppTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "vCRGloveWatch Watch AppTests";
-			sourceTree = "<group>";
-		};
-		A9EFEB402E6309090081A6C7 /* vCRGloveWatch Watch AppUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "vCRGloveWatch Watch AppUITests";
-			sourceTree = "<group>";
-		};
-		A9FCFC0D2E5866AF00BF28B1 /* vCRGlove */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				A9FCFC3A2E586BC600BF28B1 /* Exceptions for "vCRGlove" folder in "vCRGlove" target */,
-			);
-			path = vCRGlove;
-			sourceTree = "<group>";
-		};
-		A9FCFC1C2E5866B100BF28B1 /* vCRGloveTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = vCRGloveTests;
-			sourceTree = "<group>";
-		};
-		A9FCFC262E5866B100BF28B1 /* vCRGloveUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = vCRGloveUITests;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A9EFEB242E6309070081A6C7 /* Frameworks */ = {
@@ -172,6 +188,80 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A92985722FBB473200B0F0FB /* vCRGlove */ = {
+			isa = PBXGroup;
+			children = (
+				A929855D2FBB473200B0F0FB /* .gitignore */,
+				A929855E2FBB473200B0F0FB /* Assets.xcassets */,
+				A929855F2FBB473200B0F0FB /* DailyCheckInView.swift */,
+				A92985602FBB473200B0F0FB /* DailyLogView.swift */,
+				A92985612FBB473200B0F0FB /* EventStore.swift */,
+				A92985622FBB473200B0F0FB /* GloveVM.swift */,
+				A92985632FBB473200B0F0FB /* Info.plist */,
+				A92985642FBB473200B0F0FB /* JournalCalendarView.swift */,
+				A92985652FBB473200B0F0FB /* JournalHomeView.swift */,
+				A92985662FBB473200B0F0FB /* JournalModels.swift */,
+				A92985672FBB473200B0F0FB /* JournalStore.swift */,
+				A92985682FBB473200B0F0FB /* MainTabView.swift */,
+				A92985692FBB473200B0F0FB /* MedicationLogView.swift */,
+				A929856A2FBB473200B0F0FB /* NoteLogView.swift */,
+				A929856B2FBB473200B0F0FB /* PatientVCRView.swift */,
+				A929856C2FBB473200B0F0FB /* PhoneWC.swift */,
+				A929856D2FBB473200B0F0FB /* SettingsView.swift */,
+				A929856E2FBB473200B0F0FB /* SymptomEpisodeLogView.swift */,
+				A929856F2FBB473200B0F0FB /* vCRGlove.entitlements */,
+				A92985702FBB473200B0F0FB /* vCRGloveApp.swift */,
+				A92985712FBB473200B0F0FB /* VCRView.swift */,
+			);
+			path = vCRGlove;
+			sourceTree = "<group>";
+		};
+		A92985882FBB473800B0F0FB /* vCRGloveTests */ = {
+			isa = PBXGroup;
+			children = (
+				A92985872FBB473800B0F0FB /* vCRGloveTests.swift */,
+			);
+			path = vCRGloveTests;
+			sourceTree = "<group>";
+		};
+		A929858C2FBB473C00B0F0FB /* vCRGloveUITests */ = {
+			isa = PBXGroup;
+			children = (
+				A929858A2FBB473C00B0F0FB /* vCRGloveUITests.swift */,
+				A929858B2FBB473C00B0F0FB /* vCRGloveUITestsLaunchTests.swift */,
+			);
+			path = vCRGloveUITests;
+			sourceTree = "<group>";
+		};
+		A92985942FBB473D00B0F0FB /* vCRGloveWatch Watch App */ = {
+			isa = PBXGroup;
+			children = (
+				A929858F2FBB473D00B0F0FB /* Assets.xcassets */,
+				A92985902FBB473D00B0F0FB /* MotionService.swift */,
+				A92985912FBB473D00B0F0FB /* vCRGloveWatchApp.swift */,
+				A92985922FBB473D00B0F0FB /* WatchConnectivityManager.swift */,
+				A92985932FBB473D00B0F0FB /* WatchContentView.swift */,
+			);
+			path = "vCRGloveWatch Watch App";
+			sourceTree = "<group>";
+		};
+		A929859B2FBB473F00B0F0FB /* vCRGloveWatch Watch AppTests */ = {
+			isa = PBXGroup;
+			children = (
+				A929859A2FBB473F00B0F0FB /* vCRGloveWatch_Watch_AppTests.swift */,
+			);
+			path = "vCRGloveWatch Watch AppTests";
+			sourceTree = "<group>";
+		};
+		A929859F2FBB474100B0F0FB /* vCRGloveWatch Watch AppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				A929859D2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift */,
+				A929859E2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift */,
+			);
+			path = "vCRGloveWatch Watch AppUITests";
+			sourceTree = "<group>";
+		};
 		A9DAB74D2E682D3D0053D51F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -185,12 +275,12 @@
 			isa = PBXGroup;
 			children = (
 				A9EFEBA12E6825510081A6C7 /* vCRGlove.xctestplan */,
-				A9FCFC0D2E5866AF00BF28B1 /* vCRGlove */,
-				A9FCFC1C2E5866B100BF28B1 /* vCRGloveTests */,
-				A9FCFC262E5866B100BF28B1 /* vCRGloveUITests */,
-				A9EFEB282E6309070081A6C7 /* vCRGloveWatch Watch App */,
-				A9EFEB362E6309090081A6C7 /* vCRGloveWatch Watch AppTests */,
-				A9EFEB402E6309090081A6C7 /* vCRGloveWatch Watch AppUITests */,
+				A92985722FBB473200B0F0FB /* vCRGlove */,
+				A92985882FBB473800B0F0FB /* vCRGloveTests */,
+				A929858C2FBB473C00B0F0FB /* vCRGloveUITests */,
+				A92985942FBB473D00B0F0FB /* vCRGloveWatch Watch App */,
+				A929859B2FBB473F00B0F0FB /* vCRGloveWatch Watch AppTests */,
+				A929859F2FBB474100B0F0FB /* vCRGloveWatch Watch AppUITests */,
 				A9DAB74D2E682D3D0053D51F /* Frameworks */,
 				A9FCFC0C2E5866AF00BF28B1 /* Products */,
 			);
@@ -224,9 +314,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				A9EFEB282E6309070081A6C7 /* vCRGloveWatch Watch App */,
-			);
 			name = "vCRGloveWatch Watch App";
 			packageProductDependencies = (
 			);
@@ -247,9 +334,6 @@
 			dependencies = (
 				A9EFEB352E6309090081A6C7 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				A9EFEB362E6309090081A6C7 /* vCRGloveWatch Watch AppTests */,
-			);
 			name = "vCRGloveWatch Watch AppTests";
 			packageProductDependencies = (
 			);
@@ -269,9 +353,6 @@
 			);
 			dependencies = (
 				A9EFEB3F2E6309090081A6C7 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A9EFEB402E6309090081A6C7 /* vCRGloveWatch Watch AppUITests */,
 			);
 			name = "vCRGloveWatch Watch AppUITests";
 			packageProductDependencies = (
@@ -294,9 +375,6 @@
 			dependencies = (
 				A9EFEB462E6309090081A6C7 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				A9FCFC0D2E5866AF00BF28B1 /* vCRGlove */,
-			);
 			name = vCRGlove;
 			packageProductDependencies = (
 				A9AE5FD92E794A6F009F0426 /* Bhaptics */,
@@ -318,9 +396,6 @@
 			dependencies = (
 				A9FCFC1B2E5866B100BF28B1 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				A9FCFC1C2E5866B100BF28B1 /* vCRGloveTests */,
-			);
 			name = vCRGloveTests;
 			packageProductDependencies = (
 			);
@@ -340,9 +415,6 @@
 			);
 			dependencies = (
 				A9FCFC252E5866B100BF28B1 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A9FCFC262E5866B100BF28B1 /* vCRGloveUITests */,
 			);
 			name = vCRGloveUITests;
 			packageProductDependencies = (
@@ -417,6 +489,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A92985992FBB473D00B0F0FB /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -438,6 +511,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A92985842FBB473200B0F0FB /* .gitignore in Resources */,
+				A92985852FBB473200B0F0FB /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,6 +537,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A92985952FBB473D00B0F0FB /* MotionService.swift in Sources */,
+				A92985962FBB473D00B0F0FB /* vCRGloveWatchApp.swift in Sources */,
+				A92985972FBB473D00B0F0FB /* WatchConnectivityManager.swift in Sources */,
+				A92985982FBB473D00B0F0FB /* WatchContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -469,6 +548,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A929859C2FBB473F00B0F0FB /* vCRGloveWatch_Watch_AppTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -476,6 +556,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A92985A02FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift in Sources */,
+				A92985A12FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -483,6 +565,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A92985732FBB473200B0F0FB /* DailyCheckInView.swift in Sources */,
+				A92985742FBB473200B0F0FB /* DailyLogView.swift in Sources */,
+				A92985752FBB473200B0F0FB /* EventStore.swift in Sources */,
+				A92985762FBB473200B0F0FB /* GloveVM.swift in Sources */,
+				A92985772FBB473200B0F0FB /* JournalCalendarView.swift in Sources */,
+				A92985782FBB473200B0F0FB /* JournalHomeView.swift in Sources */,
+				A92985792FBB473200B0F0FB /* JournalModels.swift in Sources */,
+				A929857A2FBB473200B0F0FB /* JournalStore.swift in Sources */,
+				A929857B2FBB473200B0F0FB /* MainTabView.swift in Sources */,
+				A929857C2FBB473200B0F0FB /* MedicationLogView.swift in Sources */,
+				A929857D2FBB473200B0F0FB /* NoteLogView.swift in Sources */,
+				A929857E2FBB473200B0F0FB /* PatientVCRView.swift in Sources */,
+				A929857F2FBB473200B0F0FB /* PhoneWC.swift in Sources */,
+				A92985802FBB473200B0F0FB /* SettingsView.swift in Sources */,
+				A92985812FBB473200B0F0FB /* SymptomEpisodeLogView.swift in Sources */,
+				A92985822FBB473200B0F0FB /* vCRGloveApp.swift in Sources */,
+				A92985832FBB473200B0F0FB /* VCRView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -490,6 +589,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A92985892FBB473800B0F0FB /* vCRGloveTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -497,6 +597,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A929858D2FBB473C00B0F0FB /* vCRGloveUITests.swift in Sources */,
+				A929858E2FBB473C00B0F0FB /* vCRGloveUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
