@@ -1,0 +1,3185 @@
+{
+  "ABIRoot": {
+    "kind": "Root",
+    "name": "TopLevel",
+    "printedName": "TopLevel",
+    "children": [
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "BhapticsPosition",
+        "printedName": "BhapticsPosition",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "allCases",
+            "printedName": "allCases",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[BhapticsPlugin.BhapticsPosition]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A8PositionO8allCasesSayACGvpZ",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO8allCasesSayACGvpZ",
+            "moduleName": "BhapticsPlugin",
+            "static": true,
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[BhapticsPlugin.BhapticsPosition]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A8PositionO8allCasesSayACGvgZ",
+                "mangledName": "$s14BhapticsPlugin0A8PositionO8allCasesSayACGvgZ",
+                "moduleName": "BhapticsPlugin",
+                "static": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "Vest",
+            "printedName": "Vest",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO4VestyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO4VestyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "Head",
+            "printedName": "Head",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO4HeadyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO4HeadyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "HandL",
+            "printedName": "HandL",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO5HandLyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO5HandLyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "HandR",
+            "printedName": "HandR",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO5HandRyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO5HandRyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "FootL",
+            "printedName": "FootL",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO5FootLyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO5FootLyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "FootR",
+            "printedName": "FootR",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO5FootRyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO5FootRyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "ForearmL",
+            "printedName": "ForearmL",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO8ForearmLyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO8ForearmLyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "ForearmR",
+            "printedName": "ForearmR",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO8ForearmRyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO8ForearmRyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "GloveL",
+            "printedName": "GloveL",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO6GloveLyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO6GloveLyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "GloveR",
+            "printedName": "GloveR",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO6GloveRyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO6GloveRyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "Unknown",
+            "printedName": "Unknown",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(BhapticsPlugin.BhapticsPosition.Type) -> BhapticsPlugin.BhapticsPosition",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "BhapticsPlugin.BhapticsPosition.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:14BhapticsPlugin0A8PositionO7UnknownyA2CmF",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO7UnknownyA2CmF",
+            "moduleName": "BhapticsPlugin"
+          },
+          {
+            "kind": "Var",
+            "name": "name",
+            "printedName": "name",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A8PositionO4nameSSvp",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO4nameSSvp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A8PositionO4nameSSvg",
+                "mangledName": "$s14BhapticsPlugin0A8PositionO4nameSSvg",
+                "moduleName": "BhapticsPlugin",
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "from",
+            "printedName": "from(positionString:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsPosition",
+                "printedName": "BhapticsPlugin.BhapticsPosition",
+                "usr": "s:14BhapticsPlugin0A8PositionO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A8PositionO4from14positionStringACSS_tFZ",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO4from14positionStringACSS_tFZ",
+            "moduleName": "BhapticsPlugin",
+            "static": true,
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(rawValue:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "BhapticsPlugin.BhapticsPosition?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:14BhapticsPlugin0A8PositionO8rawValueACSgSS_tcfc",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO8rawValueACSgSS_tcfc",
+            "moduleName": "BhapticsPlugin",
+            "implicit": true,
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Var",
+            "name": "rawValue",
+            "printedName": "rawValue",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A8PositionO8rawValueSSvp",
+            "mangledName": "$s14BhapticsPlugin0A8PositionO8rawValueSSvp",
+            "moduleName": "BhapticsPlugin",
+            "implicit": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A8PositionO8rawValueSSvg",
+                "mangledName": "$s14BhapticsPlugin0A8PositionO8rawValueSSvg",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:14BhapticsPlugin0A8PositionO",
+        "mangledName": "$s14BhapticsPlugin0A8PositionO",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "enumRawTypeName": "String",
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "RawRepresentable",
+            "printedName": "RawRepresentable",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "RawValue",
+                "printedName": "RawValue",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:SY",
+            "mangledName": "$sSY"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CaseIterable",
+            "printedName": "CaseIterable",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "AllCases",
+                "printedName": "AllCases",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Array",
+                    "printedName": "[BhapticsPlugin.BhapticsPosition]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsPosition",
+                        "printedName": "BhapticsPlugin.BhapticsPosition",
+                        "usr": "s:14BhapticsPlugin0A8PositionO"
+                      }
+                    ],
+                    "usr": "s:Sa"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:s12CaseIterableP",
+            "mangledName": "$ss12CaseIterableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Decodable",
+            "printedName": "Decodable",
+            "usr": "s:Se",
+            "mangledName": "$sSe"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Encodable",
+            "printedName": "Encodable",
+            "usr": "s:SE",
+            "mangledName": "$sSE"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "CoreBluetooth",
+        "printedName": "CoreBluetooth",
+        "declKind": "Import",
+        "moduleName": "BhapticsPlugin"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "BhapticsKit",
+        "printedName": "BhapticsKit",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "delegate",
+            "printedName": "delegate",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "BhapticsPlugin.BhapticsKitDelegate?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsKitDelegate",
+                    "printedName": "BhapticsPlugin.BhapticsKitDelegate",
+                    "usr": "s:14BhapticsPlugin0A11KitDelegateP"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A3KitC8delegateAA0aC8Delegate_pSgvp",
+            "mangledName": "$s14BhapticsPlugin0A3KitC8delegateAA0aC8Delegate_pSgvp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "BhapticsPlugin.BhapticsKitDelegate?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsKitDelegate",
+                        "printedName": "BhapticsPlugin.BhapticsKitDelegate",
+                        "usr": "s:14BhapticsPlugin0A11KitDelegateP"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A3KitC8delegateAA0aC8Delegate_pSgvg",
+                "mangledName": "$s14BhapticsPlugin0A3KitC8delegateAA0aC8Delegate_pSgvg",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "BhapticsPlugin.BhapticsKitDelegate?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "BhapticsKitDelegate",
+                        "printedName": "BhapticsPlugin.BhapticsKitDelegate",
+                        "usr": "s:14BhapticsPlugin0A11KitDelegateP"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A3KitC8delegateAA0aC8Delegate_pSgvs",
+                "mangledName": "$s14BhapticsPlugin0A3KitC8delegateAA0aC8Delegate_pSgvs",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A3KitC8delegateAA0aC8Delegate_pSgvM",
+                "mangledName": "$s14BhapticsPlugin0A3KitC8delegateAA0aC8Delegate_pSgvM",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsKit",
+                "printedName": "BhapticsPlugin.BhapticsKit",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsKit"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsKit(im)init",
+            "mangledName": "$s14BhapticsPlugin0A3KitCACycfc",
+            "moduleName": "BhapticsPlugin",
+            "overriding": true,
+            "objc_name": "init",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "Override",
+              "AccessControl"
+            ],
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(delegate:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsKit",
+                "printedName": "BhapticsPlugin.BhapticsKit",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsKit"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "BhapticsPlugin.BhapticsKitDelegate?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsKitDelegate",
+                    "printedName": "BhapticsPlugin.BhapticsKitDelegate",
+                    "usr": "s:14BhapticsPlugin0A11KitDelegateP"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:14BhapticsPlugin0A3KitC8delegateAcA0aC8Delegate_pSg_tcfc",
+            "mangledName": "$s14BhapticsPlugin0A3KitC8delegateAcA0aC8Delegate_pSg_tcfc",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "Convenience",
+              "AccessControl"
+            ],
+            "init_kind": "Convenience"
+          },
+          {
+            "kind": "Function",
+            "name": "toggleScanning",
+            "printedName": "toggleScanning()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A3KitC14toggleScanningSbyF",
+            "mangledName": "$s14BhapticsPlugin0A3KitC14toggleScanningSbyF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "scan",
+            "printedName": "scan()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A3KitC4scanyyF",
+            "mangledName": "$s14BhapticsPlugin0A3KitC4scanyyF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "isScanning",
+            "printedName": "isScanning()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A3KitC10isScanningSbyF",
+            "mangledName": "$s14BhapticsPlugin0A3KitC10isScanningSbyF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "stopScan",
+            "printedName": "stopScan()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A3KitC8stopScanyyF",
+            "mangledName": "$s14BhapticsPlugin0A3KitC8stopScanyyF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "pair",
+            "printedName": "pair(device:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsDevice",
+                "printedName": "BhapticsPlugin.BhapticsDevice",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsDevice"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A3KitC4pair6deviceyAA0A6DeviceC_tF",
+            "mangledName": "$s14BhapticsPlugin0A3KitC4pair6deviceyAA0A6DeviceC_tF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "unpair",
+            "printedName": "unpair(device:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsDevice",
+                "printedName": "BhapticsPlugin.BhapticsDevice",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsDevice"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A3KitC6unpair6deviceyAA0A6DeviceC_tF",
+            "mangledName": "$s14BhapticsPlugin0A3KitC6unpair6deviceyAA0A6DeviceC_tF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getDevices",
+            "printedName": "getDevices()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[BhapticsPlugin.BhapticsDevice]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsDevice",
+                    "printedName": "BhapticsPlugin.BhapticsDevice",
+                    "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsDevice"
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A3KitC10getDevicesSayAA0A6DeviceCGyF",
+            "mangledName": "$s14BhapticsPlugin0A3KitC10getDevicesSayAA0A6DeviceCGyF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "playMotors",
+            "printedName": "playMotors(position:arr:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsPosition",
+                "printedName": "BhapticsPlugin.BhapticsPosition",
+                "usr": "s:14BhapticsPlugin0A8PositionO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[Swift.Int]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A3KitC10playMotors8position3arryAA0A8PositionO_SaySiGtF",
+            "mangledName": "$s14BhapticsPlugin0A3KitC10playMotors8position3arryAA0A8PositionO_SaySiGtF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "turnOffMotors",
+            "printedName": "turnOffMotors()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A3KitC13turnOffMotorsyyF",
+            "mangledName": "$s14BhapticsPlugin0A3KitC13turnOffMotorsyyF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "centralManager",
+            "printedName": "centralManager(_:didConnect:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBCentralManager",
+                "printedName": "CoreBluetooth.CBCentralManager",
+                "usr": "c:objc(cs)CBCentralManager"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBPeripheral",
+                "printedName": "CoreBluetooth.CBPeripheral",
+                "usr": "c:objc(cs)CBPeripheral"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@BhapticsPlugin@objc(cs)BhapticsKit(im)centralManager:didConnectPeripheral:",
+            "mangledName": "$s14BhapticsPlugin0A3KitC14centralManager_10didConnectySo09CBCentralE0C_So12CBPeripheralCtF",
+            "moduleName": "BhapticsPlugin",
+            "objc_name": "centralManager:didConnectPeripheral:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "centralManager",
+            "printedName": "centralManager(_:didDiscover:advertisementData:rssi:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBCentralManager",
+                "printedName": "CoreBluetooth.CBCentralManager",
+                "usr": "c:objc(cs)CBCentralManager"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBPeripheral",
+                "printedName": "CoreBluetooth.CBPeripheral",
+                "usr": "c:objc(cs)CBPeripheral"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Dictionary",
+                "printedName": "[Swift.String : Any]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ProtocolComposition",
+                    "printedName": "Any"
+                  }
+                ],
+                "usr": "s:SD"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "NSNumber",
+                "printedName": "Foundation.NSNumber",
+                "usr": "c:objc(cs)NSNumber"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@BhapticsPlugin@objc(cs)BhapticsKit(im)centralManager:didDiscoverPeripheral:advertisementData:RSSI:",
+            "mangledName": "$s14BhapticsPlugin0A3KitC14centralManager_11didDiscover17advertisementData4rssiySo09CBCentralE0C_So12CBPeripheralCSDySSypGSo8NSNumberCtF",
+            "moduleName": "BhapticsPlugin",
+            "objc_name": "centralManager:didDiscoverPeripheral:advertisementData:RSSI:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "centralManager",
+            "printedName": "centralManager(_:didDisconnectPeripheral:error:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBCentralManager",
+                "printedName": "CoreBluetooth.CBCentralManager",
+                "usr": "c:objc(cs)CBCentralManager"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBPeripheral",
+                "printedName": "CoreBluetooth.CBPeripheral",
+                "usr": "c:objc(cs)CBPeripheral"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Error?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Error",
+                    "printedName": "Swift.Error",
+                    "usr": "s:s5ErrorP"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@BhapticsPlugin@objc(cs)BhapticsKit(im)centralManager:didDisconnectPeripheral:error:",
+            "mangledName": "$s14BhapticsPlugin0A3KitC14centralManager_23didDisconnectPeripheral5errorySo09CBCentralE0C_So12CBPeripheralCs5Error_pSgtF",
+            "moduleName": "BhapticsPlugin",
+            "objc_name": "centralManager:didDisconnectPeripheral:error:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "centralManagerDidUpdateState",
+            "printedName": "centralManagerDidUpdateState(_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBCentralManager",
+                "printedName": "CoreBluetooth.CBCentralManager",
+                "usr": "c:objc(cs)CBCentralManager"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@BhapticsPlugin@objc(cs)BhapticsKit(im)centralManagerDidUpdateState:",
+            "mangledName": "$s14BhapticsPlugin0A3KitC28centralManagerDidUpdateStateyySo09CBCentralE0CF",
+            "moduleName": "BhapticsPlugin",
+            "objc_name": "centralManagerDidUpdateState:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Class",
+        "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsKit",
+        "mangledName": "$s14BhapticsPlugin0A3KitC",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl",
+          "ObjC"
+        ],
+        "superclassUsr": "c:objc(cs)NSObject",
+        "inheritsConvenienceInitializers": true,
+        "superclassNames": [
+          "ObjectiveC.NSObject"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CVarArg",
+            "printedName": "CVarArg",
+            "usr": "s:s7CVarArgP",
+            "mangledName": "$ss7CVarArgP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObservingPublishing",
+            "printedName": "_KeyValueCodingAndObservingPublishing",
+            "usr": "s:10Foundation37_KeyValueCodingAndObservingPublishingP",
+            "mangledName": "$s10Foundation37_KeyValueCodingAndObservingPublishingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObserving",
+            "printedName": "_KeyValueCodingAndObserving",
+            "usr": "s:10Foundation27_KeyValueCodingAndObservingP",
+            "mangledName": "$s10Foundation27_KeyValueCodingAndObservingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomStringConvertible",
+            "printedName": "CustomStringConvertible",
+            "usr": "s:s23CustomStringConvertibleP",
+            "mangledName": "$ss23CustomStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomDebugStringConvertible",
+            "printedName": "CustomDebugStringConvertible",
+            "usr": "s:s28CustomDebugStringConvertibleP",
+            "mangledName": "$ss28CustomDebugStringConvertibleP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "CoreBluetooth",
+        "printedName": "CoreBluetooth",
+        "declKind": "Import",
+        "moduleName": "BhapticsPlugin"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "BhapticsDevice",
+        "printedName": "BhapticsDevice",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "id",
+            "printedName": "id",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A6DeviceC2idSSvp",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC2idSSvp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC2idSSvg",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC2idSSvg",
+                "moduleName": "BhapticsPlugin",
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "name",
+            "printedName": "name",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A6DeviceC4nameSSvp",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC4nameSSvp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "Final",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC4nameSSvg",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC4nameSSvg",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "deviceType",
+            "printedName": "deviceType",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A6DeviceC10deviceTypeSSvp",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC10deviceTypeSSvp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "Final",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC10deviceTypeSSvg",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC10deviceTypeSSvg",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "position",
+            "printedName": "position",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsPosition",
+                "printedName": "BhapticsPlugin.BhapticsPosition",
+                "usr": "s:14BhapticsPlugin0A8PositionO"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A6DeviceC8positionAA0A8PositionOvp",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC8positionAA0A8PositionOvp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC8positionAA0A8PositionOvg",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC8positionAA0A8PositionOvg",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsPosition",
+                    "printedName": "BhapticsPlugin.BhapticsPosition",
+                    "usr": "s:14BhapticsPlugin0A8PositionO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC8positionAA0A8PositionOvs",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC8positionAA0A8PositionOvs",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC8positionAA0A8PositionOvM",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC8positionAA0A8PositionOvM",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "uuid",
+            "printedName": "uuid",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A6DeviceC4uuidSSvp",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC4uuidSSvp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "Final",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC4uuidSSvg",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC4uuidSSvg",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "connected",
+            "printedName": "connected",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A6DeviceC9connectedSbvp",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC9connectedSbvp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC9connectedSbvg",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC9connectedSbvg",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC9connectedSbvs",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC9connectedSbvs",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC9connectedSbvM",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC9connectedSbvM",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "paired",
+            "printedName": "paired",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A6DeviceC6pairedSbvp",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC6pairedSbvp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC6pairedSbvg",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC6pairedSbvg",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC6pairedSbvs",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC6pairedSbvs",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC6pairedSbvM",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC6pairedSbvM",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "lastScanTime",
+            "printedName": "lastScanTime",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A6DeviceC12lastScanTimeSivp",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC12lastScanTimeSivp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC12lastScanTimeSivg",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC12lastScanTimeSivg",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC12lastScanTimeSivs",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC12lastScanTimeSivs",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC12lastScanTimeSivM",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC12lastScanTimeSivM",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "peripheral",
+            "printedName": "peripheral",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "CoreBluetooth.CBPeripheral?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CBPeripheral",
+                    "printedName": "CoreBluetooth.CBPeripheral",
+                    "usr": "c:objc(cs)CBPeripheral"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:14BhapticsPlugin0A6DeviceC10peripheralSo12CBPeripheralCSgvp",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC10peripheralSo12CBPeripheralCSgvp",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "CoreBluetooth.CBPeripheral?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CBPeripheral",
+                        "printedName": "CoreBluetooth.CBPeripheral",
+                        "usr": "c:objc(cs)CBPeripheral"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC10peripheralSo12CBPeripheralCSgvg",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC10peripheralSo12CBPeripheralCSgvg",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "CoreBluetooth.CBPeripheral?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CBPeripheral",
+                        "printedName": "CoreBluetooth.CBPeripheral",
+                        "usr": "c:objc(cs)CBPeripheral"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC10peripheralSo12CBPeripheralCSgvs",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC10peripheralSo12CBPeripheralCSgvs",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:14BhapticsPlugin0A6DeviceC10peripheralSo12CBPeripheralCSgvM",
+                "mangledName": "$s14BhapticsPlugin0A6DeviceC10peripheralSo12CBPeripheralCSgvM",
+                "moduleName": "BhapticsPlugin",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(name:uuid:peripheral:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsDevice",
+                "printedName": "BhapticsPlugin.BhapticsDevice",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsDevice"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "CoreBluetooth.CBPeripheral?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CBPeripheral",
+                    "printedName": "CoreBluetooth.CBPeripheral",
+                    "usr": "c:objc(cs)CBPeripheral"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:14BhapticsPlugin0A6DeviceC4name4uuid10peripheralACSS_SSSo12CBPeripheralCSgtcfc",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC4name4uuid10peripheralACSS_SSSo12CBPeripheralCSgtcfc",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Function",
+            "name": "turnOff",
+            "printedName": "turnOff()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A6DeviceC7turnOffyyF",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC7turnOffyyF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "playMotor",
+            "printedName": "playMotor(arr:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[Swift.Int]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A6DeviceC9playMotor3arrySaySiG_tF",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC9playMotor3arrySaySiG_tF",
+            "moduleName": "BhapticsPlugin",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsDevice",
+                "printedName": "BhapticsPlugin.BhapticsDevice",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsDevice"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsDevice(im)init",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceCACycfc",
+            "moduleName": "BhapticsPlugin",
+            "overriding": true,
+            "implicit": true,
+            "objc_name": "init",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "Override"
+            ],
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Function",
+            "name": "peripheral",
+            "printedName": "peripheral(_:didDiscoverServices:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBPeripheral",
+                "printedName": "CoreBluetooth.CBPeripheral",
+                "usr": "c:objc(cs)CBPeripheral"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Error?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Error",
+                    "printedName": "Swift.Error",
+                    "usr": "s:s5ErrorP"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@BhapticsPlugin@objc(cs)BhapticsDevice(im)peripheral:didDiscoverServices:",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC10peripheral_19didDiscoverServicesySo12CBPeripheralC_s5Error_pSgtF",
+            "moduleName": "BhapticsPlugin",
+            "objc_name": "peripheral:didDiscoverServices:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "peripheral",
+            "printedName": "peripheral(_:didDiscoverCharacteristicsFor:error:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBPeripheral",
+                "printedName": "CoreBluetooth.CBPeripheral",
+                "usr": "c:objc(cs)CBPeripheral"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBService",
+                "printedName": "CoreBluetooth.CBService",
+                "usr": "c:objc(cs)CBService"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Error?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Error",
+                    "printedName": "Swift.Error",
+                    "usr": "s:s5ErrorP"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@BhapticsPlugin@objc(cs)BhapticsDevice(im)peripheral:didDiscoverCharacteristicsForService:error:",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC10peripheral_29didDiscoverCharacteristicsFor5errorySo12CBPeripheralC_So9CBServiceCs5Error_pSgtF",
+            "moduleName": "BhapticsPlugin",
+            "objc_name": "peripheral:didDiscoverCharacteristicsForService:error:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "peripheral",
+            "printedName": "peripheral(_:didWriteValueFor:error:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBPeripheral",
+                "printedName": "CoreBluetooth.CBPeripheral",
+                "usr": "c:objc(cs)CBPeripheral"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CBCharacteristic",
+                "printedName": "CoreBluetooth.CBCharacteristic",
+                "usr": "c:objc(cs)CBCharacteristic"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Error?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Error",
+                    "printedName": "Swift.Error",
+                    "usr": "s:s5ErrorP"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@BhapticsPlugin@objc(cs)BhapticsDevice(im)peripheral:didWriteValueForCharacteristic:error:",
+            "mangledName": "$s14BhapticsPlugin0A6DeviceC10peripheral_16didWriteValueFor5errorySo12CBPeripheralC_So16CBCharacteristicCs5Error_pSgtF",
+            "moduleName": "BhapticsPlugin",
+            "objc_name": "peripheral:didWriteValueForCharacteristic:error:",
+            "declAttributes": [
+              "Dynamic",
+              "ObjC",
+              "AccessControl"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Class",
+        "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsDevice",
+        "mangledName": "$s14BhapticsPlugin0A6DeviceC",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl",
+          "ObjC"
+        ],
+        "superclassUsr": "c:objc(cs)NSObject",
+        "superclassNames": [
+          "ObjectiveC.NSObject"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Identifiable",
+            "printedName": "Identifiable",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "ID",
+                "printedName": "ID",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:s12IdentifiableP",
+            "mangledName": "$ss12IdentifiableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CVarArg",
+            "printedName": "CVarArg",
+            "usr": "s:s7CVarArgP",
+            "mangledName": "$ss7CVarArgP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObservingPublishing",
+            "printedName": "_KeyValueCodingAndObservingPublishing",
+            "usr": "s:10Foundation37_KeyValueCodingAndObservingPublishingP",
+            "mangledName": "$s10Foundation37_KeyValueCodingAndObservingPublishingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObserving",
+            "printedName": "_KeyValueCodingAndObserving",
+            "usr": "s:10Foundation27_KeyValueCodingAndObservingP",
+            "mangledName": "$s10Foundation27_KeyValueCodingAndObservingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomStringConvertible",
+            "printedName": "CustomStringConvertible",
+            "usr": "s:s23CustomStringConvertibleP",
+            "mangledName": "$ss23CustomStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomDebugStringConvertible",
+            "printedName": "CustomDebugStringConvertible",
+            "usr": "s:s28CustomDebugStringConvertibleP",
+            "mangledName": "$ss28CustomDebugStringConvertibleP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "BhapticsKitDelegate",
+        "printedName": "BhapticsKitDelegate",
+        "children": [
+          {
+            "kind": "Function",
+            "name": "bHapticsKit",
+            "printedName": "bHapticsKit(_:bleStateChange:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsKit",
+                "printedName": "BhapticsPlugin.BhapticsKit",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsKit"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A11KitDelegateP08bHapticsC0_14bleStateChangeyAA0aC0C_SbtF",
+            "mangledName": "$s14BhapticsPlugin0A11KitDelegateP08bHapticsC0_14bleStateChangeyAA0aC0C_SbtF",
+            "moduleName": "BhapticsPlugin",
+            "genericSig": "<τ_0_0 where τ_0_0 : BhapticsPlugin.BhapticsKitDelegate>",
+            "sugared_genericSig": "<Self where Self : BhapticsPlugin.BhapticsKitDelegate>",
+            "protocolReq": true,
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "bHapticsKit",
+            "printedName": "bHapticsKit(_:deviceStateUpdated:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsKit",
+                "printedName": "BhapticsPlugin.BhapticsKit",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsKit"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Array",
+                "printedName": "[BhapticsPlugin.BhapticsDevice]",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "BhapticsDevice",
+                    "printedName": "BhapticsPlugin.BhapticsDevice",
+                    "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsDevice"
+                  }
+                ],
+                "usr": "s:Sa"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A11KitDelegateP08bHapticsC0_18deviceStateUpdatedyAA0aC0C_SayAA0A6DeviceCGtF",
+            "mangledName": "$s14BhapticsPlugin0A11KitDelegateP08bHapticsC0_18deviceStateUpdatedyAA0aC0C_SayAA0A6DeviceCGtF",
+            "moduleName": "BhapticsPlugin",
+            "genericSig": "<τ_0_0 where τ_0_0 : BhapticsPlugin.BhapticsKitDelegate>",
+            "sugared_genericSig": "<Self where Self : BhapticsPlugin.BhapticsKitDelegate>",
+            "protocolReq": true,
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "bHapticsKit",
+            "printedName": "bHapticsKit(_:didConnect:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsKit",
+                "printedName": "BhapticsPlugin.BhapticsKit",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsKit"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsDevice",
+                "printedName": "BhapticsPlugin.BhapticsDevice",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsDevice"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A11KitDelegateP08bHapticsC0_10didConnectyAA0aC0C_AA0A6DeviceCtF",
+            "mangledName": "$s14BhapticsPlugin0A11KitDelegateP08bHapticsC0_10didConnectyAA0aC0C_AA0A6DeviceCtF",
+            "moduleName": "BhapticsPlugin",
+            "genericSig": "<τ_0_0 where τ_0_0 : BhapticsPlugin.BhapticsKitDelegate>",
+            "sugared_genericSig": "<Self where Self : BhapticsPlugin.BhapticsKitDelegate>",
+            "protocolReq": true,
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "bHapticsKit",
+            "printedName": "bHapticsKit(_:didDisconnect:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsKit",
+                "printedName": "BhapticsPlugin.BhapticsKit",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsKit"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "BhapticsDevice",
+                "printedName": "BhapticsPlugin.BhapticsDevice",
+                "usr": "c:@M@BhapticsPlugin@objc(cs)BhapticsDevice"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:14BhapticsPlugin0A11KitDelegateP08bHapticsC0_13didDisconnectyAA0aC0C_AA0A6DeviceCtF",
+            "mangledName": "$s14BhapticsPlugin0A11KitDelegateP08bHapticsC0_13didDisconnectyAA0aC0C_AA0A6DeviceCtF",
+            "moduleName": "BhapticsPlugin",
+            "genericSig": "<τ_0_0 where τ_0_0 : BhapticsPlugin.BhapticsKitDelegate>",
+            "sugared_genericSig": "<Self where Self : BhapticsPlugin.BhapticsKitDelegate>",
+            "protocolReq": true,
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Protocol",
+        "usr": "s:14BhapticsPlugin0A11KitDelegateP",
+        "mangledName": "$s14BhapticsPlugin0A11KitDelegateP",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Function",
+        "name": "BhapticsPlugin_scan",
+        "printedName": "BhapticsPlugin_scan()",
+        "children": [
+          {
+            "kind": "TypeNominal",
+            "name": "Void",
+            "printedName": "()"
+          }
+        ],
+        "declKind": "Func",
+        "usr": "c:(cm)BhapticsPlugin_scan",
+        "mangledName": "$s14BhapticsPlugin0aB5_scanyyF",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl",
+          "CDecl"
+        ],
+        "funcSelfKind": "NonMutating"
+      },
+      {
+        "kind": "Function",
+        "name": "BhapticsPlugin_isScanning",
+        "printedName": "BhapticsPlugin_isScanning()",
+        "children": [
+          {
+            "kind": "TypeNominal",
+            "name": "Int",
+            "printedName": "Swift.Int",
+            "usr": "s:Si"
+          }
+        ],
+        "declKind": "Func",
+        "usr": "c:(cm)BhapticsPlugin_isScanning",
+        "mangledName": "$s14BhapticsPlugin0aB11_isScanningSiyF",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl",
+          "CDecl"
+        ],
+        "funcSelfKind": "NonMutating"
+      },
+      {
+        "kind": "Function",
+        "name": "BhapticsPlugin_stopScan",
+        "printedName": "BhapticsPlugin_stopScan()",
+        "children": [
+          {
+            "kind": "TypeNominal",
+            "name": "Void",
+            "printedName": "()"
+          }
+        ],
+        "declKind": "Func",
+        "usr": "c:(cm)BhapticsPlugin_stopScan",
+        "mangledName": "$s14BhapticsPlugin0aB9_stopScanyyF",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl",
+          "CDecl"
+        ],
+        "funcSelfKind": "NonMutating"
+      },
+      {
+        "kind": "Function",
+        "name": "BhapticsPlugin_pair",
+        "printedName": "BhapticsPlugin_pair(_:)",
+        "children": [
+          {
+            "kind": "TypeNominal",
+            "name": "Void",
+            "printedName": "()"
+          },
+          {
+            "kind": "TypeNominal",
+            "name": "Optional",
+            "printedName": "Swift.UnsafePointer<Swift.Int8>?",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UnsafePointer",
+                "printedName": "Swift.UnsafePointer<Swift.Int8>",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int8",
+                    "printedName": "Swift.Int8",
+                    "usr": "s:s4Int8V"
+                  }
+                ],
+                "usr": "s:SP"
+              }
+            ],
+            "usr": "s:Sq"
+          }
+        ],
+        "declKind": "Func",
+        "usr": "c:(cm)BhapticsPlugin_pair:",
+        "mangledName": "$s14BhapticsPlugin0aB5_pairyySPys4Int8VGSgF",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl",
+          "CDecl"
+        ],
+        "funcSelfKind": "NonMutating"
+      },
+      {
+        "kind": "Function",
+        "name": "BhapticsPlugin_unpair",
+        "printedName": "BhapticsPlugin_unpair(_:)",
+        "children": [
+          {
+            "kind": "TypeNominal",
+            "name": "Void",
+            "printedName": "()"
+          },
+          {
+            "kind": "TypeNominal",
+            "name": "Optional",
+            "printedName": "Swift.UnsafePointer<Swift.Int8>?",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UnsafePointer",
+                "printedName": "Swift.UnsafePointer<Swift.Int8>",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int8",
+                    "printedName": "Swift.Int8",
+                    "usr": "s:s4Int8V"
+                  }
+                ],
+                "usr": "s:SP"
+              }
+            ],
+            "usr": "s:Sq"
+          }
+        ],
+        "declKind": "Func",
+        "usr": "c:(cm)BhapticsPlugin_unpair:",
+        "mangledName": "$s14BhapticsPlugin0aB7_unpairyySPys4Int8VGSgF",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl",
+          "CDecl"
+        ],
+        "funcSelfKind": "NonMutating"
+      },
+      {
+        "kind": "Function",
+        "name": "BhapticsPlugin_getDevices",
+        "printedName": "BhapticsPlugin_getDevices()",
+        "children": [
+          {
+            "kind": "TypeNominal",
+            "name": "Optional",
+            "printedName": "Swift.UnsafePointer<Swift.Int8>?",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UnsafePointer",
+                "printedName": "Swift.UnsafePointer<Swift.Int8>",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int8",
+                    "printedName": "Swift.Int8",
+                    "usr": "s:s4Int8V"
+                  }
+                ],
+                "usr": "s:SP"
+              }
+            ],
+            "usr": "s:Sq"
+          }
+        ],
+        "declKind": "Func",
+        "usr": "c:(cm)BhapticsPlugin_getDevices",
+        "mangledName": "$s14BhapticsPlugin0aB11_getDevicesSPys4Int8VGSgyF",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl",
+          "CDecl"
+        ],
+        "funcSelfKind": "NonMutating"
+      },
+      {
+        "kind": "Function",
+        "name": "BhapticsPlugin_playMotors",
+        "printedName": "BhapticsPlugin_playMotors(_:length:arrPtr:)",
+        "children": [
+          {
+            "kind": "TypeNominal",
+            "name": "Void",
+            "printedName": "()"
+          },
+          {
+            "kind": "TypeNominal",
+            "name": "UnsafePointer",
+            "printedName": "Swift.UnsafePointer<Swift.Int8>",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int8",
+                "printedName": "Swift.Int8",
+                "usr": "s:s4Int8V"
+              }
+            ],
+            "usr": "s:SP"
+          },
+          {
+            "kind": "TypeNominal",
+            "name": "Int",
+            "printedName": "Swift.Int",
+            "usr": "s:Si"
+          },
+          {
+            "kind": "TypeNominal",
+            "name": "UnsafePointer",
+            "printedName": "Swift.UnsafePointer<Swift.UInt8>",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UInt8",
+                "printedName": "Swift.UInt8",
+                "usr": "s:s5UInt8V"
+              }
+            ],
+            "usr": "s:SP"
+          }
+        ],
+        "declKind": "Func",
+        "usr": "c:(cm)BhapticsPlugin_playMotors:length:arrPtr:",
+        "mangledName": "$s14BhapticsPlugin0aB11_playMotors_6length6arrPtrySPys4Int8VG_SiSPys5UInt8VGtF",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl",
+          "CDecl",
+          "RawDocComment"
+        ],
+        "funcSelfKind": "NonMutating"
+      },
+      {
+        "kind": "Function",
+        "name": "BhapticsPlugin_stop",
+        "printedName": "BhapticsPlugin_stop()",
+        "children": [
+          {
+            "kind": "TypeNominal",
+            "name": "Void",
+            "printedName": "()"
+          }
+        ],
+        "declKind": "Func",
+        "usr": "c:(cm)BhapticsPlugin_stop",
+        "mangledName": "$s14BhapticsPlugin0aB5_stopyyF",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "AccessControl",
+          "CDecl"
+        ],
+        "funcSelfKind": "NonMutating"
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "BhapticsPlugin",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      }
+    ],
+    "json_format_version": 8
+  },
+  "ConstValues": [
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 308,
+      "length": 6,
+      "value": "\"Vest\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 331,
+      "length": 6,
+      "value": "\"Head\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 355,
+      "length": 7,
+      "value": "\"HandL\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 380,
+      "length": 7,
+      "value": "\"HandR\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 405,
+      "length": 7,
+      "value": "\"FootL\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 430,
+      "length": 7,
+      "value": "\"FootR\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 458,
+      "length": 10,
+      "value": "\"ForearmL\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 489,
+      "length": 10,
+      "value": "\"ForearmR\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 518,
+      "length": 8,
+      "value": "\"GloveL\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 545,
+      "length": 8,
+      "value": "\"GloveR\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 573,
+      "length": 9,
+      "value": "\"Unknown\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 308,
+      "length": 6,
+      "value": "\"Vest\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 331,
+      "length": 6,
+      "value": "\"Head\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 355,
+      "length": 7,
+      "value": "\"HandL\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 380,
+      "length": 7,
+      "value": "\"HandR\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 405,
+      "length": 7,
+      "value": "\"FootL\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 430,
+      "length": 7,
+      "value": "\"FootR\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 458,
+      "length": 10,
+      "value": "\"ForearmL\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 489,
+      "length": 10,
+      "value": "\"ForearmR\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 518,
+      "length": 8,
+      "value": "\"GloveL\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 545,
+      "length": 8,
+      "value": "\"GloveR\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPosition.swift",
+      "kind": "StringLiteral",
+      "offset": 573,
+      "length": 9,
+      "value": "\"Unknown\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsKit.swift",
+      "kind": "BooleanLiteral",
+      "offset": 202,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsKit.swift",
+      "kind": "Array",
+      "offset": 323,
+      "length": 2,
+      "value": "[]"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPairedStorage.swift",
+      "kind": "Array",
+      "offset": 274,
+      "length": 2,
+      "value": "[]"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsPairedStorage.swift",
+      "kind": "StringLiteral",
+      "offset": 1942,
+      "length": 15,
+      "value": "\"bhaptics_data\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsDevice.swift",
+      "kind": "BooleanLiteral",
+      "offset": 408,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsDevice.swift",
+      "kind": "BooleanLiteral",
+      "offset": 485,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsDevice.swift",
+      "kind": "IntegerLiteral",
+      "offset": 526,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsDevice.swift",
+      "kind": "BooleanLiteral",
+      "offset": 568,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsDevice.swift",
+      "kind": "StringLiteral",
+      "offset": 102,
+      "length": 14,
+      "value": "\"BhapticsPlugin.BhapticsDevice\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsDevice.swift",
+      "kind": "Array",
+      "offset": 3425,
+      "length": 100,
+      "value": "[0, 1, 30, 31, 2, 3, 32, 33, 4, 5, 34, 35, 6, 7, 36, 37, 8, 9, 38, 39]"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsDevice.swift",
+      "kind": "Array",
+      "offset": 3585,
+      "length": 110,
+      "value": "[10, 11, 20, 21, 12, 13, 22, 23, 14, 15, 24, 25, 16, 17, 26, 27, 18, 19, 28, 29]"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsDevice.swift",
+      "kind": "Array",
+      "offset": 5451,
+      "length": 95,
+      "value": "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsDevice.swift",
+      "kind": "Array",
+      "offset": 5586,
+      "length": 135,
+      "value": "[100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsDevice.swift",
+      "kind": "StringLiteral",
+      "offset": 5788,
+      "length": 38,
+      "value": "\"6E40000A-B5A3-F393-E0A9-E50E24DCCA9E\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsProduct.swift",
+      "kind": "Array",
+      "offset": 709,
+      "length": 2,
+      "value": "[]"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsProduct.swift",
+      "kind": "StringLiteral",
+      "offset": 776,
+      "length": 12,
+      "value": "\"TactDevice\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsProduct.swift",
+      "kind": "StringLiteral",
+      "offset": 807,
+      "length": 2,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsProduct.swift",
+      "kind": "StringLiteral",
+      "offset": 825,
+      "length": 2,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsProduct.swift",
+      "kind": "IntegerLiteral",
+      "offset": 839,
+      "length": 3,
+      "value": "508"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsProduct.swift",
+      "kind": "IntegerLiteral",
+      "offset": 968,
+      "length": 3,
+      "value": "508"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/BhapticsProduct.swift",
+      "kind": "StringLiteral",
+      "offset": 1903,
+      "length": 11936,
+      "value": "\"[\n    {\n        \"name\": \"Tactosy2\",\n        \"nameContains\": \"tactosy2_v3 (l\",\n        \"firmwareService\": \"v4-tactosy2\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"ForearmL\",\n            \"ForearmR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"Tactosy2\",\n        \"nameContains\": \"tactosy2_v3 (r\",\n        \"firmwareService\": \"v4-tactosy2\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"ForearmR\",\n            \"ForearmL\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyH\",\n        \"nameContains\": \"tactosyh_v3 (l\",\n        \"firmwareService\": \"v4-tactosyh\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"HandL\",\n            \"HandR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyH\",\n        \"nameContains\": \"tactosyh_v3 (r\",\n        \"firmwareService\": \"v4-tactosyh\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"HandR\",\n            \"HandL\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyF\",\n        \"nameContains\": \"tactosyf_v3 (l\",\n        \"firmwareService\": \"v4-tactosyf\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"FootL\",\n            \"FootR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyF\",\n        \"nameContains\": \"tactosyf_v3 (r\",\n        \"firmwareService\": \"v4-tactosyf\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"FootR\",\n            \"FootL\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"Tactosy2\",\n        \"nameContains\": \"tactosy2_v3\",\n        \"firmwareService\": \"v4-tactosy2\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"ForearmL\",\n            \"ForearmR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyH\",\n        \"nameContains\": \"tactosyh_v3\",\n        \"firmwareService\": \"v4-tactosyh\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"HandL\",\n            \"HandR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyF\",\n        \"nameContains\": \"tactosyf_v3\",\n        \"firmwareService\": \"v4-tactosyf\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"FootL\",\n            \"FootR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactVisor\",\n        \"nameContains\": \"tactvisor_v\",\n        \"firmwareService\": \"tactvisor\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"Head\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"Tactosy2\",\n        \"nameContains\": \"tactosy2_v2 (l\",\n        \"firmwareService\": \"v3-tactosy2\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"ForearmL\",\n            \"ForearmR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"Tactosy2\",\n        \"nameContains\": \"tactosy2_v2 (r\",\n        \"firmwareService\": \"v3-tactosy2\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"ForearmR\",\n            \"ForearmL\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyH\",\n        \"nameContains\": \"tactosyh_v2 (l\",\n        \"firmwareService\": \"v3-tactosyh\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"HandL\",\n            \"HandR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyH\",\n        \"nameContains\": \"tactosyh_v2 (r\",\n        \"firmwareService\": \"v3-tactosyh\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"HandR\",\n            \"HandL\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyF\",\n        \"nameContains\": \"tactosyf_v2 (l\",\n        \"firmwareService\": \"v3-tactosyf\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"FootL\",\n            \"FootR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyF\",\n        \"nameContains\": \"tactosyf_v2 (r\",\n        \"firmwareService\": \"v3-tactosyf\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"FootR\",\n            \"FootL\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"Tactosy2\",\n        \"nameContains\": \"tactosy2_v2\",\n        \"firmwareService\": \"v3-tactosy2\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"ForearmL\",\n            \"ForearmR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyH\",\n        \"nameContains\": \"tactosyh_v2\",\n        \"firmwareService\": \"v3-tactosyh\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"HandL\",\n            \"HandR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactosyF\",\n        \"nameContains\": \"tactosyf_v2\",\n        \"firmwareService\": \"v3-tactosyf\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"FootL\",\n            \"FootR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"Tactal\",\n        \"nameContains\": \"tactal_v2\",\n        \"firmwareService\": \"v3-tactal\",\n        \"candidatePositions\": [\n            \"Head\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"Tactosy\",\n        \"nameContains\": \"tactosy_\",\n        \"firmwareService\": \"tactosy-v2\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"ForearmL\",\n            \"ForearmL\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"Tactosy2\",\n        \"nameContains\": \"tactosy2_\",\n        \"firmwareService\": \"v2-tactosy2\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"ForearmL\",\n            \"ForearmR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"Tactot\",\n        \"nameContains\": \"tactot_\",\n        \"firmwareService\": \"tactot\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"Vest\"\n        ],\n        \"hasBattery\": false,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"Tactot2\",\n        \"nameContains\": \"tactot2_\",\n        \"firmwareService\": \"tactot2\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"Vest\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"Tactot3\",\n        \"nameContains\": \"tactot3_\",\n        \"firmwareService\": \"v2-tactot3\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"Vest\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"Tactot3\",\n        \"nameContains\": \"tactot_\",\n        \"firmwareService\": \"tactot3\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"Vest\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"TactSuitX40\",\n        \"nameContains\": \"tactsuit\",\n        \"firmwareService\": \"tactsuit_x40\",\n        \"rawValue\": 509,\n        \"candidatePositions\": [\n            \"Vest\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactSuitX16\",\n        \"nameContains\": \"tactsuit\",\n        \"firmwareService\": \"tactsuit_x16\",\n        \"rawValue\": 510,\n        \"candidatePositions\": [\n            \"Vest\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"Tactal\",\n        \"nameContains\": \"tactal_\",\n        \"firmwareService\": \"v2-tactal\",\n        \"candidatePositions\": [\n            \"Head\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"TactGloveL\",\n        \"nameContains\": \"tactglove (l\",\n        \"firmwareService\": \"tactglovel-v1\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"GloveL\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactGloveR\",\n        \"nameContains\": \"tactglove (r\",\n        \"firmwareService\": \"tactglover-v1\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"GloveR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": true\n    },\n    {\n        \"name\": \"TactFacial\",\n        \"nameContains\": \"tactfacial_\",\n        \"firmwareService\": \"tactfacial\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"Head\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"TactosyH\",\n        \"nameContains\": \"tactosyh_\",\n        \"firmwareService\": \"v2-tactosyh\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"HandL\",\n            \"HandR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"TactosyF\",\n        \"nameContains\": \"tactosyf_\",\n        \"firmwareService\": \"v2-tactosyf\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"FootL\",\n            \"FootR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"TactThermoHL\",\n        \"nameContains\": \"tactthermohl\",\n        \"firmwareService\": \"\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"HandL\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"TactThermoHR\",\n        \"nameContains\": \"tactthermohr\",\n        \"firmwareService\": \"\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"HandR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"TactThermoFL\",\n        \"nameContains\": \"tactthermofl\",\n        \"firmwareService\": \"\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"FootL\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    },\n    {\n        \"name\": \"TactThermoFR\",\n        \"nameContains\": \"tactthermofr\",\n        \"firmwareService\": \"\",\n        \"rawValue\": 508,\n        \"candidatePositions\": [\n            \"FootR\"\n        ],\n        \"hasBattery\": true,\n        \"hasDfuRecover\": false\n    }\n]\""
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/View\/BhapticsViewModel.swift",
+      "kind": "BooleanLiteral",
+      "offset": 232,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/westside\/dev\/sdk\/bhaptics-sdk\/ios\/BhapticsPlugin\/BhapticsPlugin\/View\/BhapticsViewModel.swift",
+      "kind": "Array",
+      "offset": 288,
+      "length": 2,
+      "value": "[]"
+    }
+  ]
+}

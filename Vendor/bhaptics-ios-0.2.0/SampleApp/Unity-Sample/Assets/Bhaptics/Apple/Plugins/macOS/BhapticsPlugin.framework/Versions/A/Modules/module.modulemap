@@ -1,0 +1,11 @@
+framework module BhapticsPlugin {
+  umbrella header "BhapticsPlugin.h"
+
+  export *
+  module * { export * }
+}
+
+module BhapticsPlugin.Swift {
+  header "BhapticsPlugin-Swift.h"
+  requires objc
+}

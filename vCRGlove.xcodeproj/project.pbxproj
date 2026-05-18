@@ -467,7 +467,7 @@
 			mainGroup = A9FCFC022E5866AF00BF28B1;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */,
+				A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "Vendor/bhaptics-ios-0.2.0" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A9FCFC0C2E5866AF00BF28B1 /* Products */;
@@ -1153,16 +1153,16 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */ = {
+		A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "Vendor/bhaptics-ios-0.2.0" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../Downloads/bhaptics-ios-0.2.0";
+			relativePath = "Vendor/bhaptics-ios-0.2.0";
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		A9AE5FD92E794A6F009F0426 /* Bhaptics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */;
+			package = A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "Vendor/bhaptics-ios-0.2.0" */;
 			productName = Bhaptics;
 		};
 /* End XCSwiftPackageProductDependency section */

@@ -1,0 +1,105 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.7.1 (swiftlang-5.7.1.135.3 clang-1400.0.29.51)
+// swift-module-flags: -target arm64-apple-macos10.15 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name BhapticsPlugin
+// swift-module-flags-ignorable: -enable-bare-slash-regex
+@_exported import BhapticsPlugin
+import CoreBluetooth
+import Foundation
+import Swift
+import _Concurrency
+import _StringProcessing
+public enum BhapticsPosition : Swift.String, Swift.CaseIterable, Swift.Codable {
+  public static var allCases: [BhapticsPlugin.BhapticsPosition] {
+    get
+  }
+  case Vest
+  case Head
+  case HandL
+  case HandR
+  case FootL
+  case FootR
+  case ForearmL
+  case ForearmR
+  case GloveL
+  case GloveR
+  case Unknown
+  public var name: Swift.String {
+    get
+  }
+  public static func from(positionString: Swift.String) -> BhapticsPlugin.BhapticsPosition
+  public init?(rawValue: Swift.String)
+  public typealias AllCases = [BhapticsPlugin.BhapticsPosition]
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+@objc @_inheritsConvenienceInitializers public class BhapticsKit : ObjectiveC.NSObject {
+  open var delegate: BhapticsPlugin.BhapticsKitDelegate?
+  @objc override dynamic public init()
+  convenience public init(delegate: BhapticsPlugin.BhapticsKitDelegate?)
+  public func toggleScanning() -> Swift.Bool
+  public func scan()
+  public func isScanning() -> Swift.Bool
+  public func stopScan()
+  public func pair(device: BhapticsPlugin.BhapticsDevice)
+  public func unpair(device: BhapticsPlugin.BhapticsDevice)
+  public func getDevices() -> [BhapticsPlugin.BhapticsDevice]
+  public func playMotors(position: BhapticsPlugin.BhapticsPosition, arr: [Swift.Int])
+  public func turnOffMotors()
+  @objc deinit
+}
+extension BhapticsPlugin.BhapticsKit : CoreBluetooth.CBCentralManagerDelegate {
+  @objc dynamic public func centralManager(_ central: CoreBluetooth.CBCentralManager, didConnect peripheral: CoreBluetooth.CBPeripheral)
+  @objc dynamic public func centralManager(_ central: CoreBluetooth.CBCentralManager, didDiscover peripheral: CoreBluetooth.CBPeripheral, advertisementData: [Swift.String : Any], rssi RSSI: Foundation.NSNumber)
+  @objc dynamic public func centralManager(_ central: CoreBluetooth.CBCentralManager, didDisconnectPeripheral peripheral: CoreBluetooth.CBPeripheral, error: Swift.Error?)
+  @objc dynamic public func centralManagerDidUpdateState(_ central: CoreBluetooth.CBCentralManager)
+}
+@objc public class BhapticsDevice : ObjectiveC.NSObject, Swift.Identifiable {
+  public var id: Swift.String {
+    get
+  }
+  final public let name: Swift.String
+  final public let deviceType: Swift.String
+  public var position: BhapticsPlugin.BhapticsPosition
+  final public let uuid: Swift.String
+  public var connected: Swift.Bool
+  public var paired: Swift.Bool
+  public var lastScanTime: Swift.Int
+  public var peripheral: CoreBluetooth.CBPeripheral?
+  public init(name: Swift.String, uuid: Swift.String, peripheral: CoreBluetooth.CBPeripheral?)
+  public func turnOff()
+  public func playMotor(arr: [Swift.Int])
+  public typealias ID = Swift.String
+  @objc deinit
+}
+extension BhapticsPlugin.BhapticsDevice : CoreBluetooth.CBPeripheralDelegate {
+  @objc dynamic public func peripheral(_ peripheral: CoreBluetooth.CBPeripheral, didDiscoverServices error: Swift.Error?)
+  @objc dynamic public func peripheral(_ peripheral: CoreBluetooth.CBPeripheral, didDiscoverCharacteristicsFor service: CoreBluetooth.CBService, error: Swift.Error?)
+  @objc dynamic public func peripheral(_ peripheral: CoreBluetooth.CBPeripheral, didWriteValueFor characteristic: CoreBluetooth.CBCharacteristic, error: Swift.Error?)
+}
+public protocol BhapticsKitDelegate {
+  func bHapticsKit(_ kit: BhapticsPlugin.BhapticsKit, bleStateChange state: Swift.Bool)
+  func bHapticsKit(_ kit: BhapticsPlugin.BhapticsKit, deviceStateUpdated devices: [BhapticsPlugin.BhapticsDevice])
+  func bHapticsKit(_ kit: BhapticsPlugin.BhapticsKit, didConnect device: BhapticsPlugin.BhapticsDevice)
+  func bHapticsKit(_ kit: BhapticsPlugin.BhapticsKit, didDisconnect device: BhapticsPlugin.BhapticsDevice)
+}
+@_cdecl("BhapticsPlugin_scan")
+public func BhapticsPlugin_scan()
+@_cdecl("BhapticsPlugin_isScanning")
+public func BhapticsPlugin_isScanning() -> Swift.Int
+@_cdecl("BhapticsPlugin_stopScan")
+public func BhapticsPlugin_stopScan()
+@_cdecl("BhapticsPlugin_pair")
+public func BhapticsPlugin_pair(_ deviceIdPtr: Swift.UnsafePointer<Swift.CChar>?)
+@_cdecl("BhapticsPlugin_unpair")
+public func BhapticsPlugin_unpair(_ deviceIdPtr: Swift.UnsafePointer<Swift.CChar>?)
+@_cdecl("BhapticsPlugin_getDevices")
+public func BhapticsPlugin_getDevices() -> Swift.UnsafePointer<Swift.CChar>?
+@_cdecl("BhapticsPlugin_playMotors")
+public func BhapticsPlugin_playMotors(_ positionPtr: Swift.UnsafePointer<Swift.CChar>, length: Swift.Int, arrPtr: Swift.UnsafePointer<Swift.UInt8>)
+@_cdecl("BhapticsPlugin_stop")
+public func BhapticsPlugin_stop()
+extension BhapticsPlugin.BhapticsPosition : Swift.Equatable {}
+extension BhapticsPlugin.BhapticsPosition : Swift.Hashable {}
+extension BhapticsPlugin.BhapticsPosition : Swift.RawRepresentable {}
