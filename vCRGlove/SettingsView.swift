@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @ObservedObject var vm: GloveVM
     @AppStorage("showResearchTab") private var showResearchTab = false
     @AppStorage("patientID") private var patientID = ""
-
+    
     @State private var researchPassword = ""
     @State private var researchUnlocked = false
     @State private var passwordError = false
@@ -19,7 +20,7 @@ struct SettingsView: View {
         List {
             Section {
                 NavigationLink {
-                    VCRSettingsView()
+                    VCRSettingsView(vm: vm)
                 } label: {
                     SettingsRow(icon: "waveform.path.ecg", color: .blue, title: "vCR Settings", subtitle: "Duration, gloves, and session preferences")
                 }
@@ -120,15 +121,68 @@ private struct SettingsRow: View {
 }
 
 private struct VCRSettingsView: View {
+    @ObservedObject var vm: GloveVM
+    @AppStorage("vcrSessionPlan") private var vcrSessionPlan = "fourHours"
+
+    private var leftGlove: HDevice? {
+        vm.devices.first { $0.isLeftGlove && $0.isReadyForStimulation }
+    }
+
+    private var rightGlove: HDevice? {
+        vm.devices.first { $0.isRightGlove && $0.isReadyForStimulation }
+    }
+
     var body: some View {
         List {
-            Section("Session") {
-                Text("Default duration")
-                Text("Glove status and last connection time will go here.")
+            Section("Session Plan") {
+                Picker("Default vCR plan", selection: $vcrSessionPlan) {
+                    Text("4 hours once").tag("fourHours")
+                    Text("2 hours + 2 hours").tag("twoByTwo")
+                }
+                .pickerStyle(.inline)
+
+                Text(vcrSessionPlan == "fourHours"
+                     ? "Patients complete one 4-hour vCR session per day."
+                     : "Patients complete two separate 2-hour vCR sessions per day.")
+                    .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+
+            Section("Gloves") {
+                gloveRow(title: "Left glove", glove: leftGlove)
+                gloveRow(title: "Right glove", glove: rightGlove)
+
+                Button(vm.scanning ? "Stop Scan" : "Scan for Gloves") {
+                    if vm.scanning {
+                        vm.stopScan()
+                    } else {
+                        vm.startScan()
+                    }
+                }
             }
         }
         .navigationTitle("vCR Settings")
+    }
+
+    private func gloveRow(title: String, glove: HDevice?) -> some View {
+        HStack {
+            Text(title)
+
+            Spacer()
+
+            if let glove {
+                if let battery = glove.battery {
+                    Text("\(battery)%")
+                        .foregroundStyle(battery <= 10 ? .red : .secondary)
+                }
+
+                Text(glove.connectionStatusText)
+                    .foregroundStyle(glove.isReadyForStimulation ? .green : .secondary)
+            } else {
+                Text("Not detected")
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 }
 

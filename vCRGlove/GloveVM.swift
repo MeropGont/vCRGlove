@@ -82,15 +82,7 @@ struct HDevice: Identifiable, Decodable, Equatable {
 
 extension HDevice {
     var isReadyForStimulation: Bool {
-        if isConnected == true {
-            return true
-        }
-
-        if isPaired == true && battery != nil && !pos.isEmpty {
-            return true
-        }
-
-        return false
+        isConnected == true && !pos.isEmpty
     }
 
     var connectionStatusText: String {
@@ -145,6 +137,7 @@ final class GloveVM: ObservableObject {
     @Published var devices: [HDevice] = []
     @Published var countdowns: [String: Int] = [:]
     @Published var pausedPositions: Set<String> = []
+    @Published var nativeBatteryByID: [String: Int] = [:]
     
     // deal with possible interruptions
     @Published var timingCompromiseMessage: String?
@@ -170,6 +163,7 @@ final class GloveVM: ObservableObject {
     private var startedAt: [String: Date] = [:]
     private var activeStimPositions: Set<String> = []
     private var lastNoGloveCandidateLog: Date?
+    private lazy var nativeBhaptics = BhapticsKit(delegate: nil)
     
 
     private func updateIdleTimerLock() {
@@ -251,6 +245,7 @@ final class GloveVM: ObservableObject {
         guard let cstr = BhapticsPlugin_getDevices() else { return }
 
         let raw = String(cString: cstr)
+        print("BLE_RAW_UI:", raw)
         var knownDevices: [HDevice] = []
 
         if let data = raw.data(using: .utf8) {
@@ -329,12 +324,93 @@ final class GloveVM: ObservableObject {
         pollTimer = nil
         refreshDevices()
     }
+    
+    private func deviceMergeScore(_ device: HDevice) -> Int {
+        var score = 0
 
+        if device.isConnected == true { score += 1000 }
+        if device.isPaired == true { score += 100 }
+        if device.battery != nil { score += 25 }
+        if !device.pos.isEmpty { score += 10 }
+        if device.isLeftGlove || device.isRightGlove { score += 5 }
+
+        return score
+    }
+
+    private func mergeDuplicateDevices(_ candidates: [HDevice]) -> [HDevice] {
+        var byId: [String: HDevice] = [:]
+
+        for device in candidates {
+            guard !device.id.isEmpty else { continue }
+
+            if let existing = byId[device.id] {
+                byId[device.id] = deviceMergeScore(device) >= deviceMergeScore(existing) ? device : existing
+            } else {
+                byId[device.id] = device
+            }
+        }
+
+        return Array(byId.values)
+    }
+
+    private func refreshNativeBatterySnapshot() {
+        let nativeDevices = nativeBhaptics.getDevices()
+
+        guard !nativeDevices.isEmpty else {
+            let message = "BhapticsKit.getDevices returned 0 device(s)"
+            Logger.shared.log("BLE_NATIVE", message)
+            return
+        }
+
+        var batteries: [String: Int] = [:]
+
+        let summary = nativeDevices.map { device -> String in
+            let battery = device.battery
+            let positionName = device.position.name
+            let positionRaw = device.position.rawValue
+
+            if (0...100).contains(battery) {
+                batteries[device.id] = battery
+                batteries[device.uuid] = battery
+                batteries[device.name] = battery
+                batteries[positionName] = battery
+                batteries[positionRaw] = battery
+            }
+
+            return "\(device.name) \(positionName) id=\(device.id) uuid=\(device.uuid) connected=\(device.connected) paired=\(device.paired) battery=\(battery)"
+        }
+
+        nativeBatteryByID = batteries
+
+        let message = summary.joined(separator: " | ")
+        Logger.shared.log("BLE_NATIVE", message)
+    }
+
+    private func deviceWithNativeBattery(_ device: HDevice) -> HDevice {
+        var copy = device
+
+        let keys = [
+            device.id,
+            device.name ?? "",
+            device.pos,
+            device.position ?? ""
+        ].filter { !$0.isEmpty }
+
+        for key in keys {
+            if let battery = nativeBatteryByID[key] {
+                copy.battery = battery
+                break
+            }
+        }
+
+        return copy
+    }
 
     func refreshDevices() {
         guard let cstr = BhapticsPlugin_getDevices() else { return }
         let raw = String(cString: cstr)
         Logger.shared.log("BLE_RAW", raw)
+        print("BLE_RAW_UI:", raw)
 
 
         var newDevices: [HDevice] = []
@@ -358,9 +434,7 @@ final class GloveVM: ObservableObject {
         newDevices = gloveCandidates
 
 
-        var byId: [String: HDevice] = [:]
-        for d in newDevices { byId[d.id] = d }
-        var unique = Array(byId.values)
+        let unique = mergeDuplicateDevices(newDevices)
 
         self.devices = unique.sorted { ($0.position ?? "") < ($1.position ?? "") }
     }

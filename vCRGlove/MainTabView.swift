@@ -39,7 +39,7 @@ struct MainTabView: View {
             }
 
             NavigationStack {
-                SettingsView()
+                SettingsView(vm: gloveVM)
             }
             .tabItem {
                 Label("Settings", systemImage: "gearshape.fill")
