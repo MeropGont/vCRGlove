@@ -243,7 +243,6 @@ final class GloveVM: ObservableObject {
         guard let cstr = BhapticsPlugin_getDevices() else { return }
 
         let raw = String(cString: cstr)
-        print("BLE_RAW_UI:", raw)
         var knownDevices: [HDevice] = []
 
         if let data = raw.data(using: .utf8) {
@@ -355,7 +354,10 @@ final class GloveVM: ObservableObject {
     func refreshDevices() {
         guard let cstr = BhapticsPlugin_getDevices() else { return }
         let raw = String(cString: cstr)
-        Logger.shared.log("BLE_RAW", raw)
+
+        if UserDefaults.standard.bool(forKey: "debugVerboseBLELogging") {
+            Logger.shared.log("BLE_RAW", raw)
+        }
 
 
         var newDevices: [HDevice] = []
@@ -443,8 +445,8 @@ final class GloveVM: ObservableObject {
     }
 
     // MARK: - Vibration
-    func startVibration(position: String, durationSeconds: Int? = nil) {
-        stopVibration(position: position)
+    func startVibration(position: String, durationSeconds: Int? = nil, logEvent: Bool = true) {
+        stopVibration(position: position, logEvent: false)
 
         let sessionSeconds = durationSeconds ?? Int(totalSeconds)
         startedAt[position] = Date()
@@ -492,10 +494,12 @@ final class GloveVM: ObservableObject {
         activeStimPositions.insert(position)
         updateIdleTimerLock()
 
-        Logger.shared.log("vCR", "Start vibration @ \(position) [total=\(sessionSeconds)s]")
+        if logEvent {
+            Logger.shared.log("vCR", "Start vibration @ \(position) [total=\(sessionSeconds)s]")
+        }
     }
 
-    func stopVibration(position: String) {
+    func stopVibration(position: String, logEvent: Bool = true) {
         vibTimers[position]?.invalidate()
         vibTimers[position] = nil
         countdowns[position] = 0
@@ -515,7 +519,9 @@ final class GloveVM: ObservableObject {
             endStimulationBackgroundTaskIfNeeded()
         }
 
-        Logger.shared.log("vCR", "Stopped vibration @ \(position)")
+        if logEvent {
+            Logger.shared.log("vCR", "Stopped vibration @ \(position)")
+        }
     }
 
     func resumeVibration(position: String) {
@@ -526,7 +532,7 @@ final class GloveVM: ObservableObject {
         }
 
         pausedPositions.remove(position)
-        startVibration(position: position, durationSeconds: remaining)
+        startVibration(position: position, durationSeconds: remaining, logEvent: false)
 
         Logger.shared.log("vCR", "Resumed vibration @ \(position)")
     }
@@ -556,7 +562,7 @@ final class GloveVM: ObservableObject {
         let strength: UInt8 = 70
 
         for position in cleaned {
-            stopVibration(position: position)
+            stopVibration(position: position, logEvent: false)
             countdowns[position] = sessionSeconds
         }
 

@@ -179,7 +179,7 @@ struct DailyLogView: View {
             return "heart.text.square.fill"
         case .medication:
             return "pills.fill"
-        case .symptm:
+        case .symptom:
             return "waveform.path.ecg"
         case .note:
             return "note.text"
@@ -198,7 +198,7 @@ struct DailyLogView: View {
             parts.append("Daily check-in")
         }
 
-        if entry.type == .symptm {
+        if entry.type == .symptom {
             parts.append("Symptom episode")
         }
 

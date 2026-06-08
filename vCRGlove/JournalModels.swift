@@ -95,10 +95,34 @@ enum SymptomEpisodeType: String, CaseIterable, Codable, Identifiable {
 enum JournalEntryType: String, Codable {
     case dailyCheckIn
     case medication
-    case symptm
+    case symptom
     case note
     case stimulation
     case pdq8
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(String.self)
+
+        switch value {
+        case "symptm":
+            self = .symptom
+        default:
+            guard let type = JournalEntryType(rawValue: value) else {
+                throw DecodingError.dataCorruptedError(
+                    in: container,
+                    debugDescription: "Unknown journal entry type: \(value)"
+                )
+            }
+
+            self = type
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
 }
 
 

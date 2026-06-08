@@ -9,12 +9,12 @@ import SwiftUI
 
 struct PatientVCRView: View {
     @ObservedObject var vm: GloveVM
-    
+
     @AppStorage("patientID") private var patientID = ""
     @AppStorage("vcrSessionPlan") private var vcrSessionPlan = "fourHours"
     @AppStorage("vcrSplitCompletionDate") private var vcrSplitCompletionDate = ""
     @AppStorage("vcrSplitCompletionCount") private var vcrSplitCompletionCount = 0
-    
+
     @AppStorage("vcrFourHourCompletionDate") private var vcrFourHourCompletionDate = ""
 
     @State private var stopProgress: Double = 0
@@ -45,7 +45,7 @@ struct PatientVCRView: View {
     private var isSessionRunning: Bool {
         !activePositions.isEmpty
     }
-    
+
     private var pausedPositions: [String] {
         activePositions.filter { vm.pausedPositions.contains($0) }
     }
@@ -67,7 +67,7 @@ struct PatientVCRView: View {
     private var rightGlove: HDevice? {
         bestGlove(from: vm.devices.filter { $0.isRightGlove })
     }
-    
+
     private func bestGlove(from gloves: [HDevice]) -> HDevice? {
         gloves.sorted {
             let lhsScore = gloveScore($0)
@@ -111,13 +111,13 @@ struct PatientVCRView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            
+
             vcrHeader
 
             gloveStatusGrid
 
             sessionCard
-            
+
             troubleshootingLink
 
             Spacer()
@@ -135,13 +135,16 @@ struct PatientVCRView: View {
             applyPatientPreset()
             startSessionMonitor()
         }
+        .onDisappear {
+            stopSessionMonitor()
+        }
         .onChange(of: vm.devices) {
             autoPairDetectedGloves()
             stopScanningWhenBothGlovesReady()
             monitorPatientSession()
         }
     }
-    
+
     private func stopScanningWhenBothGlovesReady() {
         guard vm.scanning else { return }
 
@@ -151,7 +154,7 @@ struct PatientVCRView: View {
             Logger.shared.log("BLE", "Scan stopped automatically because both gloves are ready")
         }
     }
-    
+
     private func monitorPatientSession() {
         if !isSessionRunning {
             if sessionWasStarted && remainingSeconds == 0 {
@@ -235,7 +238,7 @@ struct PatientVCRView: View {
             }
         }
     }
-    
+
     private func startSessionMonitor() {
         guard sessionMonitorTimer == nil else { return }
 
@@ -247,6 +250,11 @@ struct PatientVCRView: View {
 
         RunLoop.main.add(timer, forMode: .common)
         sessionMonitorTimer = timer
+    }
+
+    private func stopSessionMonitor() {
+        sessionMonitorTimer?.invalidate()
+        sessionMonitorTimer = nil
     }
 
 
@@ -262,7 +270,7 @@ struct PatientVCRView: View {
         }
     }
 
-    
+
     private var sessionCard: some View {
         VStack(spacing: 16) {
             if isSessionRunning {
@@ -332,7 +340,7 @@ struct PatientVCRView: View {
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
-    
+
     private var troubleshootingLink: some View {
         NavigationLink {
             SupportSettingsView(patientID: patientID, initialTopic: "Finger check")
@@ -343,7 +351,7 @@ struct PatientVCRView: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     private func sessionActionButton(
         title: String,
         systemImage: String,
@@ -429,7 +437,7 @@ struct PatientVCRView: View {
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
-    
+
     private var scanButton: some View {
         Button {
             if vm.scanning {
@@ -463,7 +471,7 @@ struct PatientVCRView: View {
         .buttonStyle(.plain)
     }
 
-    
+
     private func gloveStatusCard(title: String, assetName: String, glove: HDevice?) -> some View {
         let isReady = glove?.isReadyForStimulation == true
         let isStimulating = glove.flatMap { vm.countdowns[$0.pos] } ?? 0 > 0
@@ -523,7 +531,7 @@ struct PatientVCRView: View {
             gloveStatusCard(title: "Right", assetName: "glove_R_icon", glove: rightGlove)
         }
     }
-    
+
     private func gloveFrameColor(isReady: Bool, isStimulating: Bool) -> Color {
         if isStimulating {
             return .indigo
@@ -580,7 +588,7 @@ struct PatientVCRView: View {
             .compactMap(\.battery)
             .first
     }
-    
+
     private func gloveFigure(title: String, device: HDevice?) -> some View {
         let ready = device?.isReadyForStimulation == true
 
@@ -649,7 +657,7 @@ struct PatientVCRView: View {
             sessionWasStarted = false
         }
     }
-    
+
     private func startStopHold() {
         guard stopTimer == nil else { return }
 
@@ -682,7 +690,7 @@ struct PatientVCRView: View {
         let seconds = seconds % 60
         return "\(minutes):\(String(format: "%02d", seconds))"
     }
-    
+
     private var sessionProgress: Double {
         guard vm.totalSeconds > 0 else { return 0 }
         let elapsed = max(vm.totalSeconds - Double(remainingSeconds), 0)
@@ -724,7 +732,7 @@ struct PatientVCRView: View {
 
         return "\(minutes)m"
     }
-    
+
     private var currentSessionDurationSeconds: Int {
         vcrSessionPlan == "twoByTwo" ? 2 * 60 * 60 : 4 * 60 * 60
     }
@@ -759,7 +767,7 @@ struct PatientVCRView: View {
 
         return "Great job. First vCR session complete. One more 2 h session remains today."
     }
-    
+
     private var completedSplitSessionsToday: Int {
         vcrSplitCompletionDate == todayKey ? vcrSplitCompletionCount : 0
     }
@@ -799,7 +807,7 @@ struct PatientVCRView: View {
     private var startButtonTitle: String {
         isVCRCompleteToday ? "Complete today" : "Start"
     }
-    
+
     private func setupStep(_ number: String, _ text: String) -> some View {
         HStack(spacing: 6) {
             Text(number)

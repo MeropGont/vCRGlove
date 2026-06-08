@@ -95,7 +95,7 @@ struct SymptomEpisodeLogView: View {
 
                 let entry = JournalEntry(
                     date: combinedDate,
-                    type: .symptm,
+                    type: .symptom,
                     symptomSeverity: severity,
                     symptoms: selectedSymptoms
                         .map { $0.rawValue }

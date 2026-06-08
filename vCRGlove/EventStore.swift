@@ -65,4 +65,25 @@ final class EventStore {
     func fileURL() -> URL? {
         try? eventFileURL()
     }
+
+    func clearEventLog(patientID: String) {
+        do {
+            let url = try eventFileURL()
+
+            if FileManager.default.fileExists(atPath: url.path) {
+                try FileManager.default.removeItem(at: url)
+            }
+
+            append(
+                type: "admin_action",
+                tag: "Research",
+                message: "Event log cleared",
+                details: [
+                    "patientID": patientID
+                ]
+            )
+        } catch {
+            print("EventStore clear error:", error.localizedDescription)
+        }
+    }
 }

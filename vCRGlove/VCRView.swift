@@ -36,11 +36,13 @@ final class Logger: ObservableObject {
     ]
 
     func log(_ tag: String, _ message: String) {
-        EventStore.shared.append(
-            type: "app_event",
-            tag: tag,
-            message: message
-        )
+        if shouldPersistToEventLog(tag: tag, message: message) {
+            EventStore.shared.append(
+                type: "app_event",
+                tag: tag,
+                message: message
+            )
+        }
 
         guard shouldShowInVisibleLog(tag: tag, message: message) else {
             return
@@ -76,6 +78,28 @@ final class Logger: ObservableObject {
             if message.contains(fragment) {
                 return false
             }
+        }
+
+        return true
+    }
+
+    private func shouldPersistToEventLog(tag: String, message: String) -> Bool {
+        if UserDefaults.standard.bool(forKey: "debugVerboseBLELogging") {
+            return true
+        }
+
+        let normalizedTag = tag.uppercased()
+
+        if normalizedTag == "BLE_RAW" || normalizedTag == "BLE_NATIVE" {
+            return false
+        }
+
+        if normalizedTag == "BLE" && message.contains("detected bHaptics device") {
+            return false
+        }
+
+        if normalizedTag == "BLE" && message == "Scan stopped" {
+            return false
         }
 
         return true
@@ -211,6 +235,9 @@ struct VCRView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             startResearchSessionMonitor()
+        }
+        .onDisappear {
+            stopResearchSessionMonitor()
         }
         .onChange(of: vm.devices) {
             autoPairDetectedGloves()
@@ -378,7 +405,7 @@ struct VCRView: View {
 
     private var stimulationControl: some View {
         VStack(spacing: 16) {
-            
+
             if let sessionMessage {
                 Text(sessionMessage)
                     .font(.caption)
@@ -392,7 +419,7 @@ struct VCRView: View {
                     .foregroundStyle(.orange)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            
+
             if isStimulating {
                 Text(isPaused ? "Paused" : "Stimulation running")
                     .font(.headline)
@@ -487,6 +514,11 @@ struct VCRView: View {
 
         RunLoop.main.add(timer, forMode: .common)
         sessionMonitorTimer = timer
+    }
+
+    private func stopResearchSessionMonitor() {
+        sessionMonitorTimer?.invalidate()
+        sessionMonitorTimer = nil
     }
 
     private func stopScanningWhenBothGlovesReady() {
@@ -589,7 +621,7 @@ struct VCRView: View {
             }
         }
     }
-    
+
     private func startAll() {
         let positions = readyDevices.map(\.pos)
         guard !positions.isEmpty else { return }
