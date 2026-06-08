@@ -159,6 +159,10 @@ struct VCRView: View {
     @StateObject private var logger = Logger.shared
     @State private var stopProgress: Double = 0
     @State private var stopTimer: Timer?
+    @State private var sessionMonitorTimer: Timer?
+    @State private var sessionMessage: String?
+    @State private var sessionPausedForNoGloves = false
+    @State private var autoPairAttemptedIDs: Set<String> = []
 
     private var leftGlove: HDevice? {
         bestGlove(from: vm.devices.filter { $0.isLeftGlove })
@@ -205,12 +209,25 @@ struct VCRView: View {
         }
         .navigationTitle("Research")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            startResearchSessionMonitor()
+        }
+        .onChange(of: vm.devices) {
+            autoPairDetectedGloves()
+            stopScanningWhenBothGlovesReady()
+            monitorResearchSession()
+        }
     }
 
     private var scanSection: some View {
         VStack(spacing: 10) {
             Button {
-                vm.scanning ? vm.stopScan() : vm.startScan(clearHistory: false)
+                if vm.scanning {
+                    vm.stopScan()
+                } else {
+                    autoPairAttemptedIDs.removeAll()
+                    vm.startScan(clearHistory: false)
+                }
             } label: {
                 Label(
                     vm.scanning ? "STOP SCAN" : "SCAN FOR GLOVES",
@@ -222,10 +239,12 @@ struct VCRView: View {
             .buttonStyle(.borderedProminent)
 
             Button("Clear History & Fresh Scan") {
+                autoPairAttemptedIDs.removeAll()
                 vm.startScan(clearHistory: true)
             }
             .font(.caption)
             .buttonStyle(.bordered)
+            .disabled(isStimulating)
         }
     }
 
@@ -268,6 +287,18 @@ struct VCRView: View {
             Text(statusText(for: glove, isActive: isActive))
                 .font(.caption)
                 .foregroundStyle(isActive ? .indigo : isReady ? .green : .secondary)
+
+            if isReady, let battery = glove?.battery {
+                Label("\(battery)%", systemImage: battery <= 10 ? "battery.25" : "battery.100")
+                    .font(.caption2)
+                    .foregroundStyle(battery <= 10 ? .red : .secondary)
+            }
+
+            if canBuzz {
+                Text("Tap icon to test buzz")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
 
             if let glove {
                 if isReady {
@@ -347,6 +378,21 @@ struct VCRView: View {
 
     private var stimulationControl: some View {
         VStack(spacing: 16) {
+            
+            if let sessionMessage {
+                Text(sessionMessage)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            if let timingCompromiseMessage = vm.timingCompromiseMessage {
+                Text(timingCompromiseMessage)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            
             if isStimulating {
                 Text(isPaused ? "Paused" : "Stimulation running")
                     .font(.headline)
@@ -430,27 +476,167 @@ struct VCRView: View {
         )
     }
 
-    private func startAll() {
-        for device in readyDevices {
-            vm.startVibrationWithFingerCheck(positions: readyDevices.map(\.pos))
+    private func startResearchSessionMonitor() {
+        guard sessionMonitorTimer == nil else { return }
+
+        let timer = Timer(timeInterval: 1.0, repeats: true) { _ in
+            vm.refreshDevices()
+            stopScanningWhenBothGlovesReady()
+            monitorResearchSession()
         }
+
+        RunLoop.main.add(timer, forMode: .common)
+        sessionMonitorTimer = timer
+    }
+
+    private func stopScanningWhenBothGlovesReady() {
+        guard vm.scanning else { return }
+
+        if leftGlove?.isReadyForStimulation == true &&
+            rightGlove?.isReadyForStimulation == true {
+            vm.stopScan()
+            Logger.shared.log("BLE", "Research scan stopped automatically because both gloves are ready")
+        }
+    }
+
+    private func autoPairDetectedGloves() {
+        guard vm.scanning else { return }
+
+        if let leftGlove, !leftGlove.isReadyForStimulation, !autoPairAttemptedIDs.contains("left") {
+            autoPairAttemptedIDs.insert("left")
+            vm.pair(device: leftGlove)
+        }
+
+        if let rightGlove, !rightGlove.isReadyForStimulation, !autoPairAttemptedIDs.contains("right") {
+            autoPairAttemptedIDs.insert("right")
+            vm.pair(device: rightGlove)
+        }
+    }
+
+    private func monitorResearchSession() {
+        guard isStimulating else {
+            sessionPausedForNoGloves = false
+            return
+        }
+
+        let readyPositions = Set(readyDevices.map(\.pos))
+        let currentlyActive = Set(activePositions)
+        let stillReadyActivePositions = currentlyActive.intersection(readyPositions)
+        let disconnectedActivePositions = currentlyActive.subtracting(readyPositions)
+
+        if !currentlyActive.isEmpty && stillReadyActivePositions.isEmpty {
+            if !sessionPausedForNoGloves {
+                sessionMessage = "Gloves disconnected. Stimulation paused. Turn gloves on and scan again to continue."
+                Logger.shared.log("vCR", "Research session paused: no active gloves connected")
+
+                for position in currentlyActive {
+                    vm.pauseVibration(position: position)
+                }
+
+                sessionPausedForNoGloves = true
+                autoPairAttemptedIDs.removeAll()
+
+                if !vm.scanning {
+                    vm.startScan(clearHistory: false)
+                }
+            }
+
+            return
+        }
+
+        if !disconnectedActivePositions.isEmpty {
+            for position in disconnectedActivePositions {
+                if !vm.pausedPositions.contains(position) {
+                    vm.pauseVibration(position: position)
+                    Logger.shared.log("vCR", "Paused disconnected research glove @ \(position)")
+                }
+            }
+
+            sessionMessage = "One glove disconnected. Stimulation continues with the connected glove."
+
+            if !vm.scanning {
+                autoPairAttemptedIDs.removeAll()
+                vm.startScan(clearHistory: false)
+            }
+        }
+
+        if sessionPausedForNoGloves && !stillReadyActivePositions.isEmpty {
+            sessionMessage = "Gloves reconnected. Press Resume to continue."
+            Logger.shared.log("vCR", "Research glove connection restored")
+            sessionPausedForNoGloves = false
+        }
+
+        if !isPaused {
+            let pausedReadyPositions = readyPositions.intersection(vm.pausedPositions).intersection(currentlyActive)
+
+            for position in pausedReadyPositions {
+                vm.resumeVibration(position: position)
+                Logger.shared.log("vCR", "Resumed reconnected research glove @ \(position)")
+            }
+        }
+
+        let newReadyDevices = readyDevices.filter { !currentlyActive.contains($0.pos) }
+
+        for glove in newReadyDevices {
+            let remaining = max(remainingSeconds, 1)
+            vm.startVibration(position: glove.pos, durationSeconds: remaining)
+
+            if isPaused || sessionPausedForNoGloves {
+                vm.pauseVibration(position: glove.pos)
+                Logger.shared.log("vCR", "Added \(glove.prettyName) to paused research session with \(remaining)s remaining")
+            } else {
+                Logger.shared.log("vCR", "Added \(glove.prettyName) to active research session with \(remaining)s remaining")
+            }
+        }
+    }
+    
+    private func startAll() {
+        let positions = readyDevices.map(\.pos)
+        guard !positions.isEmpty else { return }
+
+        vm.clearTimingCompromiseWarning()
+        sessionMessage = nil
+        sessionPausedForNoGloves = false
+
+        vm.startVibrationWithFingerCheck(positions: positions)
     }
 
     private func stopAll() {
         for position in activePositions {
             vm.stopVibration(position: position)
         }
+
+        sessionMessage = nil
+        sessionPausedForNoGloves = false
     }
 
     private func togglePause() {
         if isPaused {
-            for position in activePositions {
+            let readyPositions = Set(readyDevices.map(\.pos))
+            let positionsToResume = activePositions.filter { readyPositions.contains($0) }
+
+            guard !positionsToResume.isEmpty else {
+                sessionMessage = "Turn gloves on and scan again before resuming."
+                autoPairAttemptedIDs.removeAll()
+
+                if !vm.scanning {
+                    vm.startScan(clearHistory: false)
+                }
+
+                return
+            }
+
+            for position in positionsToResume {
                 vm.resumeVibration(position: position)
             }
+
+            sessionMessage = nil
         } else {
             for position in activePositions {
                 vm.pauseVibration(position: position)
             }
+
+            sessionMessage = "Stimulation paused."
         }
     }
 
