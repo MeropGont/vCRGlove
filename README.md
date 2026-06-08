@@ -28,7 +28,7 @@ This app explores how **consumer hardware** (bHaptics TactGlove + iPhone + Apple
 - Provides manual vibration controls for amplitude, frequency, pulse length, stimulation duration, and number of active fingers per cycle.
 - Includes a vCR mode using randomized, desynchronizing multi-finger bursts inspired by Tass and Pfeifer publications.
 - Logs major stimulation and connection events.
-- Provides a patient-facing vCR session view with large left/right glove status cards, scan flow, battery-ready connection feedback, pause/resume, and hold-to-stop controls.
+- Provides a patient-facing vCR session view with large left/right glove status cards, scan flow, clear connection feedback, pause/resume, and hold-to-stop controls.
 - Supports automatic session interruption handling when no gloves remain connected.
 - Allows a newly connected glove to join an active session without interrupting the first glove.
 - Includes a separate Research mode with manual stimulation parameters, per-glove disconnect/reconnect controls, and filtered visible logs.
@@ -61,6 +61,7 @@ This app explores how **consumer hardware** (bHaptics TactGlove + iPhone + Apple
   - `vcr/journal/journal_entries.json`
 - File sharing is enabled in `Info.plist` so app data can be copied from the phone for inspection and analysis.
 - Full app events are preserved in JSONL, while the in-app Research log hides repetitive Bluetooth noise for readability.
+- Current bHaptics device JSON does not expose glove battery percentage reliably; battery display is deferred until the SDK exposes it through the app-facing API.
 
 
 ---

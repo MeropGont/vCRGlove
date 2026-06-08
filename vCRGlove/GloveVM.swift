@@ -137,7 +137,6 @@ final class GloveVM: ObservableObject {
     @Published var devices: [HDevice] = []
     @Published var countdowns: [String: Int] = [:]
     @Published var pausedPositions: Set<String> = []
-    @Published var nativeBatteryByID: [String: Int] = [:]
     
     // deal with possible interruptions
     @Published var timingCompromiseMessage: String?
@@ -163,7 +162,6 @@ final class GloveVM: ObservableObject {
     private var startedAt: [String: Date] = [:]
     private var activeStimPositions: Set<String> = []
     private var lastNoGloveCandidateLog: Date?
-    private lazy var nativeBhaptics = BhapticsKit(delegate: nil)
     
 
     private func updateIdleTimerLock() {
@@ -353,64 +351,11 @@ final class GloveVM: ObservableObject {
         return Array(byId.values)
     }
 
-    private func refreshNativeBatterySnapshot() {
-        let nativeDevices = nativeBhaptics.getDevices()
-
-        guard !nativeDevices.isEmpty else {
-            let message = "BhapticsKit.getDevices returned 0 device(s)"
-            Logger.shared.log("BLE_NATIVE", message)
-            return
-        }
-
-        var batteries: [String: Int] = [:]
-
-        let summary = nativeDevices.map { device -> String in
-            let battery = device.battery
-            let positionName = device.position.name
-            let positionRaw = device.position.rawValue
-
-            if (0...100).contains(battery) {
-                batteries[device.id] = battery
-                batteries[device.uuid] = battery
-                batteries[device.name] = battery
-                batteries[positionName] = battery
-                batteries[positionRaw] = battery
-            }
-
-            return "\(device.name) \(positionName) id=\(device.id) uuid=\(device.uuid) connected=\(device.connected) paired=\(device.paired) battery=\(battery)"
-        }
-
-        nativeBatteryByID = batteries
-
-        let message = summary.joined(separator: " | ")
-        Logger.shared.log("BLE_NATIVE", message)
-    }
-
-    private func deviceWithNativeBattery(_ device: HDevice) -> HDevice {
-        var copy = device
-
-        let keys = [
-            device.id,
-            device.name ?? "",
-            device.pos,
-            device.position ?? ""
-        ].filter { !$0.isEmpty }
-
-        for key in keys {
-            if let battery = nativeBatteryByID[key] {
-                copy.battery = battery
-                break
-            }
-        }
-
-        return copy
-    }
 
     func refreshDevices() {
         guard let cstr = BhapticsPlugin_getDevices() else { return }
         let raw = String(cString: cstr)
         Logger.shared.log("BLE_RAW", raw)
-        print("BLE_RAW_UI:", raw)
 
 
         var newDevices: [HDevice] = []
