@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -37,6 +37,7 @@
 		A929859C2FBB473F00B0F0FB /* vCRGloveWatch_Watch_AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929859A2FBB473F00B0F0FB /* vCRGloveWatch_Watch_AppTests.swift */; };
 		A92985A02FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929859D2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift */; };
 		A92985A12FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929859E2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift */; };
+		A94255342FD805BE008B8F73 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A94255332FD805BE008B8F73 /* Localizable.xcstrings */; };
 		A9AE5FDA2E794A6F009F0426 /* Bhaptics in Frameworks */ = {isa = PBXBuildFile; productRef = A9AE5FD92E794A6F009F0426 /* Bhaptics */; };
 		A9DAB74F2E682D3D0053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */; platformFilters = (ios, xros, ); };
 		A9DAB7512E682D590053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB7502E682D590053D51F /* WatchConnectivity.framework */; };
@@ -128,6 +129,7 @@
 		A929859A2FBB473F00B0F0FB /* vCRGloveWatch_Watch_AppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveWatch_Watch_AppTests.swift; sourceTree = "<group>"; };
 		A929859D2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveWatch_Watch_AppUITests.swift; sourceTree = "<group>"; };
 		A929859E2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveWatch_Watch_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		A94255332FD805BE008B8F73 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
 		A9DAB7502E682D590053D51F /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
 		A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "vCRGloveWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -212,6 +214,7 @@
 				A929856F2FBB473200B0F0FB /* vCRGlove.entitlements */,
 				A92985702FBB473200B0F0FB /* vCRGloveApp.swift */,
 				A92985712FBB473200B0F0FB /* VCRView.swift */,
+				A94255332FD805BE008B8F73 /* Localizable.xcstrings */,
 			);
 			path = vCRGlove;
 			sourceTree = "<group>";
@@ -458,11 +461,13 @@
 				};
 			};
 			buildConfigurationList = A9FCFC062E5866AF00BF28B1 /* Build configuration list for PBXProject "vCRGlove" */;
+			compatibilityVersion = "Xcode 15.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				de,
 			);
 			mainGroup = A9FCFC022E5866AF00BF28B1;
 			minimizedProjectReferenceProxies = 1;
@@ -512,6 +517,7 @@
 			files = (
 				A92985842FBB473200B0F0FB /* .gitignore in Resources */,
 				A92985852FBB473200B0F0FB /* Assets.xcassets in Resources */,
+				A94255342FD805BE008B8F73 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -837,6 +843,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -892,6 +899,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};

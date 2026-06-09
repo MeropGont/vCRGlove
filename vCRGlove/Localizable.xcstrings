@@ -1,0 +1,1827 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ glove" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Handschuh"
+          }
+        }
+      }
+    },
+    "%lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
+    },
+    "%lld glove(s) ready" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Handschuh(e) bereit"
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
+    },
+    "😄" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "😄"
+          }
+        }
+      }
+    },
+    "😐" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "😐"
+          }
+        }
+      }
+    },
+    "😣" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "😣"
+          }
+        }
+      }
+    },
+    "🙁" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "🙁"
+          }
+        }
+      }
+    },
+    "🙂" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "🙂"
+          }
+        }
+      }
+    },
+    "2 h" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 h"
+          }
+        }
+      }
+    },
+    "2 hours + 2 hours" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 Stunden + 2 Stunden"
+          }
+        }
+      }
+    },
+    "4 h" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 h"
+          }
+        }
+      }
+    },
+    "4 h session done" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4-h-Sitzung abgeschlossen"
+          }
+        }
+      }
+    },
+    "4 hours once" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einmal 4 Stunden"
+          }
+        }
+      }
+    },
+    "015221500869" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "015221500869"
+          }
+        }
+      }
+    },
+    "Add a note" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notiz hinzufügen"
+          }
+        }
+      }
+    },
+    "Add details" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details hinzufügen"
+          }
+        }
+      }
+    },
+    "ADD NOTE" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NOTIZ HINZUFÜGEN"
+          }
+        }
+      }
+    },
+    "Amplitude" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amplitude"
+          }
+        }
+      }
+    },
+    "Avatar selection will go here." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avatar-Auswahl folgt."
+          }
+        }
+      }
+    },
+    "Backup status" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup-Status"
+          }
+        }
+      }
+    },
+    "Both 2 h sessions done" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beide 2-h-Sitzungen abgeschlossen"
+          }
+        }
+      }
+    },
+    "Calendar" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalender"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbrechen"
+          }
+        }
+      }
+    },
+    "CHECK IN" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CHECK-IN"
+          }
+        }
+      }
+    },
+    "Check-In" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check-in"
+          }
+        }
+      }
+    },
+    "Clear Event Log File" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ereignisprotokolldatei löschen"
+          }
+        }
+      }
+    },
+    "Clear event log file?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ereignisprotokolldatei löschen?"
+          }
+        }
+      }
+    },
+    "Clear History & Fresh Scan" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verlauf löschen & neu suchen"
+          }
+        }
+      }
+    },
+    "Clear Visible Log" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sichtbares Protokoll löschen"
+          }
+        }
+      }
+    },
+    "Complete today" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heute abgeschlossen"
+          }
+        }
+      }
+    },
+    "Connect at least one glove to begin" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbinden Sie mindestens einen Handschuh, um zu beginnen."
+          }
+        }
+      }
+    },
+    "Contact ICNS support" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ICNS-Support kontaktieren"
+          }
+        }
+      }
+    },
+    "Daily Check-In" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Täglicher Check-in"
+          }
+        }
+      }
+    },
+    "Daily check-ins" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tägliche Check-ins"
+          }
+        }
+      }
+    },
+    "Daily Log" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesprotokoll"
+          }
+        }
+      }
+    },
+    "Data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten"
+          }
+        }
+      }
+    },
+    "Day timeline" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesverlauf"
+          }
+        }
+      }
+    },
+    "Default vCR plan" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard-vCR-Plan"
+          }
+        }
+      }
+    },
+    "Device assignment notes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notizen zur Gerätezuordnung"
+          }
+        }
+      }
+    },
+    "Diagnostics" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnostik"
+          }
+        }
+      }
+    },
+    "Disconnect" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trennen"
+          }
+        }
+      }
+    },
+    "Disconnected" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Getrennt"
+          }
+        }
+      }
+    },
+    "Duration, gloves, and session preferences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dauer, Handschuhe und Sitzungseinstellungen"
+          }
+        }
+      }
+    },
+    "Export logs" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokolle exportieren"
+          }
+        }
+      }
+    },
+    "Fingers per cycle" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finger pro Zyklus"
+          }
+        }
+      }
+    },
+    "Frequency" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frequenz"
+          }
+        }
+      }
+    },
+    "Future movement tasks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zukünftige Bewegungsaufgaben"
+          }
+        }
+      }
+    },
+    "Gloves" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handschuhe"
+          }
+        }
+      }
+    },
+    "Gloves disconnected. Stimulation paused. Turn gloves on and scan again to continue." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handschuhe getrennt. Stimulation pausiert. Schalten Sie die Handschuhe ein und suchen Sie erneut, um fortzufahren."
+          }
+        }
+      }
+    },
+    "Gloves disconnected. Turn them on and scan again to continue." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handschuhe getrennt. Schalten Sie sie ein und suchen Sie erneut, um fortzufahren."
+          }
+        }
+      }
+    },
+    "Gloves reconnected. Press Resume to continue." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handschuhe wieder verbunden. Tippen Sie auf Fortsetzen, um weiterzumachen."
+          }
+        }
+      }
+    },
+    "Gloves, vCR, journal, and troubleshooting" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handschuhe, vCR, Journal und Fehlerbehebung"
+          }
+        }
+      }
+    },
+    "Great job. First vCR session complete. One more 2 h session remains today." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gut gemacht. Die erste vCR-Sitzung ist abgeschlossen. Heute bleibt noch eine weitere 2-h-Sitzung."
+          }
+        }
+      }
+    },
+    "Great job. Your 4 h vCR session is complete for today." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gut gemacht. Ihre 4-h-vCR-Sitzung für heute ist abgeschlossen."
+          }
+        }
+      }
+    },
+    "Great job. Your vCR session is complete for today." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gut gemacht. Ihre vCR-Sitzung für heute ist abgeschlossen."
+          }
+        }
+      }
+    },
+    "Hold to Stop" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Stoppen halten"
+          }
+        }
+      }
+    },
+    "How are you today?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie geht es Ihnen heute?"
+          }
+        }
+      }
+    },
+    "ICNS" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ICNS"
+          }
+        }
+      }
+    },
+    "ID" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID"
+          }
+        }
+      }
+    },
+    "ID, icon, and language" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID, Symbol und Sprache"
+          }
+        }
+      }
+    },
+    "If the steps above did not solve the issue, contact ICNS support." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn die Schritte oben das Problem nicht gelöst haben, kontaktieren Sie bitte den ICNS-Support."
+          }
+        }
+      }
+    },
+    "Incorrect password" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falsches Passwort"
+          }
+        }
+      }
+    },
+    "Instructions" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anleitung"
+          }
+        }
+      }
+    },
+    "Journal" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journal"
+          }
+        }
+      }
+    },
+    "Journal reminders" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journal-Erinnerungen"
+          }
+        }
+      }
+    },
+    "Keep this app open during stimulation." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte lassen Sie diese App während der Stimulation geöffnet."
+          }
+        }
+      }
+    },
+    "Language" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprache"
+          }
+        }
+      }
+    },
+    "Language: English / Deutsch" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprache: English / Deutsch"
+          }
+        }
+      }
+    },
+    "Last check-in" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzter Check-in"
+          }
+        }
+      }
+    },
+    "Last saved: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zuletzt gespeichert: %@"
+          }
+        }
+      }
+    },
+    "Latest backup" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letztes Backup"
+          }
+        }
+      }
+    },
+    "Left glove" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linker Handschuh"
+          }
+        }
+      }
+    },
+    "LOG MEDICATION" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MEDIKATION PROTOKOLLIEREN"
+          }
+        }
+      }
+    },
+    "Log OFF periods, tremor, freezing, dyskinesia, or other symptom changes." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokollieren Sie OFF-Phasen, Tremor, Freezing, Dyskinesien oder andere Symptomveränderungen."
+          }
+        }
+      }
+    },
+    "LOG SYMPTOM" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SYMPTOM PROTOKOLLIEREN"
+          }
+        }
+      }
+    },
+    "Log usual, late, missed, or extra medication events." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokollieren Sie reguläre, verspätete, ausgelassene oder zusätzliche Medikamenteneinnahmen."
+          }
+        }
+      }
+    },
+    "Logs" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokolle"
+          }
+        }
+      }
+    },
+    "Logs, exports, backup, and study notes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokolle, Exporte, Backup und Studiennotizen"
+          }
+        }
+      }
+    },
+    "Medication" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medikation"
+          }
+        }
+      }
+    },
+    "Mood, overall symptoms, and symptom list for this day." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimmung, Gesamtsymptome und Symptomliste für diesen Tag."
+          }
+        }
+      }
+    },
+    "Need Help?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brauchen Sie Hilfe?"
+          }
+        }
+      }
+    },
+    "No check-in for this day" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Check-in für diesen Tag"
+          }
+        }
+      }
+    },
+    "No check-in saved yet" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noch kein Check-in gespeichert"
+          }
+        }
+      }
+    },
+    "No entries saved for this day yet." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für diesen Tag sind noch keine Einträge gespeichert."
+          }
+        }
+      }
+    },
+    "Not detected" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht erkannt"
+          }
+        }
+      }
+    },
+    "Note" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notiz"
+          }
+        }
+      }
+    },
+    "One glove disconnected. Stimulation continues with the connected glove." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Handschuh wurde getrennt. vCR läuft mit dem verbundenen Handschuh weiter."
+          }
+        }
+      }
+    },
+    "One glove disconnected. vCR continues with the connected glove." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Handschuh wurde getrennt. vCR läuft mit dem verbundenen Handschuh weiter."
+          }
+        }
+      }
+    },
+    "OPEN DAILY LOG" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAGESPROTOKOLL ÖFFNEN"
+          }
+        }
+      }
+    },
+    "Open iPhone Language Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone-Spracheinstellungen öffnen"
+          }
+        }
+      }
+    },
+    "OPEN TODAY'S LOG" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEUTIGES PROTOKOLL ÖFFNEN"
+          }
+        }
+      }
+    },
+    "Optional note" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionale Notiz"
+          }
+        }
+      }
+    },
+    "Overall symptom intensity" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesamte Symptomstärke"
+          }
+        }
+      }
+    },
+    "Password" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwort"
+          }
+        }
+      }
+    },
+    "Patient" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patient"
+          }
+        }
+      }
+    },
+    "Patient ID" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patienten-ID"
+          }
+        }
+      }
+    },
+    "Patient notes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilnehmernotizen"
+          }
+        }
+      }
+    },
+    "Patients complete one 4-hour vCR session per day." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patienten absolvieren eine 4-stündige vCR-Sitzung pro Tag."
+          }
+        }
+      }
+    },
+    "Patients complete two separate 2-hour vCR sessions per day." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patienten absolvieren zwei getrennte 2-stündige vCR-Sitzungen pro Tag."
+          }
+        }
+      }
+    },
+    "Pause" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausieren"
+          }
+        }
+      }
+    },
+    "Paused" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausiert"
+          }
+        }
+      }
+    },
+    "Permissions" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berechtigungen"
+          }
+        }
+      }
+    },
+    "Permissions, storage, and data handling" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berechtigungen, Speicher und Datenverwaltung"
+          }
+        }
+      }
+    },
+    "Please contact support and briefly describe what was not working." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte kontaktieren Sie den Support und beschreiben Sie kurz, was nicht funktioniert hat."
+          }
+        }
+      }
+    },
+    "Privacy & Data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutz & Daten"
+          }
+        }
+      }
+    },
+    "Profile" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profil"
+          }
+        }
+      }
+    },
+    "Protocol notes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokollnotizen"
+          }
+        }
+      }
+    },
+    "Pulse length" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulsdauer"
+          }
+        }
+      }
+    },
+    "Quiet hours" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruhezeiten"
+          }
+        }
+      }
+    },
+    "Ready" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bereit"
+          }
+        }
+      }
+    },
+    "Reconnect" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut verbinden"
+          }
+        }
+      }
+    },
+    "Record anything unusual or important for this day." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notieren Sie alles Ungewöhnliche oder Wichtige für diesen Tag."
+          }
+        }
+      }
+    },
+    "Refresh Diagnostics" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnostik aktualisieren"
+          }
+        }
+      }
+    },
+    "Reminders" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erinnerungen"
+          }
+        }
+      }
+    },
+    "Research" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forschung"
+          }
+        }
+      }
+    },
+    "Research Admin" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forschungsverwaltung"
+          }
+        }
+      }
+    },
+    "Research Mode" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forschungsmodus"
+          }
+        }
+      }
+    },
+    "Resume" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fortsetzen"
+          }
+        }
+      }
+    },
+    "Right glove" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechter Handschuh"
+          }
+        }
+      }
+    },
+    "Save Check-In" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check-in speichern"
+          }
+        }
+      }
+    },
+    "Save Medication Log" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medikationsprotokoll speichern"
+          }
+        }
+      }
+    },
+    "Save Note" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notiz speichern"
+          }
+        }
+      }
+    },
+    "Save Study Metadata" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studienmetadaten speichern"
+          }
+        }
+      }
+    },
+    "Save Symptom Episode" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Symptomepisode speichern"
+          }
+        }
+      }
+    },
+    "Scan" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen"
+          }
+        }
+      }
+    },
+    "Scan for gloves" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handschuhe suchen"
+          }
+        }
+      }
+    },
+    "Scan for Gloves" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handschuhe suchen"
+          }
+        }
+      }
+    },
+    "SCAN FOR GLOVES" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NACH HANDSCHUHEN SUCHEN"
+          }
+        }
+      }
+    },
+    "Send Email to vcr@uke.de" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-Mail an vcr@uke.de senden"
+          }
+        }
+      }
+    },
+    "Session Plan" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sitzungsplan"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen"
+          }
+        }
+      }
+    },
+    "Share Event Log" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ereignisprotokoll teilen"
+          }
+        }
+      }
+    },
+    "Show Research Tab" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forschungs-Tab anzeigen"
+          }
+        }
+      }
+    },
+    "Something not working?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funktioniert etwas nicht?"
+          }
+        }
+      }
+    },
+    "Start" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starten"
+          }
+        }
+      }
+    },
+    "Still Need Help?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brauchen Sie weiterhin Hilfe?"
+          }
+        }
+      }
+    },
+    "Stimulating" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulation läuft"
+          }
+        }
+      }
+    },
+    "Stimulation Parameters" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulationsparameter"
+          }
+        }
+      }
+    },
+    "Stimulation paused." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulation pausiert."
+          }
+        }
+      }
+    },
+    "Stimulation running" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulation läuft"
+          }
+        }
+      }
+    },
+    "Stop Scan" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suche stoppen"
+          }
+        }
+      }
+    },
+    "STOP SCAN" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SUCHE STOPPEN"
+          }
+        }
+      }
+    },
+    "Stop scanning" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suche stoppen"
+          }
+        }
+      }
+    },
+    "Storage size" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speichergröße"
+          }
+        }
+      }
+    },
+    "Storage status" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speicherstatus"
+          }
+        }
+      }
+    },
+    "Stored data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gespeicherte Daten"
+          }
+        }
+      }
+    },
+    "Study" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studie"
+          }
+        }
+      }
+    },
+    "Study start date" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studienbeginn"
+          }
+        }
+      }
+    },
+    "Symptom" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Symptom"
+          }
+        }
+      }
+    },
+    "Symptom Episode" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Symptomepisode"
+          }
+        }
+      }
+    },
+    "Sync data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten synchronisieren"
+          }
+        }
+      }
+    },
+    "Tap icon to test buzz" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Testen antippen"
+          }
+        }
+      }
+    },
+    "Tap to test buzz" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Testen antippen"
+          }
+        }
+      }
+    },
+    "Task reminders" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgaben-Erinnerungen"
+          }
+        }
+      }
+    },
+    "Tell Us What Happened" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschreiben Sie, was passiert ist"
+          }
+        }
+      }
+    },
+    "This deletes the JSONL event log on this phone and starts a new log with an audit entry." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dies löscht das JSONL-Ereignisprotokoll auf diesem Telefon und startet ein neues Protokoll mit einem Audit-Eintrag."
+          }
+        }
+      }
+    },
+    "This ID is set by the research team." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese ID wird vom Forschungsteam festgelegt."
+          }
+        }
+      }
+    },
+    "Time" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uhrzeit"
+          }
+        }
+      }
+    },
+    "Time remaining" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbleibende Zeit"
+          }
+        }
+      }
+    },
+    "Total duration" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesamtdauer"
+          }
+        }
+      }
+    },
+    "Track daily symptoms, mood, and notes around your vCR sessions." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erfassen Sie tägliche Symptome, Stimmung und Notizen rund um Ihre vCR-Sitzungen."
+          }
+        }
+      }
+    },
+    "Troubleshooting" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehlerbehebung"
+          }
+        }
+      }
+    },
+    "Try This First" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versuchen Sie zuerst Folgendes"
+          }
+        }
+      }
+    },
+    "Turn gloves on" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handschuhe einschalten"
+          }
+        }
+      }
+    },
+    "Turn gloves on and scan again before resuming." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schalten Sie die Handschuhe ein und suchen Sie erneut, bevor Sie fortfahren."
+          }
+        }
+      }
+    },
+    "Unlock Research Mode" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forschungsmodus entsperren"
+          }
+        }
+      }
+    },
+    "vCR" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR"
+          }
+        }
+      }
+    },
+    "vCR %lld of 2" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR %lld von 2"
+          }
+        }
+      }
+    },
+    "vCR complete today" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR heute abgeschlossen"
+          }
+        }
+      }
+    },
+    "vCR preset" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR-Voreinstellung"
+          }
+        }
+      }
+    },
+    "vCR reminders" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR-Erinnerungen"
+          }
+        }
+      }
+    },
+    "vCR session" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR-Sitzung"
+          }
+        }
+      }
+    },
+    "vCR Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR-Einstellungen"
+          }
+        }
+      }
+    },
+    "vCR timing may have been interrupted while the app was not open." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das vCR-Timing wurde möglicherweise unterbrochen, während die App nicht geöffnet war."
+          }
+        }
+      }
+    },
+    "vCR, journal, and task notifications" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR-, Journal- und Aufgabenbenachrichtigungen"
+          }
+        }
+      }
+    },
+    "Verbose BLE debug logging" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausführliches BLE-Debug-Protokoll"
+          }
+        }
+      }
+    },
+    "Verbose BLE logging saves raw bHaptics device snapshots and should only be enabled temporarily during debugging." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausführliches BLE-Protokollieren speichert rohe bHaptics-Geräteschnappschüsse und sollte nur vorübergehend zur Fehlersuche aktiviert werden."
+          }
+        }
+      }
+    },
+    "What is not working?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was funktioniert nicht?"
+          }
+        }
+      }
+    },
+    "What would you like to record?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was möchten Sie erfassen?"
+          }
+        }
+      }
+    },
+    "Which symptoms are present?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welche Symptome sind vorhanden?"
+          }
+        }
+      }
+    },
+    "Your most recent check-in will appear here." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihr letzter Check-in erscheint hier."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.2"
+}

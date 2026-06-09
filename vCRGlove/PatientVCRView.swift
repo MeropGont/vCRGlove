@@ -22,7 +22,7 @@ struct PatientVCRView: View {
     @State private var autoPairAttemptedIDs: Set<String> = []
     @State private var patientSessionActive = false
     @State private var missingActivePositions: Set<String> = []
-    @State private var sessionMessage: String?
+    @State private var sessionMessage: LocalizedStringKey?
     @State private var sessionMonitorTimer: Timer?
     @State private var sessionWasStarted = false
     @State private var sessionPausedForNoGloves = false
@@ -120,12 +120,11 @@ struct PatientVCRView: View {
 
             troubleshootingLink
 
-            Spacer()
-
             Text("Keep this app open during stimulation.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+                .padding(.top, 4)
         }
         .padding()
         .padding(.top, 12)
@@ -353,7 +352,7 @@ struct PatientVCRView: View {
     }
 
     private func sessionActionButton(
-        title: String,
+        title: LocalizedStringKey,
         systemImage: String,
         fill: Color,
         action: @escaping () -> Void
@@ -450,8 +449,13 @@ struct PatientVCRView: View {
             HStack {
                 Image(systemName: vm.scanning ? "stop.circle.fill" : "dot.radiowaves.left.and.right")
 
-                Text(vm.scanning ? "Stop scanning" : "Scan for gloves")
-                    .fontWeight(.semibold)
+                if vm.scanning {
+                    Text("Stop scanning")
+                        .fontWeight(.semibold)
+                } else {
+                    Text("Scan for gloves")
+                        .fontWeight(.semibold)
+                }
 
                 Spacer()
 
@@ -499,7 +503,7 @@ struct PatientVCRView: View {
                 }
 
 
-            Text("\(title) glove")
+            Text(title == "Left" ? "Left glove" : "Right glove")
                 .font(.headline)
 
             Text(statusText(for: glove, isStimulating: isStimulating))
@@ -556,17 +560,13 @@ struct PatientVCRView: View {
         return .secondary
     }
 
-    private func statusText(for glove: HDevice?, isStimulating: Bool) -> String {
+    private func statusText(for glove: HDevice?, isStimulating: Bool) -> LocalizedStringKey {
         if isStimulating {
             return "Stimulating"
         }
 
         if glove?.isReadyForStimulation == true {
             return "Ready"
-        }
-
-        if glove == nil {
-            return "Not detected"
         }
 
         return "Disconnected"
@@ -746,7 +746,7 @@ struct PatientVCRView: View {
         return "\(c.year ?? 0)-\(c.month ?? 0)-\(c.day ?? 0)"
     }
 
-    private func completionMessageForCurrentPlan() -> String {
+    private func completionMessageForCurrentPlan() -> LocalizedStringKey {
         guard vcrSessionPlan == "twoByTwo" else {
             return "Great job. Your vCR session is complete for today."
         }
@@ -784,7 +784,7 @@ struct PatientVCRView: View {
         min(completedSplitSessionsToday + 1, 2)
     }
 
-    private var idleSessionTitle: String {
+    private var idleSessionTitle: LocalizedStringKey {
         if isVCRCompleteToday {
             return "vCR complete today"
         }
@@ -796,7 +796,7 @@ struct PatientVCRView: View {
         return "vCR session"
     }
 
-    private var idleSessionSubtitle: String {
+    private var idleSessionSubtitle: LocalizedStringKey {
         if isVCRCompleteToday {
             return vcrSessionPlan == "twoByTwo" ? "Both 2 h sessions done" : "4 h session done"
         }
@@ -804,11 +804,11 @@ struct PatientVCRView: View {
         return vcrSessionPlan == "twoByTwo" ? "2 h" : "4 h"
     }
 
-    private var startButtonTitle: String {
+    private var startButtonTitle: LocalizedStringKey {
         isVCRCompleteToday ? "Complete today" : "Start"
     }
 
-    private func setupStep(_ number: String, _ text: String) -> some View {
+    private func setupStep(_ number: String, _ text: LocalizedStringKey) -> some View {
         HStack(spacing: 6) {
             Text(number)
                 .font(.caption.bold())

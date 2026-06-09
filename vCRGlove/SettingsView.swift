@@ -96,8 +96,8 @@ struct SettingsView: View {
 private struct SettingsRow: View {
     let icon: String
     let color: Color
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
 
     var body: some View {
         HStack(spacing: 14) {
@@ -209,14 +209,39 @@ private struct ProfileSettingsView: View {
             }
 
             Section("Profile") {
-                Text("Language: English / Deutsch")
-                    .foregroundStyle(.secondary)
+                NavigationLink {
+                    LanguageSettingsView()
+                } label: {
+                    HStack {
+                        Text("Language")
+                        Spacer()
+                        Text(Locale.current.localizedString(forIdentifier: Locale.current.identifier) ?? Locale.current.identifier)
+                            .foregroundStyle(.secondary)
+                    }
+                }
 
                 Text("Avatar selection will go here.")
                     .foregroundStyle(.secondary)
             }
         }
         .navigationTitle("Profile")
+    }
+}
+
+private struct LanguageSettingsView: View {
+    var body: some View {
+        List {
+            Section {
+                Button {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    Label("Open iPhone Language Settings", systemImage: "globe")
+                }
+            }
+        }
+        .navigationTitle("Language")
     }
 }
 

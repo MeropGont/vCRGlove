@@ -139,7 +139,7 @@ final class GloveVM: ObservableObject {
     @Published var pausedPositions: Set<String> = []
     
     // deal with possible interruptions
-    @Published var timingCompromiseMessage: String?
+    @Published var timingCompromiseMessage: LocalizedStringKey?
 
     private var backgroundedDuringStimulationAt: Date?
     private var stimulationBackgroundTask: UIBackgroundTaskIdentifier = .invalid

@@ -150,7 +150,7 @@ struct LogsPanel: View {
 
 // MARK: - LabeledSlider
 struct LabeledSlider: View {
-    let title: String
+    let title: LocalizedStringKey
     @Binding var value: Double
     let range: ClosedRange<Double>
     let step: Double
@@ -184,7 +184,7 @@ struct VCRView: View {
     @State private var stopProgress: Double = 0
     @State private var stopTimer: Timer?
     @State private var sessionMonitorTimer: Timer?
-    @State private var sessionMessage: String?
+    @State private var sessionMessage: LocalizedStringKey?
     @State private var sessionPausedForNoGloves = false
     @State private var autoPairAttemptedIDs: Set<String> = []
 
@@ -308,7 +308,7 @@ struct VCRView: View {
                     vm.testBuzz(device: glove)
                 }
 
-            Text("\(title) glove")
+            Text(title == "Left" ? "Left glove" : "Right glove")
                 .font(.headline)
 
             Text(statusText(for: glove, isActive: isActive))
@@ -721,10 +721,9 @@ struct VCRView: View {
         return .gray.opacity(0.35)
     }
 
-    private func statusText(for glove: HDevice?, isActive: Bool) -> String {
+    private func statusText(for glove: HDevice?, isActive: Bool) -> LocalizedStringKey {
         if isActive { return "Stimulating" }
         if glove?.isReadyForStimulation == true { return "Ready" }
-        if glove == nil { return "Not detected" }
         return "Disconnected"
     }
 
