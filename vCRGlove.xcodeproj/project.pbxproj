@@ -7,10 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A9AE5FDA2E794A6F009F0426 /* Bhaptics in Frameworks */ = {isa = PBXBuildFile; productRef = A9AE5FD92E794A6F009F0426 /* Bhaptics */; };
 		A9DAB74F2E682D3D0053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */; platformFilters = (ios, xros, ); };
 		A9DAB7512E682D590053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB7502E682D590053D51F /* WatchConnectivity.framework */; };
 		A9EFEB472E6309090081A6C7 /* vCRGloveWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D61597EE2FC464AC00885F32 /* Bhaptics in Frameworks */ = {isa = PBXBuildFile; productRef = D61597ED2FC464AC00885F32 /* Bhaptics */; };
+		D6AB6C932FCB7CA300602F46 /* ParkinsonMetadata in Frameworks */ = {isa = PBXBuildFile; productRef = D6AB6C922FCB7CA300602F46 /* ParkinsonMetadata */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -150,8 +151,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A9AE5FDA2E794A6F009F0426 /* Bhaptics in Frameworks */,
+				D61597EE2FC464AC00885F32 /* Bhaptics in Frameworks */,
 				A9DAB74F2E682D3D0053D51F /* WatchConnectivity.framework in Frameworks */,
+				D6AB6C932FCB7CA300602F46 /* ParkinsonMetadata in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,7 +301,8 @@
 			);
 			name = vCRGlove;
 			packageProductDependencies = (
-				A9AE5FD92E794A6F009F0426 /* Bhaptics */,
+				D61597ED2FC464AC00885F32 /* Bhaptics */,
+				D6AB6C922FCB7CA300602F46 /* ParkinsonMetadata */,
 			);
 			productName = vCRGlove;
 			productReference = A9FCFC0B2E5866AF00BF28B1 /* vCRGlove.app */;
@@ -395,7 +398,8 @@
 			mainGroup = A9FCFC022E5866AF00BF28B1;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */,
+				D61597EC2FC42EA000885F32 /* XCRemoteSwiftPackageReference "bhaptics-ios" */,
+				D6AB6C912FCB7CA300602F46 /* XCLocalSwiftPackageReference "../../../../../../LOCAL/Metadata/ParkinsonMetadata" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A9FCFC0C2E5866AF00BF28B1 /* Products */;
@@ -538,7 +542,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				DEVELOPMENT_TEAM = X8H2U93QTD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
@@ -571,7 +575,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				DEVELOPMENT_TEAM = X8H2U93QTD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
@@ -802,7 +806,7 @@
 				CODE_SIGN_ENTITLEMENTS = vCRGlove/vCRGlove.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				DEVELOPMENT_TEAM = X8H2U93QTD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = vCRGlove/Info.plist;
@@ -824,21 +828,22 @@
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "\"\"";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "\"\" UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fatemeh.vcr.vCRGlove;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 2.5;
 			};
 			name = Debug;
@@ -851,7 +856,7 @@
 				CODE_SIGN_ENTITLEMENTS = vCRGlove/vCRGlove.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				DEVELOPMENT_TEAM = X8H2U93QTD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = vCRGlove/Info.plist;
@@ -873,21 +878,22 @@
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "\"\"";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "\"\" UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.5;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fatemeh.vcr.vCRGlove;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 2.5;
 			};
 			name = Release;
@@ -1051,17 +1057,32 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */ = {
+		D6AB6C912FCB7CA300602F46 /* XCLocalSwiftPackageReference "../../../../../../LOCAL/Metadata/ParkinsonMetadata" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../Downloads/bhaptics-ios-0.2.0";
+			relativePath = ../../../../../../LOCAL/Metadata/ParkinsonMetadata;
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		D61597EC2FC42EA000885F32 /* XCRemoteSwiftPackageReference "bhaptics-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/bhaptics/bhaptics-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
-		A9AE5FD92E794A6F009F0426 /* Bhaptics */ = {
+		D61597ED2FC464AC00885F32 /* Bhaptics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */;
+			package = D61597EC2FC42EA000885F32 /* XCRemoteSwiftPackageReference "bhaptics-ios" */;
 			productName = Bhaptics;
+		};
+		D6AB6C922FCB7CA300602F46 /* ParkinsonMetadata */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ParkinsonMetadata;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -1,3 +1,10 @@
+//
+//  DailyCheckInView.swift
+//  vCRGlove
+//
+//  Created by Tactile Glove on 27.04.26.
+//
+
 import SwiftUI
 
 struct DailyCheckInView: View {

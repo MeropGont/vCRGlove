@@ -27,9 +27,9 @@ struct vCRGloveApp: App {
     init() {
         _ = PhoneWC.shared
 
-        if let url = EventStore.shared.fileURL() {
-            print("Event log file:", url.path)
-        }
+        _ = AppDeviceIdentifier.ensureCreated()
+
+        _ = ParkinsonMetadataStore.shared
     }
 
     var body: some Scene {

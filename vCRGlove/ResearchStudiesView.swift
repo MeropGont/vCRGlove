@@ -11,6 +11,7 @@ import SwiftUI
 // ---------------------------------------------------------------------
 // MARK: Study Models
 // ---------------------------------------------------------------------
+// --> this is just to make cohort management easier -- TODO
 
 struct StudyListDocument: Codable {
     var schemaVersion = 1
@@ -22,10 +23,43 @@ struct StudyDesign: Identifiable, Codable, Equatable {
     var id = UUID()
     var studyId: String
     var cohorts: [String] = []
+    var ukeStudySupervisor: String?
+    var statusLabels: [String] = []
     var pseudonymScheme: StudyIdentifierScheme?
-    var deviceIdScheme: StudyIdentifierScheme?
     var createdAt = Date()
     var updatedAt = Date()
+
+    init(
+        id: UUID = UUID(),
+        studyId: String,
+        cohorts: [String] = [],
+        ukeStudySupervisor: String? = nil,
+        statusLabels: [String] = [],
+        pseudonymScheme: StudyIdentifierScheme? = nil,
+        createdAt: Date = Date(),
+        updatedAt: Date = Date()
+    ) {
+        self.id = id
+        self.studyId = studyId
+        self.cohorts = cohorts
+        self.ukeStudySupervisor = ukeStudySupervisor
+        self.statusLabels = statusLabels
+        self.pseudonymScheme = pseudonymScheme
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        studyId = try container.decode(String.self, forKey: .studyId)
+        cohorts = try container.decodeIfPresent([String].self, forKey: .cohorts) ?? []
+        ukeStudySupervisor = try container.decodeIfPresent(String.self, forKey: .ukeStudySupervisor)
+        statusLabels = try container.decodeIfPresent([String].self, forKey: .statusLabels) ?? []
+        pseudonymScheme = try container.decodeIfPresent(StudyIdentifierScheme.self, forKey: .pseudonymScheme)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+    }
 }
 
 struct StudyIdentifierScheme: Codable, Equatable {
@@ -57,6 +91,45 @@ enum StudyIdentifierStartKind: String, CaseIterable, Codable, Identifiable {
 
 struct StudyIdentifierCountUp: Codable, Equatable {
     var startValue: Int
+}
+
+extension StudyIdentifierScheme {
+    func exampleValue(allowsCountUp: Bool) -> String {
+        generatedValue(allowsCountUp: allowsCountUp)
+    }
+
+    func generatedValue(allowsCountUp: Bool, countUpValue: Int? = nil) -> String {
+        let core: String
+        if allowsCountUp, let countUp {
+            core = String(format: "%0\(length)d", countUpValue ?? countUp.startValue).suffix(length).description
+        } else {
+            core = randomCore()
+        }
+
+        return [prefix, core, suffix]
+            .compactMap { $0?.nilIfBlank }
+            .joined()
+    }
+
+    private func randomCore() -> String {
+        let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        let numerals = "0123456789"
+        var value = ""
+
+        if let startRule {
+            let source = startRule.kind == .letters ? alphabet : numerals
+            for _ in 0..<min(startRule.count, length) {
+                value.append(source.randomElement() ?? "A")
+            }
+        }
+
+        while value.count < length {
+            let source = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+            value.append(source.randomElement() ?? "0")
+        }
+
+        return String(value.prefix(length))
+    }
 }
 
 // ---------------------------------------------------------------------
@@ -187,7 +260,7 @@ private extension JSONEncoder {
 }
 
 // ---------------------------------------------------------------------
-// MARK: Studies List
+// MARK: Studies List UI
 // ---------------------------------------------------------------------
 
 struct ResearchStudiesView: View {
@@ -229,8 +302,6 @@ struct ResearchStudiesView: View {
                     }
                     .onDelete(perform: store.delete)
                 }
-            } header: {
-                Text("Known Studies")
             }
         }
         .navigationTitle("Studies")
@@ -289,9 +360,6 @@ struct ResearchStudiesView: View {
                     if study.pseudonymScheme != nil {
                         Label("Pseudonym", systemImage: "person.text.rectangle")
                     }
-                    if study.deviceIdScheme != nil {
-                        Label("Device ID", systemImage: "barcode.viewfinder")
-                    }
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -324,10 +392,13 @@ private struct StudyEditorSheet: View {
     @State private var studyId = ""
     @State private var includeCohorts = false
     @State private var cohorts: [String] = [""]
+    @State private var ukeStudySupervisor = ""
+    @State private var includeStatusLabels = false
+    @State private var statusLabels = Self.defaultStatusLabels
     @State private var includePseudonymScheme = false
     @State private var pseudonymScheme = StudyIdentifierSchemeDraft.pseudonymDefault
-    @State private var includeDeviceIdScheme = false
-    @State private var deviceIdScheme = StudyIdentifierSchemeDraft.deviceDefault
+
+    private static let defaultStatusLabels = ["Erhebungsphase", "Beendet", "Ausgeschlossen", "Auswertung"]
 
     private var isSaveEnabled: Bool {
         !studyId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -374,6 +445,43 @@ private struct StudyEditorSheet: View {
                             }
                         }
                     }
+
+                    TextField("UKE Study Supervisor Name", text: $ukeStudySupervisor)
+                        .textInputAutocapitalization(.words)
+                        .submitLabel(.done)
+
+                    optionalSelectionRow(isSelected: statusLabelsSelectionBinding) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Text("Status Labels")
+                                Spacer()
+                                Button {
+                                    statusLabels.append("")
+                                } label: {
+                                    Image(systemName: "plus")
+                                }
+                                .buttonStyle(.borderless)
+                                .accessibilityLabel("Add Status Label")
+                            }
+
+                            ForEach(statusLabels.indices, id: \.self) { index in
+                                HStack {
+                                    TextField("Status Label", text: statusLabelBinding(at: index))
+                                        .submitLabel(.done)
+
+                                    if statusLabels.count > 1 {
+                                        Button(role: .destructive) {
+                                            statusLabels.remove(at: index)
+                                        } label: {
+                                            Image(systemName: "minus.circle")
+                                        }
+                                        .buttonStyle(.borderless)
+                                        .accessibilityLabel("Remove Status Label")
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 schemeSection(
@@ -382,14 +490,6 @@ private struct StudyEditorSheet: View {
                     draft: $pseudonymScheme,
                     allowsCountUp: true,
                     previewTitle: "Example Pseudonym"
-                )
-
-                schemeSection(
-                    title: "Device ID Scheme",
-                    isSelected: $includeDeviceIdScheme,
-                    draft: $deviceIdScheme,
-                    allowsCountUp: false,
-                    previewTitle: "Example Device ID"
                 )
             }
             .navigationTitle(study == nil ? "New Study" : "Edit Study")
@@ -432,7 +532,7 @@ private struct StudyEditorSheet: View {
             if isSelected.wrappedValue {
                 Stepper("Length: \(draft.wrappedValue.length)", value: draft.length, in: 4...16)
 
-                Toggle("Start with", isOn: draft.includeStartRule)
+                Toggle("Start with", isOn: mutuallyExclusiveStartRuleBinding(for: draft, allowsCountUp: allowsCountUp))
                 if draft.wrappedValue.includeStartRule {
                     Stepper("Characters: \(draft.wrappedValue.startCount)", value: draft.startCount, in: 1...3)
                     Picker("Type", selection: draft.startKind) {
@@ -459,7 +559,7 @@ private struct StudyEditorSheet: View {
                 }
 
                 if allowsCountUp {
-                    Toggle("Count Up", isOn: draft.includeCountUp)
+                    Toggle("Count Up", isOn: mutuallyExclusiveCountUpBinding(for: draft))
                     if draft.wrappedValue.includeCountUp {
                         Stepper("Start Value: \(draft.wrappedValue.countUpStart)", value: draft.countUpStart, in: 0...999_999)
                     }
@@ -494,6 +594,18 @@ private struct StudyEditorSheet: View {
         }
     }
 
+    private var statusLabelsSelectionBinding: Binding<Bool> {
+        Binding(
+            get: { includeStatusLabels },
+            set: { isSelected in
+                includeStatusLabels = isSelected
+                if isSelected && cleanedStatusLabels().isEmpty {
+                    statusLabels = Self.defaultStatusLabels
+                }
+            }
+        )
+    }
+
     private func cohortBinding(at index: Int) -> Binding<String> {
         Binding(
             get: { cohorts.indices.contains(index) ? cohorts[index] : "" },
@@ -505,10 +617,48 @@ private struct StudyEditorSheet: View {
         )
     }
 
+    private func statusLabelBinding(at index: Int) -> Binding<String> {
+        Binding(
+            get: { statusLabels.indices.contains(index) ? statusLabels[index] : "" },
+            set: { newValue in
+                guard statusLabels.indices.contains(index) else { return }
+                statusLabels[index] = newValue
+                includeStatusLabels = true
+            }
+        )
+    }
+
     private func limitedText(_ binding: Binding<String>, maxLength: Int) -> Binding<String> {
         Binding(
             get: { binding.wrappedValue },
             set: { binding.wrappedValue = String($0.prefix(maxLength)) }
+        )
+    }
+
+    private func mutuallyExclusiveStartRuleBinding(
+        for draft: Binding<StudyIdentifierSchemeDraft>,
+        allowsCountUp: Bool
+    ) -> Binding<Bool> {
+        Binding(
+            get: { draft.wrappedValue.includeStartRule },
+            set: { isOn in
+                draft.wrappedValue.includeStartRule = isOn
+                if allowsCountUp && isOn {
+                    draft.wrappedValue.includeCountUp = false
+                }
+            }
+        )
+    }
+
+    private func mutuallyExclusiveCountUpBinding(for draft: Binding<StudyIdentifierSchemeDraft>) -> Binding<Bool> {
+        Binding(
+            get: { draft.wrappedValue.includeCountUp },
+            set: { isOn in
+                draft.wrappedValue.includeCountUp = isOn
+                if isOn {
+                    draft.wrappedValue.includeStartRule = false
+                }
+            }
         )
     }
 
@@ -517,26 +667,35 @@ private struct StudyEditorSheet: View {
         studyId = study.studyId
         cohorts = study.cohorts.isEmpty ? [""] : study.cohorts
         includeCohorts = !study.cohorts.isEmpty
+        ukeStudySupervisor = study.ukeStudySupervisor ?? ""
+        statusLabels = study.statusLabels.isEmpty ? Self.defaultStatusLabels : study.statusLabels
+        includeStatusLabels = !study.statusLabels.isEmpty
         includePseudonymScheme = study.pseudonymScheme != nil
         pseudonymScheme = study.pseudonymScheme.map(StudyIdentifierSchemeDraft.init) ?? .pseudonymDefault
-        includeDeviceIdScheme = study.deviceIdScheme != nil
-        deviceIdScheme = study.deviceIdScheme.map(StudyIdentifierSchemeDraft.init) ?? .deviceDefault
     }
 
     private func makeStudy() -> StudyDesign {
         let cleanedCohorts = cohorts
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
+        let cleanedStatusLabels = cleanedStatusLabels()
 
         return StudyDesign(
             id: study?.id ?? UUID(),
             studyId: studyId.trimmingCharacters(in: .whitespacesAndNewlines),
             cohorts: includeCohorts ? cleanedCohorts : [],
+            ukeStudySupervisor: ukeStudySupervisor.nilIfBlank,
+            statusLabels: includeStatusLabels ? cleanedStatusLabels : [],
             pseudonymScheme: includePseudonymScheme ? pseudonymScheme.makeScheme(allowsCountUp: true) : nil,
-            deviceIdScheme: includeDeviceIdScheme ? deviceIdScheme.makeScheme(allowsCountUp: false) : nil,
             createdAt: study?.createdAt ?? Date(),
             updatedAt: Date()
         )
+    }
+
+    private func cleanedStatusLabels() -> [String] {
+        statusLabels
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
     }
 }
 
@@ -562,19 +721,6 @@ private struct StudyIdentifierSchemeDraft: Equatable {
         includeSuffix: false,
         suffix: "",
         includeCountUp: true,
-        countUpStart: 101
-    )
-
-    static let deviceDefault = StudyIdentifierSchemeDraft(
-        length: 16,
-        includeStartRule: false,
-        startCount: 1,
-        startKind: .letters,
-        includePrefix: false,
-        prefix: "",
-        includeSuffix: false,
-        suffix: "",
-        includeCountUp: false,
         countUpStart: 101
     )
 

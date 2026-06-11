@@ -9,42 +9,49 @@ import SwiftUI
 
 struct MainTabView: View {
     @StateObject private var gloveVM = GloveVM()
-    @StateObject private var mappStore = MappStorageStore.shared
+    @StateObject private var mappStore = ParkinsonMetadataStore.shared
     @AppStorage("showResearchTab") private var showResearchTab = false
     @AppStorage("patientID") private var patientID = ""
+    @AppStorage("appearanceMode") private var appearanceMode = AppAppearanceMode.auto.rawValue
+    @AppStorage("researchSettingsUnlocked") private var researchSettingsUnlocked = false
+    @AppStorage("researchAutoLockEnabled") private var researchAutoLockEnabled = true
+    @AppStorage("researchAutoLockDeadline") private var researchAutoLockDeadlineTimestamp = 0.0
     @Environment(\.scenePhase) private var scenePhase
 
 
     var body: some View {
-        TabView {
-            NavigationStack {
-                PatientVCRView(vm: gloveVM)
-            }
-            .tabItem {
-                Label("vCR", systemImage: "waveform.path.ecg")
-            }
-
-            if showResearchTab {
+        TimelineView(.periodic(from: Foundation.Date.now, by: 10)) { context in
+            TabView {
                 NavigationStack {
-                    VCRView(vm: gloveVM)
+                    PatientVCRView(vm: gloveVM)
                 }
                 .tabItem {
-                    Label("Research", systemImage: "slider.horizontal.3")
+                    Label("vCR", systemImage: "waveform.path.ecg")
                 }
-            }
 
-            NavigationStack {
-                JournalHomeView()
-            }
-            .tabItem {
-                Label("Journal", systemImage: "book.fill")
-            }
+                if showResearchTab {
+                    NavigationStack {
+                        VCRView(vm: gloveVM)
+                    }
+                    .tabItem {
+                        Label("Research", systemImage: "slider.horizontal.3")
+                    }
+                }
 
-            NavigationStack {
-                SettingsView()
-            }
-            .tabItem {
-                Label("Settings", systemImage: "gearshape.fill")
+                NavigationStack {
+                    JournalHomeView()
+                }
+                .tabItem {
+                    Label("Journal", systemImage: "book.fill")
+                }
+
+                NavigationStack {
+                    SettingsView()
+                }
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape.fill")
+                }
+                .badge(settingsTabBadge(at: context.date))
             }
         }
         .onAppear {
@@ -62,12 +69,22 @@ struct MainTabView: View {
             }
             .interactiveDismissDisabled(true)
         }
+        .preferredColorScheme(AppAppearanceMode(rawValue: appearanceMode)?.colorScheme)
     }
 
     private var needsPatientBinding: Binding<Bool> {
         Binding(
             get: { mappStore.activePatient == nil },
             set: { _ in }
+        )
+    }
+
+    private func settingsTabBadge(at date: Foundation.Date) -> String? {
+        ResearchModeAccess.remainingMinutesBadge(
+            unlocked: researchSettingsUnlocked,
+            autoLockEnabled: researchAutoLockEnabled,
+            autoLockDeadlineTimestamp: researchAutoLockDeadlineTimestamp,
+            at: date
         )
     }
 

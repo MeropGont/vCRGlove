@@ -37,6 +37,9 @@ private enum AvatarEmojiTopic: String, CaseIterable, Identifiable {
     }
 }
 
+// ---------------------------------------------------------------------
+// MARK: Avatar Selection UI
+// ---------------------------------------------------------------------
 struct AvatarSelectionSheet: View {
     @Binding var avatarStorage: String
     @Environment(\.dismiss) private var dismiss
@@ -110,10 +113,10 @@ struct AvatarSelectionSheet: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
+                        Image(systemName: "checkmark")
                             .imageScale(.large)
                     }
-                    .accessibilityLabel("Close")
+                    .accessibilityLabel("Confirm avatar")
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -166,19 +169,27 @@ struct AvatarSelectionSheet: View {
                     }
 
                 Button {
-                    withAnimation(.snappy) {
-                        searchText = ""
-                        isSearchExpanded = false
-                    }
-                    isSearchFocused = false
+                    closeSearch()
                 } label: {
-                    Image(systemName: "xmark")
-                        .imageScale(.small)
+                    Image(systemName: "xmark.circle.fill")
+                        .imageScale(.medium)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Dismiss search")
+                .accessibilityLabel("Clear and close search")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func closeSearch() {
+        searchText = ""
+        isSearchFocused = false
+
+        withAnimation(.snappy) {
+            isSearchExpanded = false
         }
     }
 

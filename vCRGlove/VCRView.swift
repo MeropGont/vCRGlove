@@ -1,3 +1,10 @@
+//
+//  VCRView.swift
+//  vCRGlove
+//
+//  Created by Tactile Glove on 22.08.25.
+//
+
 import SwiftUI
 import Combine
 
@@ -114,7 +121,7 @@ struct LogsPanel: View {
                     .padding(.vertical, 12)
                     .id("bottom")
                 }
-                .onChange(of: logger.entries.count) { _ in
+                .onChange(of: logger.entries.count) { _, _ in
                     withAnimation { proxy.scrollTo("bottom", anchor: .bottom) }
                 }
             }
@@ -156,6 +163,7 @@ struct LabeledSlider: View {
 // MARK: - ContentView (changed to VCRView)
 struct VCRView: View {
     @ObservedObject var vm: GloveVM
+    @Environment(\.colorScheme) private var colorScheme
     @StateObject private var logger = Logger.shared
     @State private var stopProgress: Double = 0
     @State private var stopTimer: Timer?
@@ -232,9 +240,13 @@ struct VCRView: View {
 
     private var gloveStatusGrid: some View {
         HStack(spacing: 14) {
-            gloveStatusCard(title: "Left", assetName: "glove_L_icon", glove: leftGlove)
-            gloveStatusCard(title: "Right", assetName: "glove_R_icon", glove: rightGlove)
+            gloveStatusCard(title: "Left", assetName: gloveAssetName(lightName: "glove_L_icon", darkName: "glove_L_white"), glove: leftGlove)
+            gloveStatusCard(title: "Right", assetName: gloveAssetName(lightName: "glove_R_icon", darkName: "glove_R_white"), glove: rightGlove)
         }
+    }
+
+    private func gloveAssetName(lightName: String, darkName: String) -> String {
+        colorScheme == .dark ? darkName : lightName
     }
 
     private func gloveStatusCard(title: String, assetName: String, glove: HDevice?) -> some View {
@@ -431,7 +443,7 @@ struct VCRView: View {
     }
 
     private func startAll() {
-        for device in readyDevices {
+        for _ in readyDevices {
             vm.startVibrationWithFingerCheck(positions: readyDevices.map(\.pos))
         }
     }

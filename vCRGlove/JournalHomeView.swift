@@ -32,6 +32,9 @@ struct JournalHomeView: View {
             }
             .padding()
         }
+        .onAppear {
+            store.reloadFromDatabase()
+        }
     }
 
     private var dailyCheckInCard: some View {

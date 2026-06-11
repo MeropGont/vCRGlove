@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PatientVCRView: View {
     @ObservedObject var vm: GloveVM
+    @Environment(\.colorScheme) private var colorScheme
     
     @AppStorage("patientID") private var patientID = ""
 
@@ -104,49 +105,50 @@ struct PatientVCRView: View {
 
 
     var body: some View {
-        VStack(spacing: 18) {
-            VStack(spacing: 6) {
-                Text("vCR Session")
-                    .font(.largeTitle.bold())
+        ScrollView {
+            VStack(spacing: 18) {
+                VStack(spacing: 6) {
+                    Text("vCR Session")
+                        .font(.largeTitle.bold())
 
-                Text(statusText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    Text(statusText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    
+                    if let sessionMessage {
+                        Text(sessionMessage)
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                            .multilineTextAlignment(.center)
+                    }
+
+                }
                 
-                if let sessionMessage {
-                    Text(sessionMessage)
+                if let timingCompromiseMessage = vm.timingCompromiseMessage {
+                    Text(timingCompromiseMessage)
                         .font(.caption)
                         .foregroundStyle(.orange)
                         .multilineTextAlignment(.center)
                 }
 
-            }
-            
-            if let timingCompromiseMessage = vm.timingCompromiseMessage {
-                Text(timingCompromiseMessage)
-                    .font(.caption)
-                    .foregroundStyle(.orange)
+
+                scanButton
+
+                gloveStatusGrid
+
+                sessionCard
+                
+                troubleshootingLink
+
+                Text("Keep this app open during stimulation.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
-
-
-            scanButton
-
-            gloveStatusGrid
-
-            sessionCard
-            
-            troubleshootingLink
-
-            Spacer()
-
-            Text("Keep this app open during stimulation.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            .padding()
+            .padding(.bottom, 24)
         }
-        .padding()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .navigationBar)
         .onAppear {
@@ -434,9 +436,13 @@ struct PatientVCRView: View {
 
     private var gloveStatusGrid: some View {
         HStack(spacing: 14) {
-            gloveStatusCard(title: "Left", assetName: "glove_L_icon", glove: leftGlove)
-            gloveStatusCard(title: "Right", assetName: "glove_R_icon", glove: rightGlove)
+            gloveStatusCard(title: "Left", assetName: gloveAssetName(lightName: "glove_L_icon", darkName: "glove_L_white"), glove: leftGlove)
+            gloveStatusCard(title: "Right", assetName: gloveAssetName(lightName: "glove_R_icon", darkName: "glove_R_white"), glove: rightGlove)
         }
+    }
+
+    private func gloveAssetName(lightName: String, darkName: String) -> String {
+        colorScheme == .dark ? darkName : lightName
     }
     private func gloveFrameColor(isReady: Bool, isStimulating: Bool) -> Color {
         if isStimulating {
@@ -524,7 +530,7 @@ struct PatientVCRView: View {
         applyPatientPreset()
         vm.clearTimingCompromiseWarning()
 
-        for glove in readyGloves {
+        for _ in readyGloves {
             vm.startVibrationWithFingerCheck(positions: readyGloves.map(\.pos))
         }
         

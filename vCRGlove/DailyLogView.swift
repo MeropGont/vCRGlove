@@ -40,6 +40,9 @@ struct DailyLogView: View {
         }
         .navigationTitle("Daily Log")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            store.reloadFromDatabase()
+        }
     }
 
     private var dailyCheckInCard: some View {

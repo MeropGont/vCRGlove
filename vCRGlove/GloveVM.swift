@@ -1,3 +1,10 @@
+//
+//  GloveVM.swift
+//  vCRGlove
+//
+//  Created by Tactile Glove on 27.04.26.
+//
+
 import Foundation
 import SwiftUI
 import UIKit
@@ -360,7 +367,7 @@ final class GloveVM: ObservableObject {
 
         var byId: [String: HDevice] = [:]
         for d in newDevices { byId[d.id] = d }
-        var unique = Array(byId.values)
+        let unique = Array(byId.values)
 
         self.devices = unique.sorted { ($0.position ?? "") < ($1.position ?? "") }
     }
@@ -473,6 +480,15 @@ final class GloveVM: ObservableObject {
         activeStimPositions.insert(position)
         updateIdleTimerLock()
 
+        ParkinsonMetadataStore.shared.saveStimulationSettings(
+            amplitude: amp,
+            frequencyHz: freq,
+            pulseMs: Double(pMs),
+            totalSeconds: Double(sessionSeconds),
+            fingersPerCycle: fingers,
+            vcrPreset: vcrMode
+        )
+        ParkinsonMetadataStore.shared.saveGloveSnapshot(reason: "stimulation_started", devices: devices)
         Logger.shared.log("vCR", "Start vibration @ \(position) [total=\(sessionSeconds)s]")
     }
 
@@ -496,6 +512,7 @@ final class GloveVM: ObservableObject {
             endStimulationBackgroundTaskIfNeeded()
         }
 
+        ParkinsonMetadataStore.shared.saveGloveSnapshot(reason: "stimulation_stopped", devices: devices)
         Logger.shared.log("vCR", "Stopped vibration @ \(position)")
     }
 
@@ -573,7 +590,7 @@ final class GloveVM: ObservableObject {
 
     // MARK: - Low-level motor helpers
     private func sendBurstAll(position: String, strength: UInt8, burstMs: Int) {
-        var arr = [UInt8](repeating: strength, count: 20)
+        let arr = [UInt8](repeating: strength, count: 20)
         position.withCString { pstr in
             arr.withUnsafeBufferPointer { buf in
                 if let base = buf.baseAddress {
@@ -621,7 +638,7 @@ final class GloveVM: ObservableObject {
 
 
     private func sendAllOff(position: String) {
-        var off = [UInt8](repeating: 0, count: 20)
+        let off = [UInt8](repeating: 0, count: 20)
         position.withCString { pstr in
             off.withUnsafeBufferPointer { buf in
                 if let base = buf.baseAddress {
