@@ -9,7 +9,9 @@ import SwiftUI
 
 struct MainTabView: View {
     @StateObject private var gloveVM = GloveVM()
+    @StateObject private var mappStore = MappStorageStore.shared
     @AppStorage("showResearchTab") private var showResearchTab = false
+    @AppStorage("patientID") private var patientID = ""
     @Environment(\.scenePhase) private var scenePhase
 
 
@@ -45,9 +47,32 @@ struct MainTabView: View {
                 Label("Settings", systemImage: "gearshape.fill")
             }
         }
+        .onAppear {
+            syncPatientID()
+        }
         .onChange(of: scenePhase) { _, newPhase in
             gloveVM.handleScenePhaseChange(newPhase)
         }
+        .onChange(of: mappStore.activePatient?.id?.numericId()) { _, _ in
+            syncPatientID()
+        }
+        .fullScreenCover(isPresented: needsPatientBinding) {
+            NavigationStack {
+                ProfileSettingsView(patientID: $patientID, requiresActivePatient: true)
+            }
+            .interactiveDismissDisabled(true)
+        }
+    }
+
+    private var needsPatientBinding: Binding<Bool> {
+        Binding(
+            get: { mappStore.activePatient == nil },
+            set: { _ in }
+        )
+    }
+
+    private func syncPatientID() {
+        patientID = mappStore.activePatient?.displayID ?? ""
     }
 }
 
