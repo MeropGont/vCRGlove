@@ -1,188 +1,226 @@
-﻿english,german,notes,Status
-%@ glove,%@ Handschuh,From Localizable.xcstrings; review,available
-%lld,%lld,From Localizable.xcstrings; review,available
-%lld glove(s) ready,%lld Handschuh(e) bereit,From Localizable.xcstrings; review,available
-%lld%%,%lld%%,From Localizable.xcstrings; review,available
-😄,😄,From Localizable.xcstrings; review,available
-😐,😐,From Localizable.xcstrings; review,available
-😣,😣,From Localizable.xcstrings; review,available
-🙁,🙁,From Localizable.xcstrings; review,available
-🙂,🙂,From Localizable.xcstrings; review,available
-015221500869,015221500869,From Localizable.xcstrings; review,available
-2 h,2 h,From Localizable.xcstrings; review,available
-2 hours + 2 hours,2 Stunden + 2 Stunden,From Localizable.xcstrings; review,available
-4 h,4 h,From Localizable.xcstrings; review,available
-4 h session done,4-h-Sitzung abgeschlossen,From Localizable.xcstrings; review,available
-4 hours once,Einmal 4 Stunden,From Localizable.xcstrings; review,available
-Add a note,Notiz hinzufügen,From Localizable.xcstrings; review,available
-Add details,Details hinzufügen,From Localizable.xcstrings; review,available
-ADD NOTE,NOTIZ HINZUFÜGEN,From Localizable.xcstrings; review,available
-Avatar selection will go here.,Avatar-Auswahl folgt.,From Localizable.xcstrings; review,available
-Backup status,Backup-Status,From Localizable.xcstrings; review,available
-Both 2 h sessions done,Beide 2-h-Sitzungen abgeschlossen,From Localizable.xcstrings; review,available
-Calendar,Kalender,From Localizable.xcstrings; review,available
-Cancel,Abbrechen,From Localizable.xcstrings; review,available
-CHECK IN,CHECK-IN,From Localizable.xcstrings; review,available
-Check-In,Check-in,From Localizable.xcstrings; review,available
-Clear Event Log File,Ereignisprotokolldatei löschen,From Localizable.xcstrings; review,available
-Clear event log file?,Ereignisprotokolldatei löschen?,From Localizable.xcstrings; review,available
-Clear History & Fresh Scan,Verlauf löschen & neu suchen,From Localizable.xcstrings; review,available
-Clear Visible Log,Sichtbares Protokoll löschen,From Localizable.xcstrings; review,available
-Complete today,Heute abgeschlossen,From Localizable.xcstrings; review,available
-Connect at least one glove to begin,"Verbinden Sie mindestens einen Handschuh, um zu beginnen.",Session instruction,available
-Contact ICNS support,ICNS-Support kontaktieren,From Localizable.xcstrings; review,available
-Daily Check-In,Täglicher Check-in,From Localizable.xcstrings; review,available
-Daily check-ins,Tägliche Check-ins,From Localizable.xcstrings; review,available
-Daily Log,Tagesprotokoll,From Localizable.xcstrings; review,available
-Data,Daten,From Localizable.xcstrings; review,available
-Day timeline,Tagesverlauf,From Localizable.xcstrings; review,available
-Default vCR plan,Standard-vCR-Plan,From Localizable.xcstrings; review,available
-Device assignment notes,Notizen zur Gerätezuordnung,From Localizable.xcstrings; review,available
-Diagnostics,Diagnostik,From Localizable.xcstrings; review,available
-Disconnect,Trennen,From Localizable.xcstrings; review,available
-Disconnected,Getrennt,Patient vCR glove status,available
-"Duration, gloves, and session preferences","Dauer, Handschuhe und Sitzungseinstellungen",From Localizable.xcstrings; review,available
-Export logs,Protokolle exportieren,From Localizable.xcstrings; review,available
-Future movement tasks,Zukünftige Bewegungsaufgaben,From Localizable.xcstrings; review,available
-Gloves,Handschuhe,From Localizable.xcstrings; review,available
-Gloves disconnected. Turn them on and scan again to continue.,"Handschuhe getrennt. Schalten Sie sie ein und suchen Sie erneut, um fortzufahren.",Interruption message,available
-Gloves reconnected. Press Resume to continue.,"Handschuhe wieder verbunden. Tippen Sie auf Fortsetzen, um weiterzumachen.",Recovery message,available
-"Gloves, vCR, journal, and troubleshooting","Handschuhe, vCR, Journal und Fehlerbehebung",From Localizable.xcstrings; review,available
-Great job. First vCR session complete. One more 2 h session remains today.,Gut gemacht. Die erste vCR-Sitzung ist abgeschlossen. Heute bleibt noch eine weitere 2-h-Sitzung.,Completion message,available
-Great job. Your 4 h vCR session is complete for today.,Gut gemacht. Ihre 4-h-vCR-Sitzung für heute ist abgeschlossen.,From Localizable.xcstrings; review,available
-Great job. Your vCR session is complete for today.,Gut gemacht. Ihre vCR-Sitzung für heute ist abgeschlossen.,Completion message,available
-Hold to Stop,Zum Stoppen halten,Session action,available
-How are you today?,Wie geht es Ihnen heute?,From Localizable.xcstrings; review,available
-ICNS,ICNS,From Localizable.xcstrings; review,available
-ID,ID,From Localizable.xcstrings; review,available
-"ID, icon, and language","ID, Symbol und Sprache",From Localizable.xcstrings; review,available
-"If the steps above did not solve the issue, contact ICNS support.","Wenn die Schritte oben das Problem nicht gelöst haben, kontaktieren Sie bitte den ICNS-Support.",From Localizable.xcstrings; review,available
-Incorrect password,Falsches Passwort,From Localizable.xcstrings; review,available
-Instructions,Anleitung,From Localizable.xcstrings; review,available
-Journal,Journal,Tab title,available
-Journal reminders,Journal-Erinnerungen,From Localizable.xcstrings; review,available
-Keep this app open during stimulation.,Bitte lassen Sie diese App während der Stimulation geöffnet.,Patient vCR footer,available
-Language,Sprache,Settings,available
-Language: English / Deutsch,Sprache: English / Deutsch,From Localizable.xcstrings; review,available
-Last check-in,Letzter Check-in,From Localizable.xcstrings; review,available
-Last saved: %@,Zuletzt gespeichert: %@,From Localizable.xcstrings; review,available
-Latest backup,Letztes Backup,From Localizable.xcstrings; review,available
-Left glove,Linker Handschuh,Patient vCR glove card,available
-LOG MEDICATION,MEDIKATION PROTOKOLLIEREN,From Localizable.xcstrings; review,available
-"Log OFF periods, tremor, freezing, dyskinesia, or other symptom changes.","Protokollieren Sie OFF-Phasen, Tremor, Freezing, Dyskinesien oder andere Symptomveränderungen.",From Localizable.xcstrings; review,available
-LOG SYMPTOM,SYMPTOM PROTOKOLLIEREN,From Localizable.xcstrings; review,available
-"Log usual, late, missed, or extra medication events.","Protokollieren Sie reguläre, verspätete, ausgelassene oder zusätzliche Medikamenteneinnahmen.",From Localizable.xcstrings; review,available
-Logs,Protokolle,From Localizable.xcstrings; review,available
-"Logs, exports, backup, and study notes","Protokolle, Exporte, Backup und Studiennotizen",From Localizable.xcstrings; review,available
-Medication,Medikation,From Localizable.xcstrings; review,available
-"Mood, overall symptoms, and symptom list for this day.","Stimmung, Gesamtsymptome und Symptomliste für diesen Tag.",From Localizable.xcstrings; review,available
-Need Help?,Brauchen Sie Hilfe?,Settings support,available
-No check-in for this day,Kein Check-in für diesen Tag,From Localizable.xcstrings; review,available
-No check-in saved yet,Noch kein Check-in gespeichert,From Localizable.xcstrings; review,available
-No entries saved for this day yet.,Für diesen Tag sind noch keine Einträge gespeichert.,From Localizable.xcstrings; review,available
-Not detected,Nicht erkannt,Patient vCR glove status,available
-Note,Notiz,From Localizable.xcstrings; review,available
-One glove disconnected. vCR continues with the connected glove.,Ein Handschuh wurde getrennt. vCR läuft mit dem verbundenen Handschuh weiter.,Interruption message,available
-OPEN DAILY LOG,TAGESPROTOKOLL ÖFFNEN,From Localizable.xcstrings; review,available
-Open iPhone Language Settings,iPhone-Spracheinstellungen öffnen,Settings action,available
-OPEN TODAY'S LOG,HEUTIGES PROTOKOLL ÖFFNEN,From Localizable.xcstrings; review,available
-Optional note,Optionale Notiz,From Localizable.xcstrings; review,available
-Overall symptom intensity,Gesamte Symptomstärke,From Localizable.xcstrings; review,available
-Password,Passwort,From Localizable.xcstrings; review,available
-Patient,Patient,From Localizable.xcstrings; review,available
-Patient ID,Patienten-ID,From Localizable.xcstrings; review,available
-Patient notes,Teilnehmernotizen,From Localizable.xcstrings; review,available
-Patients complete one 4-hour vCR session per day.,Patienten absolvieren eine 4-stündige vCR-Sitzung pro Tag.,From Localizable.xcstrings; review,available
-Patients complete two separate 2-hour vCR sessions per day.,Patienten absolvieren zwei getrennte 2-stündige vCR-Sitzungen pro Tag.,From Localizable.xcstrings; review,available
-Pause,Pausieren,Session action,available
-Paused,Pausiert,Session state,available
-Permissions,Berechtigungen,From Localizable.xcstrings; review,available
-"Permissions, storage, and data handling","Berechtigungen, Speicher und Datenverwaltung",From Localizable.xcstrings; review,available
-Please contact support and briefly describe what was not working.,"Bitte kontaktieren Sie den Support und beschreiben Sie kurz, was nicht funktioniert hat.",From Localizable.xcstrings; review,available
-Privacy & Data,Datenschutz & Daten,From Localizable.xcstrings; review,available
-Profile,Profil,Settings,available
-Protocol notes,Protokollnotizen,From Localizable.xcstrings; review,available
-Quiet hours,Ruhezeiten,From Localizable.xcstrings; review,available
-Ready,Bereit,Patient vCR glove status,available
-Reconnect,Erneut verbinden,From Localizable.xcstrings; review,available
-Record anything unusual or important for this day.,Notieren Sie alles Ungewöhnliche oder Wichtige für diesen Tag.,From Localizable.xcstrings; review,available
-Refresh Diagnostics,Diagnostik aktualisieren,From Localizable.xcstrings; review,available
-Reminders,Erinnerungen,From Localizable.xcstrings; review,available
-Research,Forschung,Tab title,available
-Research Admin,Forschungsverwaltung,From Localizable.xcstrings; review,available
-Research Mode,Forschungsmodus,From Localizable.xcstrings; review,available
-Resume,Fortsetzen,Session action,available
-Right glove,Rechter Handschuh,Patient vCR glove card,available
-Save Check-In,Check-in speichern,From Localizable.xcstrings; review,available
-Save Medication Log,Medikationsprotokoll speichern,From Localizable.xcstrings; review,available
-Save Note,Notiz speichern,From Localizable.xcstrings; review,available
-Save Study Metadata,Studienmetadaten speichern,From Localizable.xcstrings; review,available
-Save Symptom Episode,Symptomepisode speichern,From Localizable.xcstrings; review,available
-Scan,Suchen,Patient vCR setup step,available
-Scan for gloves,Handschuhe suchen,Patient vCR scan button,available
-Scan for gloves,Handschuhe suchen,Scan action,available
-SCAN FOR GLOVES,NACH HANDSCHUHEN SUCHEN,From Localizable.xcstrings; review,available
-Scan for Gloves,Nach Handschuhen suchen,From Localizable.xcstrings; review,available
-Send Email to vcr@uke.de,E-Mail an vcr@uke.de senden,Support action,available
-Session Plan,Sitzungsplan,From Localizable.xcstrings; review,available
-Settings,Einstellungen,Tab title,available
-Share Event Log,Ereignisprotokoll teilen,From Localizable.xcstrings; review,available
-Show Research Tab,Forschungs-Tab anzeigen,From Localizable.xcstrings; review,available
-Something not working?,Funktioniert etwas nicht?,Patient troubleshooting link,available
-Start,Starten,From Localizable.xcstrings; review,available
-Start 2 h vCR,2-h-vCR starten,Session action,obsolete
-Start 4 h vCR,4-h-vCR starten,Session action,obsolete
-Start vCR,vCR starten,Session action,obsolete
-Still Need Help?,Brauchen Sie weiterhin Hilfe?,Support screen,available
-Stimulating,Stimulation läuft,Patient vCR glove status,available
-Stimulation Parameters,Stimulationsparameter,From Localizable.xcstrings; review,available
-Stimulation running,Stimulation läuft,Session state,available
-STOP SCAN,SUCHE STOPPEN,From Localizable.xcstrings; review,available
-Stop Scan,Suche stoppen,From Localizable.xcstrings; review,available
-Stop scanning,Suche stoppen,Patient vCR scan button,available
-Stop scanning,Suche stoppen,Scan state,available
-Storage size,Speichergröße,From Localizable.xcstrings; review,available
-Storage status,Speicherstatus,From Localizable.xcstrings; review,available
-Stored data,Gespeicherte Daten,From Localizable.xcstrings; review,available
-Study,Studie,From Localizable.xcstrings; review,available
-Study start date,Studienbeginn,From Localizable.xcstrings; review,available
-Symptom,Symptom,From Localizable.xcstrings; review,available
-Symptom Episode,Symptomepisode,From Localizable.xcstrings; review,available
-Sync data,Daten synchronisieren,From Localizable.xcstrings; review,available
-Tap icon to test buzz,Symbol zum Testen antippen,From Localizable.xcstrings; review,available
-Tap to test buzz,Zum Testen antippen,Patient vCR glove card,available
-Task reminders,Aufgaben-Erinnerungen,From Localizable.xcstrings; review,available
-Tell Us What Happened,"Beschreiben Sie, was passiert ist",From Localizable.xcstrings; review,available
-This deletes the JSONL event log on this phone and starts a new log with an audit entry.,Dies löscht das JSONL-Ereignisprotokoll auf diesem Telefon und startet ein neues Protokoll mit einem Audit-Eintrag.,From Localizable.xcstrings; review,available
-This ID is set by the research team.,Diese ID wird vom Forschungsteam festgelegt.,From Localizable.xcstrings; review,available
-Time,Uhrzeit,From Localizable.xcstrings; review,available
-Time remaining,Verbleibende Zeit,Session timer label,available
-"Track daily symptoms, mood, and notes around your vCR sessions.","Erfassen Sie tägliche Symptome, Stimmung und Notizen rund um Ihre vCR-Sitzungen.",From Localizable.xcstrings; review,available
-Troubleshooting,Fehlerbehebung,Support screen,available
-Try This First,Versuchen Sie zuerst Folgendes,Support screen,available
-Turn gloves on,Handschuhe einschalten,Patient vCR setup step,available
-Turn gloves on and scan again before resuming.,"Schalten Sie die Handschuhe ein und suchen Sie erneut, bevor Sie fortfahren.",Recovery message,available
-Unlock Research Mode,Forschungsmodus entsperren,From Localizable.xcstrings; review,available
-vCR,vCR,Patient main tab title,available
-vCR %lld of 2,vCR %lld von 2,From Localizable.xcstrings; review,available
-vCR complete today,vCR heute abgeschlossen,From Localizable.xcstrings; review,available
-vCR preset,vCR-Voreinstellung,From Localizable.xcstrings; review,available
-vCR reminders,vCR-Erinnerungen,From Localizable.xcstrings; review,available
-vCR session,vCR-Sitzung,From Localizable.xcstrings; review,available
-vCR Settings,vCR-Einstellungen,From Localizable.xcstrings; review,available
-vCR timing may have been interrupted while the app was not open.,"Das vCR-Timing wurde möglicherweise unterbrochen, während die App nicht geöffnet war.",Timing warning,available
-"vCR, journal, and task notifications","vCR-, Journal- und Aufgabenbenachrichtigungen",From Localizable.xcstrings; review,available
-Verbose BLE debug logging,Ausführliches BLE-Debug-Protokoll,From Localizable.xcstrings; review,available
-Verbose BLE logging saves raw bHaptics device snapshots and should only be enabled temporarily during debugging.,Ausführliches BLE-Protokollieren speichert rohe bHaptics-Geräteschnappschüsse und sollte nur vorübergehend zur Fehlersuche aktiviert werden.,From Localizable.xcstrings; review,available
-What is not working?,Was funktioniert nicht?,Support screen,available
-What would you like to record?,Was möchten Sie erfassen?,From Localizable.xcstrings; review,available
-Which symptoms are present?,Welche Symptome sind vorhanden?,From Localizable.xcstrings; review,available
-Your most recent check-in will appear here.,Ihr letzter Check-in erscheint hier.,From Localizable.xcstrings; review,available
-Amplitude,Amplitude,Research vCR parameter,available
-Frequency,Frequenz,Research vCR parameter,available
-Pulse length,Pulsdauer,Research vCR parameter,available
-Fingers per cycle,Finger pro Zyklus,Research vCR parameter,available
-Total duration,Gesamtdauer,Research vCR parameter,available
-Stimulation paused.,Stimulation pausiert.,Research vCR session message,available
-Gloves disconnected. Stimulation paused. Turn gloves on and scan again to continue.,"Handschuhe getrennt. Stimulation pausiert. Schalten Sie die Handschuhe ein und suchen Sie erneut, um fortzufahren.",Research vCR interruption message,available
-One glove disconnected. Stimulation continues with the connected glove.,Ein Handschuh wurde getrennt. Die Stimulation läuft mit dem verbundenen Handschuh weiter.,Research vCR interruption message,available
+﻿english,german,notes,Status,,
+%@ glove,%@ Handschuh,From Localizable.xcstrings; review,available,,
+%lld,%lld,From Localizable.xcstrings; review,available,,
+%lld glove(s) ready,%lld Handschuh(e) bereit,From Localizable.xcstrings; review,available,,
+%lld%%,%lld%%,From Localizable.xcstrings; review,available,,
+😄,😄,From Localizable.xcstrings; review,available,,
+😐,😐,From Localizable.xcstrings; review,available,,
+😣,😣,From Localizable.xcstrings; review,available,,
+🙁,🙁,From Localizable.xcstrings; review,available,,
+🙂,🙂,From Localizable.xcstrings; review,available,,
+015221500869,015221500869,From Localizable.xcstrings; review,available,,
+2 h,2 h,From Localizable.xcstrings; review,available,,
+2 hours + 2 hours,2 Stunden + 2 Stunden,From Localizable.xcstrings; review,available,,
+4 h,4 h,From Localizable.xcstrings; review,available,,
+4 h session done,4-h-Sitzung abgeschlossen,From Localizable.xcstrings; review,available,,
+4 hours once,Einmal 4 Stunden,From Localizable.xcstrings; review,available,,
+Add a note,Notiz hinzufügen,From Localizable.xcstrings; review,available,,
+Add details,Details hinzufügen,From Localizable.xcstrings; review,available,,
+ADD NOTE,NOTIZ HINZUFÜGEN,From Localizable.xcstrings; review,available,,
+Avatar selection will go here.,Avatar-Auswahl folgt.,From Localizable.xcstrings; review,available,,
+Backup status,Backup-Status,From Localizable.xcstrings; review,available,,
+Both 2 h sessions done,Beide 2-h-Sitzungen abgeschlossen,From Localizable.xcstrings; review,available,,
+Calendar,Kalender,From Localizable.xcstrings; review,available,,
+Cancel,Abbrechen,From Localizable.xcstrings; review,available,,
+CHECK IN,CHECK-IN,From Localizable.xcstrings; review,available,,
+Check-In,Check-in,From Localizable.xcstrings; review,available,,
+Clear Event Log File,Ereignisprotokolldatei löschen,From Localizable.xcstrings; review,available,,
+Clear event log file?,Ereignisprotokolldatei löschen?,From Localizable.xcstrings; review,available,,
+Clear History & Fresh Scan,Verlauf löschen & neu suchen,From Localizable.xcstrings; review,available,,
+Clear Visible Log,Sichtbares Protokoll löschen,From Localizable.xcstrings; review,available,,
+Complete today,Heute abgeschlossen,From Localizable.xcstrings; review,available,,
+Connect at least one glove to begin,"Verbinden Sie mindestens einen Handschuh, um zu beginnen.",Session instruction,available,,
+Contact ICNS support,ICNS-Support kontaktieren,From Localizable.xcstrings; review,available,,
+Daily Check-In,Täglicher Check-in,From Localizable.xcstrings; review,available,,
+Daily check-ins,Tägliche Check-ins,From Localizable.xcstrings; review,available,,
+Daily Log,Tagesprotokoll,From Localizable.xcstrings; review,available,,
+Data,Daten,From Localizable.xcstrings; review,available,,
+Day timeline,Tagesverlauf,From Localizable.xcstrings; review,available,,
+Default vCR plan,Standard-vCR-Plan,From Localizable.xcstrings; review,available,,
+Device assignment notes,Notizen zur Gerätezuordnung,From Localizable.xcstrings; review,available,,
+Diagnostics,Diagnostik,From Localizable.xcstrings; review,available,,
+Disconnect,Trennen,From Localizable.xcstrings; review,available,,
+Disconnected,Getrennt,Patient vCR glove status,available,,
+"Duration, gloves, and session preferences","Dauer, Handschuhe und Sitzungseinstellungen",From Localizable.xcstrings; review,available,,
+Export logs,Protokolle exportieren,From Localizable.xcstrings; review,available,,
+Future movement tasks,Zukünftige Bewegungsaufgaben,From Localizable.xcstrings; review,available,,
+Gloves,Handschuhe,From Localizable.xcstrings; review,available,,
+Gloves disconnected. Turn them on and scan again to continue.,"Handschuhe getrennt. Schalten Sie sie ein und suchen Sie erneut, um fortzufahren.",Interruption message,available,,
+Gloves reconnected. Press Resume to continue.,"Handschuhe wieder verbunden. Tippen Sie auf Fortsetzen, um weiterzumachen.",Recovery message,available,,
+"Gloves, vCR, journal, and troubleshooting","Handschuhe, vCR, Journal und Fehlerbehebung",From Localizable.xcstrings; review,available,,
+Great job. First vCR session complete. One more 2 h session remains today.,Gut gemacht. Die erste vCR-Sitzung ist abgeschlossen. Heute bleibt noch eine weitere 2-h-Sitzung.,Completion message,available,,
+Great job. Your 4 h vCR session is complete for today.,Gut gemacht. Ihre 4-h-vCR-Sitzung für heute ist abgeschlossen.,From Localizable.xcstrings; review,available,,
+Great job. Your vCR session is complete for today.,Gut gemacht. Ihre vCR-Sitzung für heute ist abgeschlossen.,Completion message,available,,
+Hold to Stop,Zum Stoppen halten,Session action,available,,
+How are you today?,Wie geht es Ihnen heute?,From Localizable.xcstrings; review,available,,
+ICNS,ICNS,From Localizable.xcstrings; review,available,,
+ID,ID,From Localizable.xcstrings; review,available,,
+"ID, icon, and language","ID, Symbol und Sprache",From Localizable.xcstrings; review,available,,
+"If the steps above did not solve the issue, contact ICNS support.","Wenn die Schritte oben das Problem nicht gelöst haben, kontaktieren Sie bitte den ICNS-Support.",From Localizable.xcstrings; review,available,,
+Incorrect password,Falsches Passwort,From Localizable.xcstrings; review,available,,
+Instructions,Anleitung,From Localizable.xcstrings; review,available,,
+Journal,Journal,Tab title,available,,
+Journal reminders,Journal-Erinnerungen,From Localizable.xcstrings; review,available,,
+Keep this app open during stimulation.,Bitte lassen Sie diese App während der Stimulation geöffnet.,Patient vCR footer,available,,
+Language,Sprache,Settings,available,,
+Language: English / Deutsch,Sprache: English / Deutsch,From Localizable.xcstrings; review,available,,
+Last check-in,Letzter Check-in,From Localizable.xcstrings; review,available,,
+Last saved: %@,Zuletzt gespeichert: %@,From Localizable.xcstrings; review,available,,
+Latest backup,Letztes Backup,From Localizable.xcstrings; review,available,,
+Left glove,Linker Handschuh,Patient vCR glove card,available,,
+LOG MEDICATION,MEDIKATION PROTOKOLLIEREN,From Localizable.xcstrings; review,available,,
+"Log OFF periods, tremor, freezing, dyskinesia, or other symptom changes.","Protokollieren Sie OFF-Phasen, Tremor, Freezing, Dyskinesien oder andere Symptomveränderungen.",From Localizable.xcstrings; review,available,,
+LOG SYMPTOM,SYMPTOM PROTOKOLLIEREN,From Localizable.xcstrings; review,available,,
+"Log usual, late, missed, or extra medication events.","Protokollieren Sie reguläre, verspätete, ausgelassene oder zusätzliche Medikamenteneinnahmen.",From Localizable.xcstrings; review,available,,
+Logs,Protokolle,From Localizable.xcstrings; review,available,,
+"Logs, exports, backup, and study notes","Protokolle, Exporte, Backup und Studiennotizen",From Localizable.xcstrings; review,available,,
+Medication,Medikation,From Localizable.xcstrings; review,available,,
+"Mood, overall symptoms, and symptom list for this day.","Stimmung, Gesamtsymptome und Symptomliste für diesen Tag.",From Localizable.xcstrings; review,available,,
+Need Help?,Brauchen Sie Hilfe?,Settings support,available,,
+No check-in for this day,Kein Check-in für diesen Tag,From Localizable.xcstrings; review,available,,
+No check-in saved yet,Noch kein Check-in gespeichert,From Localizable.xcstrings; review,available,,
+No entries saved for this day yet.,Für diesen Tag sind noch keine Einträge gespeichert.,From Localizable.xcstrings; review,available,,
+Not detected,Nicht erkannt,Patient vCR glove status,available,,
+Note,Notiz,From Localizable.xcstrings; review,available,,
+One glove disconnected. vCR continues with the connected glove.,Ein Handschuh wurde getrennt. vCR läuft mit dem verbundenen Handschuh weiter.,Interruption message,available,,
+OPEN DAILY LOG,TAGESPROTOKOLL ÖFFNEN,From Localizable.xcstrings; review,available,,
+Open iPhone Language Settings,iPhone-Spracheinstellungen öffnen,Settings action,available,,
+OPEN TODAY'S LOG,HEUTIGES PROTOKOLL ÖFFNEN,From Localizable.xcstrings; review,available,,
+Optional note,Optionale Notiz,From Localizable.xcstrings; review,available,,
+Overall symptom intensity,Gesamte Symptomstärke,From Localizable.xcstrings; review,available,,
+Password,Passwort,From Localizable.xcstrings; review,available,,
+Patient,Patient,From Localizable.xcstrings; review,available,,
+Patient ID,Patienten-ID,From Localizable.xcstrings; review,available,,
+Patient notes,Teilnehmernotizen,From Localizable.xcstrings; review,available,,
+Patients complete one 4-hour vCR session per day.,Patienten absolvieren eine 4-stündige vCR-Sitzung pro Tag.,From Localizable.xcstrings; review,available,,
+Patients complete two separate 2-hour vCR sessions per day.,Patienten absolvieren zwei getrennte 2-stündige vCR-Sitzungen pro Tag.,From Localizable.xcstrings; review,available,,
+Pause,Pausieren,Session action,available,,
+Paused,Pausiert,Session state,available,,
+Permissions,Berechtigungen,From Localizable.xcstrings; review,available,,
+"Permissions, storage, and data handling","Berechtigungen, Speicher und Datenverwaltung",From Localizable.xcstrings; review,available,,
+Please contact support and briefly describe what was not working.,"Bitte kontaktieren Sie den Support und beschreiben Sie kurz, was nicht funktioniert hat.",From Localizable.xcstrings; review,available,,
+Privacy & Data,Datenschutz & Daten,From Localizable.xcstrings; review,available,,
+Profile,Profil,Settings,available,,
+Protocol notes,Protokollnotizen,From Localizable.xcstrings; review,available,,
+Quiet hours,Ruhezeiten,From Localizable.xcstrings; review,available,,
+Ready,Bereit,Patient vCR glove status,available,,
+Reconnect,Erneut verbinden,From Localizable.xcstrings; review,available,,
+Record anything unusual or important for this day.,Notieren Sie alles Ungewöhnliche oder Wichtige für diesen Tag.,From Localizable.xcstrings; review,available,,
+Refresh Diagnostics,Diagnostik aktualisieren,From Localizable.xcstrings; review,available,,
+Reminders,Erinnerungen,From Localizable.xcstrings; review,available,,
+Research,Forschung,Tab title,available,,
+Research Admin,Forschungsverwaltung,From Localizable.xcstrings; review,available,,
+Research Mode,Forschungsmodus,From Localizable.xcstrings; review,available,,
+Resume,Fortsetzen,Session action,available,,
+Right glove,Rechter Handschuh,Patient vCR glove card,available,,
+Save Check-In,Check-in speichern,From Localizable.xcstrings; review,available,,
+Save Medication Log,Medikationsprotokoll speichern,From Localizable.xcstrings; review,available,,
+Save Note,Notiz speichern,From Localizable.xcstrings; review,available,,
+Save Study Metadata,Studienmetadaten speichern,From Localizable.xcstrings; review,available,,
+Save Symptom Episode,Symptomepisode speichern,From Localizable.xcstrings; review,available,,
+Scan,Suchen,Patient vCR setup step,available,,
+Scan for gloves,Handschuhe suchen,Patient vCR scan button,available,,
+Scan for gloves,Handschuhe suchen,Scan action,available,,
+SCAN FOR GLOVES,NACH HANDSCHUHEN SUCHEN,From Localizable.xcstrings; review,available,,
+Scan for Gloves,Nach Handschuhen suchen,From Localizable.xcstrings; review,available,,
+Send Email to vcr@uke.de,E-Mail an vcr@uke.de senden,Support action,available,,
+Session Plan,Sitzungsplan,From Localizable.xcstrings; review,available,,
+Settings,Einstellungen,Tab title,available,,
+Share Event Log,Ereignisprotokoll teilen,From Localizable.xcstrings; review,available,,
+Show Research Tab,Forschungs-Tab anzeigen,From Localizable.xcstrings; review,available,,
+Something not working?,Funktioniert etwas nicht?,Patient troubleshooting link,available,,
+Start,Starten,From Localizable.xcstrings; review,available,,
+Start 2 h vCR,2-h-vCR starten,Session action,obsolete,,
+Start 4 h vCR,4-h-vCR starten,Session action,obsolete,,
+Start vCR,vCR starten,Session action,obsolete,,
+Still Need Help?,Brauchen Sie weiterhin Hilfe?,Support screen,available,,
+Stimulating,Stimulation läuft,Patient vCR glove status,available,,
+Stimulation Parameters,Stimulationsparameter,From Localizable.xcstrings; review,available,,
+Stimulation running,Stimulation läuft,Session state,available,,
+STOP SCAN,SUCHE STOPPEN,From Localizable.xcstrings; review,available,,
+Stop Scan,Suche stoppen,From Localizable.xcstrings; review,available,,
+Stop scanning,Suche stoppen,Patient vCR scan button,available,,
+Stop scanning,Suche stoppen,Scan state,available,,
+Storage size,Speichergröße,From Localizable.xcstrings; review,available,,
+Storage status,Speicherstatus,From Localizable.xcstrings; review,available,,
+Stored data,Gespeicherte Daten,From Localizable.xcstrings; review,available,,
+Study,Studie,From Localizable.xcstrings; review,available,,
+Study start date,Studienbeginn,From Localizable.xcstrings; review,available,,
+Symptom,Symptom,From Localizable.xcstrings; review,available,,
+Symptom Episode,Symptomepisode,From Localizable.xcstrings; review,available,,
+Sync data,Daten synchronisieren,From Localizable.xcstrings; review,available,,
+Tap icon to test buzz,Symbol zum Testen antippen,From Localizable.xcstrings; review,available,,
+Tap to test buzz,Zum Testen antippen,Patient vCR glove card,available,,
+Task reminders,Aufgaben-Erinnerungen,From Localizable.xcstrings; review,available,,
+Tell Us What Happened,"Beschreiben Sie, was passiert ist",From Localizable.xcstrings; review,available,,
+This deletes the JSONL event log on this phone and starts a new log with an audit entry.,Dies löscht das JSONL-Ereignisprotokoll auf diesem Telefon und startet ein neues Protokoll mit einem Audit-Eintrag.,From Localizable.xcstrings; review,available,,
+This ID is set by the research team.,Diese ID wird vom Forschungsteam festgelegt.,From Localizable.xcstrings; review,available,,
+Time,Uhrzeit,From Localizable.xcstrings; review,available,,
+Time remaining,Verbleibende Zeit,Session timer label,available,,
+"Track daily symptoms, mood, and notes around your vCR sessions.","Erfassen Sie tägliche Symptome, Stimmung und Notizen rund um Ihre vCR-Sitzungen.",From Localizable.xcstrings; review,available,,
+Troubleshooting,Fehlerbehebung,Support screen,available,,
+Try This First,Versuchen Sie zuerst Folgendes,Support screen,available,,
+Turn gloves on,Handschuhe einschalten,Patient vCR setup step,available,,
+Turn gloves on and scan again before resuming.,"Schalten Sie die Handschuhe ein und suchen Sie erneut, bevor Sie fortfahren.",Recovery message,available,,
+Unlock Research Mode,Forschungsmodus entsperren,From Localizable.xcstrings; review,available,,
+vCR,vCR,Patient main tab title,available,,
+vCR %lld of 2,vCR %lld von 2,From Localizable.xcstrings; review,available,,
+vCR complete today,vCR heute abgeschlossen,From Localizable.xcstrings; review,available,,
+vCR preset,vCR-Voreinstellung,From Localizable.xcstrings; review,available,,
+vCR reminders,vCR-Erinnerungen,From Localizable.xcstrings; review,available,,
+vCR session,vCR-Sitzung,From Localizable.xcstrings; review,available,,
+vCR Settings,vCR-Einstellungen,From Localizable.xcstrings; review,available,,
+vCR timing may have been interrupted while the app was not open.,"Das vCR-Timing wurde möglicherweise unterbrochen, während die App nicht geöffnet war.",Timing warning,available,,
+"vCR, journal, and task notifications","vCR-, Journal- und Aufgabenbenachrichtigungen",From Localizable.xcstrings; review,available,,
+Verbose BLE debug logging,Ausführliches BLE-Debug-Protokoll,From Localizable.xcstrings; review,available,,
+Verbose BLE logging saves raw bHaptics device snapshots and should only be enabled temporarily during debugging.,Ausführliches BLE-Protokollieren speichert rohe bHaptics-Geräteschnappschüsse und sollte nur vorübergehend zur Fehlersuche aktiviert werden.,From Localizable.xcstrings; review,available,,
+What is not working?,Was funktioniert nicht?,Support screen,available,,
+What would you like to record?,Was möchten Sie erfassen?,From Localizable.xcstrings; review,available,,
+Which symptoms are present?,Welche Symptome sind vorhanden?,From Localizable.xcstrings; review,available,,
+Your most recent check-in will appear here.,Ihr letzter Check-in erscheint hier.,From Localizable.xcstrings; review,available,,
+Amplitude,Amplitude,Research vCR parameter,available,,
+Frequency,Frequenz,Research vCR parameter,available,,
+Pulse length,Pulsdauer,Research vCR parameter,available,,
+Fingers per cycle,Finger pro Zyklus,Research vCR parameter,available,,
+Total duration,Gesamtdauer,Research vCR parameter,available,,
+Stimulation paused.,Stimulation pausiert.,Research vCR session message,available,,
+Gloves disconnected. Stimulation paused. Turn gloves on and scan again to continue.,"Handschuhe getrennt. Stimulation pausiert. Schalten Sie die Handschuhe ein und suchen Sie erneut, um fortzufahren.",Research vCR interruption message,available,,
+One glove disconnected. Stimulation continues with the connected glove.,Ein Handschuh wurde getrennt. Die Stimulation läuft mit dem verbundenen Handschuh weiter.,Research vCR interruption message,available,,
+A glove is not detected,Ein Handschuh wird nicht erkannt,Troubleshooting,available,,
+App documents size,Größe der App-Dokumente,Research admin diagnostics,available,,
+App version,App-Version,Research admin diagnostics,available,,
+Check that at least one glove shows Ready. Then press Start vCR.,"Prüfen Sie, ob mindestens ein Handschuh als Bereit angezeigt wird. Tippen Sie dann auf vCR starten.",Troubleshooting,available,,
+Check that notifications are allowed for this app in iPhone Settings.,Prüfen Sie in den iPhone-Einstellungen, ob Benachrichtigungen für diese App erlaubt sind.,Troubleshooting,available,
+"Close and reopen the app. If stimulation is running, stop it first if possible.","Schließen Sie die App und öffnen Sie sie erneut. Falls die Stimulation läuft, stoppen Sie sie vorher, wenn möglich.",Troubleshooting,available,,
+Contact support and include what you were trying to do when the problem happened.,Kontaktieren Sie den Support und beschreiben Sie, was Sie gerade tun wollten, als das Problem auftrat.,Troubleshooting,available
+Continue only if all fingers can be felt clearly. Please report this to support so we can check the glove mapping.,"Fahren Sie nur fort, wenn alle Finger deutlich spürbar sind. Bitte melden Sie dies dem Support, damit wir die Handschuhzuordnung prüfen können.",Troubleshooting,available,,
+Device,Gerät,Research admin diagnostics,available,,
+Event log,Ereignisprotokoll,Research admin diagnostics,available,,
+Event log size,Größe des Ereignisprotokolls,Research admin diagnostics,available,,
+"For now, add a note explaining the correction. Editing entries can be added later.",Fügen Sie vorerst eine Notiz mit der Korrektur hinzu. Das Bearbeiten von Einträgen kann später ergänzt werden.,Troubleshooting,available,,
+I cannot find today’s log,Ich finde den heutigen Eintrag nicht,Troubleshooting,available,,
+I do not receive reminders,Ich erhalte keine Erinnerungen,Troubleshooting,available,,
+I entered something wrong,Ich habe etwas falsch eingegeben,Troubleshooting,available,,
+I get too many reminders,Ich erhalte zu viele Erinnerungen,Troubleshooting,available,,
+I need to pause,Ich muss pausieren,Troubleshooting,available,,
+ID and icon,ID und Symbol,Settings profile subtitle,available,,
+"Keep the app open and avoid switching apps during the finger check. If this happens repeatedly, contact support.","Lassen Sie die App geöffnet und wechseln Sie während der Fingerprüfung nicht zu einer anderen App. Wenn dies wiederholt passiert, kontaktieren Sie den Support.",Troubleshooting,available,,
+Keep the app open during stimulation. Avoid locking the phone or switching to another app.,"Lassen Sie die App während der Stimulation geöffnet. Vermeiden Sie es, das iPhone zu sperren oder zu einer anderen App zu wechseln.",Troubleshooting,available,,
+"Keep the phone close to the gloves and keep the app open. If both gloves disconnect, the session will stop automatically.","Halten Sie das iPhone nahe bei den Handschuhen und lassen Sie die App geöffnet. Wenn beide Handschuhe getrennt werden, stoppt die Sitzung automatisch.",Troubleshooting,available,,
+Last log update,Letzte Protokollaktualisierung,Research admin diagnostics,available,,
+"Make sure both gloves are charged and worn correctly. Stop the session, press Scan for Gloves again, then start vCR once more.","Stellen Sie sicher, dass beide Handschuhe geladen und richtig angelegt sind. Stoppen Sie die Sitzung, tippen Sie erneut auf Handschuhe suchen und starten Sie vCR noch einmal.",Troubleshooting,available,,
+One finger did not buzz,Ein Finger hat nicht vibriert,Troubleshooting,available,,
+Only one glove connects,Nur ein Handschuh verbindet sich,Troubleshooting,available,,
+Open the Journal tab and tap today’s date in the calendar.,Öffnen Sie den Journal-Tab und tippen Sie im Kalender auf das heutige Datum.,Troubleshooting,available,,
+Reminder frequency can be adjusted in Settings > Reminders.,Die Häufigkeit der Erinnerungen kann unter Einstellungen > Erinnerungen angepasst werden.,Troubleshooting,available,,
+Stimulation does not start,Stimulation startet nicht,Troubleshooting,available,,
+Stimulation feels interrupted,Stimulation fühlt sich unterbrochen an,Troubleshooting,available,,
+The app is behaving strangely,Die App verhält sich ungewöhnlich,Troubleshooting,available,,
+The buzzes felt uneven,Die Vibrationen fühlten sich ungleichmäßig an,Troubleshooting,available,,
+The glove disconnects,Der Handschuh trennt die Verbindung,Troubleshooting,available,,
+The issue keeps happening,Das Problem tritt weiterhin auf,Troubleshooting,available,,
+The wrong finger buzzed,Der falsche Finger hat vibriert,Troubleshooting,available,,
+Turn the glove off and on again. Then press Scan for Gloves and wait up to one minute.,Schalten Sie den Handschuh aus und wieder ein. Tippen Sie dann auf Handschuhe suchen und warten Sie bis zu einer Minute.,Troubleshooting,available,,
+Use Pause during the session. Press Resume when you are ready to continue.,Nutzen Sie Pause während der Sitzung. Tippen Sie auf Fortsetzen, wenn Sie weitermachen möchten.,Troubleshooting,available,
+"You can still start vCR with one glove. If the second glove does not appear after scanning, charge it and try again.","Sie können vCR auch mit einem Handschuh starten. Wenn der zweite Handschuh nach dem Suchen nicht erscheint, laden Sie ihn auf und versuchen Sie es erneut.",Troubleshooting,available,,
+iOS version,iOS-Version,Research admin diagnostics,available,,

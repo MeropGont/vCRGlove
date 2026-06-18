@@ -29,7 +29,7 @@ struct SettingsView: View {
                 NavigationLink {
                     ProfileSettingsView(patientID: patientID)
                 } label: {
-                    SettingsRow(icon: "person.crop.circle", color: .purple, title: "Profile", subtitle: "ID, icon, and language")
+                    SettingsRow(icon: "person.crop.circle", color: .purple, title: "Profile", subtitle: "ID and icon")
                 }
 
                 NavigationLink {
@@ -90,6 +90,16 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    LanguageSettingsView()
+                } label: {
+                    Image(systemName: "globe")
+                }
+                .accessibilityLabel("Language")
+            }
+        }
     }
 }
 
@@ -209,17 +219,6 @@ private struct ProfileSettingsView: View {
             }
 
             Section("Profile") {
-                NavigationLink {
-                    LanguageSettingsView()
-                } label: {
-                    HStack {
-                        Text("Language")
-                        Spacer()
-                        Text(Locale.current.localizedString(forIdentifier: Locale.current.identifier) ?? Locale.current.identifier)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
                 Text("Avatar selection will go here.")
                     .foregroundStyle(.secondary)
             }
@@ -410,7 +409,7 @@ private struct ResearchAdminSettingsView: View {
         }
     }
 
-    private func infoRow(_ title: String, _ value: String) -> some View {
+    private func infoRow(_ title: LocalizedStringKey, _ value: String) -> some View {
         HStack(alignment: .top) {
             Text(title)
             Spacer()
@@ -596,7 +595,7 @@ struct SupportSettingsView: View {
             Section {
                 Picker("What is not working?", selection: $topic) {
                     ForEach(topics, id: \.self) { topic in
-                        Text(topic)
+                        Text(LocalizedStringKey(topic))
                     }
                 }
             }
@@ -608,7 +607,9 @@ struct SupportSettingsView: View {
                 }
             } else {
                 Section("Try This First") {
-                    ForEach(troubleshootingSteps, id: \.question) { item in
+                    ForEach(troubleshootingSteps.indices, id: \.self) { index in
+                        let item = troubleshootingSteps[index]
+
                         DisclosureGroup(item.question) {
                             Text(item.answer)
                                 .foregroundStyle(.secondary)
@@ -633,7 +634,7 @@ struct SupportSettingsView: View {
         .navigationTitle("Troubleshooting")
     }
 
-    private var troubleshootingSteps: [(question: String, answer: String)] {
+    private var troubleshootingSteps: [(question: LocalizedStringKey, answer: LocalizedStringKey)] {
         switch topic {
         case "Finger check":
             return [
