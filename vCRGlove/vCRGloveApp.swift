@@ -30,6 +30,8 @@ struct vCRGloveApp: App {
         if let url = EventStore.shared.fileURL() {
             print("Event log file:", url.path)
         }
+        
+        ReminderScheduler.scheduleFromStoredSettings()
     }
 
     var body: some Scene {

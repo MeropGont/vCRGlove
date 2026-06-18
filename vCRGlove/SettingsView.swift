@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UIKit
+import UserNotifications
 
 struct SettingsView: View {
     @ObservedObject var vm: GloveVM
@@ -520,16 +521,456 @@ private struct ResearchAdminSettingsView: View {
 }
 
 private struct ReminderSettingsView: View {
+    @AppStorage("notificationsEnabled") private var notificationsEnabled = false
+
+    @AppStorage("vcrReminderEnabled") private var vcrReminderEnabled = true
+    @AppStorage("vcrReminderHour") private var vcrReminderHour = 9
+    @AppStorage("vcrReminderMinute") private var vcrReminderMinute = 0
+
+    @AppStorage("journalReminderEnabled") private var journalReminderEnabled = true
+    @AppStorage("journalReminderHour") private var journalReminderHour = 18
+    @AppStorage("journalReminderMinute") private var journalReminderMinute = 0
+    @AppStorage("journalReminderWeekdays") private var journalReminderWeekdays = "2,4,6"
+
+    @AppStorage("taskReminderEnabled") private var taskReminderEnabled = true
+    @AppStorage("taskReminderHour") private var taskReminderHour = 18
+    @AppStorage("taskReminderMinute") private var taskReminderMinute = 0
+    @AppStorage("taskReminderWeekdays") private var taskReminderWeekdays = "3,5"
+
+    @AppStorage("quietHoursEnabled") private var quietHoursEnabled = true
+    @AppStorage("quietStartHour") private var quietStartHour = 21
+    @AppStorage("quietEndHour") private var quietEndHour = 8
+
+    @State private var permissionText = "Checking..."
+    @State private var statusMessage: LocalizedStringKey?
+
+    private let weekdayOptions: [(value: Int, label: LocalizedStringKey)] = [
+        (2, "Mon"),
+        (3, "Tue"),
+        (4, "Wed"),
+        (5, "Thu"),
+        (6, "Fri"),
+        (7, "Sat"),
+        (1, "Sun")
+    ]
+
     var body: some View {
         List {
-            Section("Reminders") {
-                Text("vCR reminders")
-                Text("Journal reminders")
-                Text("Task reminders")
-                Text("Quiet hours")
+            Section("Notification Permission") {
+                HStack {
+                    Text("Status")
+                    Spacer()
+                    Text(permissionText)
+                        .foregroundStyle(.secondary)
+                }
+
+                if !notificationsEnabled {
+                    Button("Allow Notifications") {
+                        requestPermission()
+                    }
+
+                    Text("Allow notifications before changing reminder settings.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Button("Open iPhone Notification Settings") {
+                    if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    } else if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            }
+
+            Section("vCR Reminder") {
+                Toggle("Daily vCR reminder", isOn: $vcrReminderEnabled)
+
+                DatePicker(
+                    "Reminder time",
+                    selection: Binding(
+                        get: { dateFrom(hour: vcrReminderHour, minute: vcrReminderMinute) },
+                        set: { updateTime($0, hour: &vcrReminderHour, minute: &vcrReminderMinute) }
+                    ),
+                    displayedComponents: .hourAndMinute
+                )
+                .disabled(!vcrReminderEnabled)
+            }
+            .disabled(!notificationsEnabled)
+            .opacity(notificationsEnabled ? 1 : 0.45)
+
+            Section("Journal Reminders") {
+                Toggle("Journal reminders", isOn: $journalReminderEnabled)
+
+                DatePicker(
+                    "Reminder time",
+                    selection: Binding(
+                        get: { dateFrom(hour: journalReminderHour, minute: journalReminderMinute) },
+                        set: { updateTime($0, hour: &journalReminderHour, minute: &journalReminderMinute) }
+                    ),
+                    displayedComponents: .hourAndMinute
+                )
+                .disabled(!journalReminderEnabled)
+
+                weekdayPicker(selection: $journalReminderWeekdays)
+                    .disabled(!journalReminderEnabled)
+            }
+            .disabled(!notificationsEnabled)
+            .opacity(notificationsEnabled ? 1 : 0.45)
+
+            Section("Task Reminders") {
+                Toggle("Task reminders", isOn: $taskReminderEnabled)
+
+                DatePicker(
+                    "Reminder time",
+                    selection: Binding(
+                        get: { dateFrom(hour: taskReminderHour, minute: taskReminderMinute) },
+                        set: { updateTime($0, hour: &taskReminderHour, minute: &taskReminderMinute) }
+                    ),
+                    displayedComponents: .hourAndMinute
+                )
+                .disabled(!taskReminderEnabled)
+
+                weekdayPicker(selection: $taskReminderWeekdays)
+                    .disabled(!taskReminderEnabled)
+            }
+            .disabled(!notificationsEnabled)
+            .opacity(notificationsEnabled ? 1 : 0.45)
+
+            Section("Quiet Hours") {
+                Toggle("Use quiet hours", isOn: $quietHoursEnabled)
+
+                Stepper("Start: \(quietStartHour):00", value: $quietStartHour, in: 0...23)
+                    .disabled(!quietHoursEnabled)
+
+                Stepper("End: \(quietEndHour):00", value: $quietEndHour, in: 0...23)
+                    .disabled(!quietHoursEnabled)
+
+                Text("Journal and task reminders inside quiet hours are moved to the quiet-hours end time.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .disabled(!notificationsEnabled)
+            .opacity(notificationsEnabled ? 1 : 0.45)
+
+            if let statusMessage {
+                Section {
+                    Text(statusMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .navigationTitle("Reminders")
+        .onAppear {
+            refreshPermissionStatus()
+        }
+        .onChange(of: vcrReminderEnabled) { _, _ in scheduleIfAllowed() }
+        .onChange(of: journalReminderEnabled) { _, _ in scheduleIfAllowed() }
+        .onChange(of: journalReminderWeekdays) { _, _ in scheduleIfAllowed() }
+        .onChange(of: taskReminderEnabled) { _, _ in scheduleIfAllowed() }
+        .onChange(of: taskReminderWeekdays) { _, _ in scheduleIfAllowed() }
+        .onChange(of: quietHoursEnabled) { _, _ in scheduleIfAllowed() }
+        .onChange(of: quietStartHour) { _, _ in scheduleIfAllowed() }
+        .onChange(of: quietEndHour) { _, _ in scheduleIfAllowed() }
+    }
+
+    private func weekdayPicker(selection: Binding<String>) -> some View {
+        HStack(spacing: 6) {
+            ForEach(weekdayOptions, id: \.value) { weekday in
+                let isSelected = selectedWeekdays(from: selection.wrappedValue).contains(weekday.value)
+
+                Button {
+                    toggleWeekday(weekday.value, in: selection)
+                } label: {
+                    Text(weekday.label)
+                        .font(.caption.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(isSelected ? Color.blue : Color(.secondarySystemGroupedBackground))
+                        .foregroundStyle(isSelected ? .white : .primary)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func requestPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+            DispatchQueue.main.async {
+                notificationsEnabled = granted
+                refreshPermissionStatus()
+
+                if granted {
+                    scheduleIfAllowed(showMessage: true)
+                }
+            }
+        }
+    }
+
+    private func refreshPermissionStatus() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                switch settings.authorizationStatus {
+                case .authorized, .provisional, .ephemeral:
+                    permissionText = "Allowed"
+                    notificationsEnabled = true
+                    scheduleIfAllowed(showMessage: false)
+                case .denied:
+                    permissionText = "Not allowed"
+                    notificationsEnabled = false
+                case .notDetermined:
+                    permissionText = "Not asked yet"
+                    notificationsEnabled = false
+                @unknown default:
+                    permissionText = "Unknown"
+                    notificationsEnabled = false
+                }
+            }
+        }
+    }
+
+    private func scheduleIfAllowed(showMessage: Bool = true) {
+        guard notificationsEnabled else {
+            return
+        }
+
+        ReminderScheduler.schedule(
+            vcrEnabled: vcrReminderEnabled,
+            vcrHour: vcrReminderHour,
+            vcrMinute: vcrReminderMinute,
+            journalEnabled: journalReminderEnabled,
+            journalHour: journalReminderHour,
+            journalMinute: journalReminderMinute,
+            journalWeekdays: selectedWeekdays(from: journalReminderWeekdays),
+            taskEnabled: taskReminderEnabled,
+            taskHour: taskReminderHour,
+            taskMinute: taskReminderMinute,
+            taskWeekdays: selectedWeekdays(from: taskReminderWeekdays),
+            quietHoursEnabled: quietHoursEnabled,
+            quietStartHour: quietStartHour,
+            quietEndHour: quietEndHour
+        )
+
+        if showMessage {
+            statusMessage = "Reminder settings saved."
+        }
+    }
+
+    private func dateFrom(hour: Int, minute: Int) -> Date {
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        components.hour = hour
+        components.minute = minute
+        return Calendar.current.date(from: components) ?? Date()
+    }
+
+    private func updateTime(_ date: Date, hour: inout Int, minute: inout Int) {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+        hour = components.hour ?? hour
+        minute = components.minute ?? minute
+        scheduleIfAllowed()
+    }
+
+    private func selectedWeekdays(from text: String) -> Set<Int> {
+        Set(text.split(separator: ",").compactMap { Int($0) })
+    }
+
+    private func toggleWeekday(_ weekday: Int, in selection: Binding<String>) {
+        var selected = selectedWeekdays(from: selection.wrappedValue)
+
+        if selected.contains(weekday) {
+            selected.remove(weekday)
+        } else {
+            selected.insert(weekday)
+        }
+
+        selection.wrappedValue = selected.sorted().map(String.init).joined(separator: ",")
+    }
+}
+
+enum ReminderScheduler {
+    static func scheduleFromStoredSettings() {
+        let defaults = UserDefaults.standard
+
+        schedule(
+            vcrEnabled: boolSetting("vcrReminderEnabled", defaultValue: true),
+            vcrHour: defaults.object(forKey: "vcrReminderHour") as? Int ?? 9,
+            vcrMinute: defaults.object(forKey: "vcrReminderMinute") as? Int ?? 0,
+            journalEnabled: boolSetting("journalReminderEnabled", defaultValue: true),
+            journalHour: defaults.object(forKey: "journalReminderHour") as? Int ?? 18,
+            journalMinute: defaults.object(forKey: "journalReminderMinute") as? Int ?? 0,
+            journalWeekdays: weekdaysSetting("journalReminderWeekdays", defaultValue: "2,4,6"),
+            taskEnabled: boolSetting("taskReminderEnabled", defaultValue: true),
+            taskHour: defaults.object(forKey: "taskReminderHour") as? Int ?? 18,
+            taskMinute: defaults.object(forKey: "taskReminderMinute") as? Int ?? 0,
+            taskWeekdays: weekdaysSetting("taskReminderWeekdays", defaultValue: "3,5"),
+            quietHoursEnabled: boolSetting("quietHoursEnabled", defaultValue: true),
+            quietStartHour: defaults.object(forKey: "quietStartHour") as? Int ?? 21,
+            quietEndHour: defaults.object(forKey: "quietEndHour") as? Int ?? 8
+        )
+    }
+
+    private static func boolSetting(_ key: String, defaultValue: Bool) -> Bool {
+        if UserDefaults.standard.object(forKey: key) == nil {
+            return defaultValue
+        }
+
+        return UserDefaults.standard.bool(forKey: key)
+    }
+
+    private static func weekdaysSetting(_ key: String, defaultValue: String) -> Set<Int> {
+        let text = UserDefaults.standard.string(forKey: key) ?? defaultValue
+        return Set(text.split(separator: ",").compactMap { Int($0) })
+    }
+
+    static func schedule(
+        vcrEnabled: Bool,
+        vcrHour: Int,
+        vcrMinute: Int,
+        journalEnabled: Bool,
+        journalHour: Int,
+        journalMinute: Int,
+        journalWeekdays: Set<Int>,
+        taskEnabled: Bool,
+        taskHour: Int,
+        taskMinute: Int,
+        taskWeekdays: Set<Int>,
+        quietHoursEnabled: Bool,
+        quietStartHour: Int,
+        quietEndHour: Int
+    ) {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: identifiers)
+
+        if vcrEnabled {
+            scheduleDaily(
+                id: "vcr.daily",
+                title: String(localized: "vCR session"),
+                body: String(localized: "Your gloves are ready when you are"),
+                hour: vcrHour,
+                minute: vcrMinute
+            )
+        }
+
+        if journalEnabled {
+            let adjustedTime = adjustedForQuietHours(
+                hour: journalHour,
+                minute: journalMinute,
+                quietHoursEnabled: quietHoursEnabled,
+                quietStartHour: quietStartHour,
+                quietEndHour: quietEndHour
+            )
+
+            scheduleWeekly(
+                idPrefix: "journal",
+                weekdays: journalWeekdays,
+                title: String(localized: "Journal check-in"),
+                body: String(localized: "How are you feeling today?"),
+                hour: adjustedTime.hour,
+                minute: adjustedTime.minute
+            )
+        }
+
+        if taskEnabled {
+            let adjustedTime = adjustedForQuietHours(
+                hour: taskHour,
+                minute: taskMinute,
+                quietHoursEnabled: quietHoursEnabled,
+                quietStartHour: quietStartHour,
+                quietEndHour: quietEndHour
+            )
+
+            scheduleWeekly(
+                idPrefix: "task",
+                weekdays: taskWeekdays,
+                title: String(localized: "Movement task"),
+                body: String(localized: "Let's do today’s movement task"),
+                hour: adjustedTime.hour,
+                minute: adjustedTime.minute
+            )
+        }
+    }
+
+    private static var identifiers: [String] {
+        ["vcr.daily"] +
+        (1...7).map { "journal.\($0)" } +
+        (1...7).map { "task.\($0)" }
+    }
+
+    private static func adjustedForQuietHours(
+        hour: Int,
+        minute: Int,
+        quietHoursEnabled: Bool,
+        quietStartHour: Int,
+        quietEndHour: Int
+    ) -> (hour: Int, minute: Int) {
+        guard quietHoursEnabled else {
+            return (hour, minute)
+        }
+
+        let selectedMinutes = hour * 60 + minute
+        let quietStart = quietStartHour * 60
+        let quietEnd = quietEndHour * 60
+
+        let isInsideQuietHours: Bool
+        if quietStart < quietEnd {
+            isInsideQuietHours = selectedMinutes >= quietStart && selectedMinutes < quietEnd
+        } else {
+            isInsideQuietHours = selectedMinutes >= quietStart || selectedMinutes < quietEnd
+        }
+
+        if isInsideQuietHours {
+            return (quietEndHour, 0)
+        }
+
+        return (hour, minute)
+    }
+
+    private static func scheduleDaily(id: String, title: String, body: String, hour: Int, minute: Int) {
+        var components = DateComponents()
+        components.hour = hour
+        components.minute = minute
+
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+        let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    private static func scheduleWeekly(
+        idPrefix: String,
+        weekdays: Set<Int>,
+        title: String,
+        body: String,
+        hour: Int,
+        minute: Int
+    ) {
+        for weekday in weekdays {
+            var components = DateComponents()
+            components.weekday = weekday
+            components.hour = hour
+            components.minute = minute
+
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body = body
+            content.sound = .default
+
+            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+            let request = UNNotificationRequest(
+                identifier: "\(idPrefix).\(weekday)",
+                content: content,
+                trigger: trigger
+            )
+
+            UNUserNotificationCenter.current().add(request)
+        }
     }
 }
 
