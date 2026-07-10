@@ -81,6 +81,47 @@ final class MotionService: ObservableObject {
         }
     }
 
+    // MARK: - Live streaming to the iPhone (movement tasks, e.g. 3.6)
+
+    @Published var isStreaming = false
+
+    /// Samples per batch message (~0.3 s at 50 Hz — keeps WCSession happy
+    /// while the phone-side chart still feels live).
+    private static let batchSize = 16
+    private var streamBatch: [[Double]] = []
+
+    /// Streams rotation rate around the forearm axis (watch x-axis) to the
+    /// phone. One pronation/supination cycle = one positive rotation lobe,
+    /// which the phone-side analyzer counts via hysteresis.
+    func startStreaming() {
+        guard !isStreaming, !isRecording else { return }
+        guard motion.isDeviceMotionAvailable else { return }
+        isStreaming = true
+        streamBatch.removeAll()
+
+        motion.deviceMotionUpdateInterval = 1.0 / samplesPerSec
+        motion.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical, to: queue) { [weak self] dm, _ in
+            guard let self, let dm, self.isStreaming else { return }
+            // Rotation around the wrist/forearm axis — pronation/supination.
+            self.streamBatch.append([dm.timestamp, dm.rotationRate.x])
+            if self.streamBatch.count >= Self.batchSize {
+                let batch = self.streamBatch
+                self.streamBatch.removeAll(keepingCapacity: true)
+                WatchConnectivityManager.shared.sendMotionBatch(batch)
+            }
+        }
+    }
+
+    func stopStreaming() {
+        guard isStreaming else { return }
+        isStreaming = false
+        motion.stopDeviceMotionUpdates()
+        if !streamBatch.isEmpty {
+            WatchConnectivityManager.shared.sendMotionBatch(streamBatch)
+            streamBatch.removeAll()
+        }
+    }
+
     func exportRecordingToPhone() {
         guard let url = FileManager.default.temporaryDirectory
             .contents?.sorted(by: { $0.path > $1.path }).first else { return } // last file heuristic

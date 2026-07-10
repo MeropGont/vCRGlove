@@ -18,7 +18,37 @@ final class PhoneWC: NSObject, WCSessionDelegate {
         WCSession.default.activate()
     }
 
+    // MARK: - Live motion streaming (movement tasks, e.g. 3.6)
+
+    /// Set by WatchMotionCapture during a trial. Called on a background queue
+    /// with one batch of [timestamp, value] pairs (watch monotonic clock).
+    var onMotionBatch: (([[Double]]) -> Void)?
+
+    var isWatchReachable: Bool {
+        WCSession.isSupported() && WCSession.default.isReachable
+    }
+
+    func startMotionStream() {
+        guard WCSession.default.isReachable else { return }
+        WCSession.default.sendMessage(["type": "startMotionStream"],
+                                      replyHandler: nil, errorHandler: nil)
+    }
+
+    func stopMotionStream() {
+        guard WCSession.default.isReachable else { return }
+        WCSession.default.sendMessage(["type": "stopMotionStream"],
+                                      replyHandler: nil, errorHandler: nil)
+    }
+
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+        // High-frequency motion batches go straight to the capture pipeline —
+        // never into the handshake log.
+        if message["type"] as? String == "motionBatch" {
+            if let samples = message["samples"] as? [[Double]] {
+                onMotionBatch?(samples)
+            }
+            return
+        }
         append(["kind":"message","payload":message, "ts_phone": ISO8601DateFormatter().string(from: Date())])
     }
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {

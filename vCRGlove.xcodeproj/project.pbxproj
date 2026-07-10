@@ -10,7 +10,6 @@
 		A9AE5FDA2E794A6F009F0426 /* Bhaptics in Frameworks */ = {isa = PBXBuildFile; productRef = A9AE5FD92E794A6F009F0426 /* Bhaptics */; };
 		A9DAB74F2E682D3D0053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */; platformFilters = (ios, xros, ); };
 		A9DAB7512E682D590053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB7502E682D590053D51F /* WatchConnectivity.framework */; };
-		A9EFEB472E6309090081A6C7 /* vCRGloveWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -22,13 +21,6 @@
 			remoteInfo = "vCRGloveWatch Watch App";
 		};
 		A9EFEB3E2E6309090081A6C7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A9FCFC032E5866AF00BF28B1 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A9EFEB262E6309070081A6C7;
-			remoteInfo = "vCRGloveWatch Watch App";
-		};
-		A9EFEB452E6309090081A6C7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A9FCFC032E5866AF00BF28B1 /* Project object */;
 			proxyType = 1;
@@ -50,20 +42,6 @@
 			remoteInfo = vCRGlove;
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		A9EFEB4B2E6309090081A6C7 /* Embed Watch Content */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolderSpec = 16;
-			files = (
-				A9EFEB472E6309090081A6C7 /* vCRGloveWatch Watch App.app in Embed Watch Content */,
-			);
-			name = "Embed Watch Content";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk/System/Library/Frameworks/WatchConnectivity.framework; sourceTree = DEVELOPER_DIR; };
@@ -287,12 +265,10 @@
 				A9FCFC072E5866AF00BF28B1 /* Sources */,
 				A9FCFC082E5866AF00BF28B1 /* Frameworks */,
 				A9FCFC092E5866AF00BF28B1 /* Resources */,
-				A9EFEB4B2E6309090081A6C7 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				A9EFEB462E6309090081A6C7 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A9FCFC0D2E5866AF00BF28B1 /* vCRGlove */,
@@ -395,7 +371,7 @@
 			mainGroup = A9FCFC022E5866AF00BF28B1;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */,
+				A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../bhaptics-ios-0.2.0" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A9FCFC0C2E5866AF00BF28B1 /* Products */;
@@ -512,11 +488,6 @@
 			isa = PBXTargetDependency;
 			target = A9EFEB262E6309070081A6C7 /* vCRGloveWatch Watch App */;
 			targetProxy = A9EFEB3E2E6309090081A6C7 /* PBXContainerItemProxy */;
-		};
-		A9EFEB462E6309090081A6C7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A9EFEB262E6309070081A6C7 /* vCRGloveWatch Watch App */;
-			targetProxy = A9EFEB452E6309090081A6C7 /* PBXContainerItemProxy */;
 		};
 		A9FCFC1B2E5866B100BF28B1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -802,7 +773,7 @@
 				CODE_SIGN_ENTITLEMENTS = vCRGlove/vCRGlove.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				DEVELOPMENT_TEAM = 6G948G5USL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = vCRGlove/Info.plist;
@@ -851,7 +822,7 @@
 				CODE_SIGN_ENTITLEMENTS = vCRGlove/vCRGlove.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2YHR8Y94ZW;
+				DEVELOPMENT_TEAM = 6G948G5USL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = vCRGlove/Info.plist;
@@ -1051,16 +1022,16 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */ = {
+		A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../bhaptics-ios-0.2.0" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../Downloads/bhaptics-ios-0.2.0";
+			relativePath = "../bhaptics-ios-0.2.0";
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		A9AE5FD92E794A6F009F0426 /* Bhaptics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../../../Downloads/bhaptics-ios-0.2.0" */;
+			package = A9AE5FD82E69B30F009F0426 /* XCLocalSwiftPackageReference "../bhaptics-ios-0.2.0" */;
 			productName = Bhaptics;
 		};
 /* End XCSwiftPackageProductDependency section */

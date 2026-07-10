@@ -12,7 +12,8 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            Text(motion.isRecording ? "Recording…" : "Idle")
+            Text(motion.isStreaming ? "Streaming to iPhone…"
+                 : motion.isRecording ? "Recording…" : "Idle")
                 .font(.headline)
 
             Text(String(format: "RMS(1s): %.4f g", motion.rmsLast1s))

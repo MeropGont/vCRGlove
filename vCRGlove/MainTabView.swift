@@ -32,6 +32,13 @@ struct MainTabView: View {
             }
 
             NavigationStack {
+                MovementTaskView()
+            }
+            .tabItem {
+                Label("Movement", systemImage: "hand.tap.fill")
+            }
+
+            NavigationStack {
                 JournalHomeView()
             }
             .tabItem {

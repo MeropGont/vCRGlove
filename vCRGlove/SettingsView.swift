@@ -204,6 +204,11 @@ private struct ResearchAdminSettingsView: View {
             }
 
             Section("Data") {
+                NavigationLink {
+                    MovementExportView()
+                } label: {
+                    Text("Movement task export")
+                }
                 Text("Export logs")
                 Text("Sync data")
                 Text("Storage size")
