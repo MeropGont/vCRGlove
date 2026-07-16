@@ -70,6 +70,7 @@ struct StopCondition: Codable, Equatable {
 
     static let tenReps      = StopCondition(mode: .repetitions, targetReps: 10, targetDuration: 15)
     static let fifteenSec   = StopCondition(mode: .duration,    targetReps: 10, targetDuration: 15)
+    static let thirtySec    = StopCondition(mode: .duration,    targetReps: 10, targetDuration: 30)
 }
 
 // MARK: - Raw signal
@@ -109,7 +110,7 @@ struct MovementMetrics: Codable, Equatable {
 // MARK: - Trial & Session
 
 /// A single recording of one task on one hand.
-struct Trial: Identifiable, Codable {
+struct Trial: Identifiable, Codable, Equatable {
     let id: UUID
     let taskType: MovementTaskType
     let side: BodySide

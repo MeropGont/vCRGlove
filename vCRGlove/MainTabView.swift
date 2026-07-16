@@ -32,7 +32,7 @@ struct MainTabView: View {
             }
 
             NavigationStack {
-                MovementTaskView()
+                MovementSessionFlowView()
             }
             .tabItem {
                 Label("Movement", systemImage: "hand.tap.fill")

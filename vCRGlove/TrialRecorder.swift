@@ -22,7 +22,11 @@ final class TrialRecorder: ObservableObject {
     /// cannot complete 10 countable cycles), the trial still ends after this
     /// many seconds instead of hanging forever. The partial recording is
     /// analyzed and returned as usual.
+    #if targetEnvironment(simulator)
+    static let repetitionsSafetyTimeoutSec: Double = 5
+    #else
     static let repetitionsSafetyTimeoutSec: Double = 30
+    #endif
 
     @Published private(set) var isRecording = false
     @Published private(set) var elapsed: Double = 0        // seconds since start
@@ -43,8 +47,10 @@ final class TrialRecorder: ObservableObject {
     /// Queue-owned cycle count (recordQueue only); mirrored into `liveCycleCount`.
     private var currentCycles = 0
     private var samplesSinceLastAnalysis: Int = 0
-    /// Re-run the cycle-count analyzer every N samples (30 fps → ~3 Hz updates).
-    private static let analysisInterval = 10
+    /// Re-run the cycle-count analyzer every N samples (30 fps → ~1 Hz updates).
+    /// Lower frequency keeps the serial recordQueue responsive so _finish() can
+    /// start immediately when the stop condition is met.
+    private static let analysisInterval = 30
 
     /// Serial queue that owns all mutable state; `ingest` is safe to call from any thread.
     private let recordQueue = DispatchQueue(label: "vcr.trialrecorder", qos: .userInitiated)
@@ -102,8 +108,17 @@ final class TrialRecorder: ObservableObject {
                     self.samplesSinceLastAnalysis = 0
                     self.currentCycles = self.analyzer.analyze(self.buffer).cycleCount
                 }
-                shouldStop = self.currentCycles >= self.stopCondition.targetReps
-                    || t >= Self.repetitionsSafetyTimeoutSec
+                if self.currentCycles >= self.stopCondition.targetReps {
+                    shouldStop = true
+                } else if t >= Self.repetitionsSafetyTimeoutSec {
+                    EventStore.shared.append(
+                        type: "PERF", tag: "safety_timeout",
+                        message: String(format: "Repetition safety timeout hit after %.1f s", t),
+                        details: ["duration": String(format: "%.1f", t)])
+                    shouldStop = true
+                } else {
+                    shouldStop = false
+                }
             }
 
             let capturedElapsed = t
@@ -120,6 +135,7 @@ final class TrialRecorder: ObservableObject {
 
     /// Stop early / manually (e.g. user taps "Stop").
     func finish() {
+        print("[PERF] finish() called from main")
         recordQueue.async { [weak self] in self?._finish() }
     }
 
@@ -127,19 +143,59 @@ final class TrialRecorder: ObservableObject {
     private func _finish() {
         guard isActive else { return }
         isActive = false
-        let metrics = analyzer.analyze(buffer)
-        let trial = Trial(
-            taskType: taskType,
-            side: side,
-            source: source,
-            stopCondition: stopCondition,
-            startedAt: startWallClock ?? Date(),
-            startUptime: startMonotonic,
-            samples: buffer,
-            metrics: metrics
-        )
-        DispatchQueue.main.async { [weak self] in
+
+        let finishStart = CFAbsoluteTimeGetCurrent()
+        print("[PERF] _finish() started, buffer samples: \(buffer.count)")
+        EventStore.shared.append(
+            type: "PERF", tag: "finish_start",
+            message: "_finish() started",
+            details: ["buffer_samples": "\(buffer.count)"])
+
+        // Snapshot everything the analysis needs.
+        let snapshotBuffer    = buffer
+        let snapshotTaskType  = taskType
+        let snapshotSide      = side
+        let snapshotSource    = source
+        let snapshotStop      = stopCondition
+        let snapshotStart     = startWallClock ?? Date()
+        let snapshotUptime    = startMonotonic
+
+        // Tell the UI the recording is over right now — no waiting for analysis.
+        Task { @MainActor [weak self] in
             self?.isRecording = false
+        }
+
+        // The analysis stays on this background queue; it never touches the main thread.
+        let analysisStart = CFAbsoluteTimeGetCurrent()
+        let metrics = analyzer.analyze(snapshotBuffer)
+        let analysisElapsed = CFAbsoluteTimeGetCurrent() - analysisStart
+
+        let trial = Trial(
+            taskType:      snapshotTaskType,
+            side:          snapshotSide,
+            source:        snapshotSource,
+            stopCondition: snapshotStop,
+            startedAt:     snapshotStart,
+            startUptime:   snapshotUptime,
+            samples:       snapshotBuffer,
+            metrics:       metrics
+        )
+
+        print("[PERF] analyzed \(snapshotBuffer.count) samples in \(String(format: "%.3f", analysisElapsed)) s")
+        EventStore.shared.append(
+            type: "PERF", tag: "analysis_timed",
+            message: String(format: "Analyzed %d samples in %.3f s", snapshotBuffer.count, analysisElapsed),
+            details: ["samples": "\(snapshotBuffer.count)",
+                      "seconds": String(format: "%.3f", analysisElapsed)])
+
+        let finishElapsed = CFAbsoluteTimeGetCurrent() - finishStart
+        print("[PERF] _finish() completed in \(String(format: "%.3f", finishElapsed)) s")
+        EventStore.shared.append(
+            type: "PERF", tag: "finish_complete",
+            message: String(format: "_finish() completed in %.3f s", finishElapsed),
+            details: ["seconds": String(format: "%.3f", finishElapsed)])
+
+        Task { @MainActor [weak self] in
             self?.onComplete?(trial)
         }
     }

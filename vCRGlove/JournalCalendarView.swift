@@ -9,6 +9,7 @@ import SwiftUI
 
 struct JournalCalendarPanel: View {
     @ObservedObject private var store = JournalStore.shared
+    @ObservedObject private var taskStore = TaskSessionStore.shared
 
     @State private var displayedMonth = Calendar.current.startOfMonth(for: Date())
     @State private var selectedDate = Date()
@@ -73,6 +74,11 @@ struct JournalCalendarPanel: View {
                             .background(
                                 Circle()
                                     .fill(dayBackgroundColor(for: date))
+                                    .overlay(
+                                        Circle()
+                                            .stroke(hasMovementMeasurement(on: date) ? Color(red: 0.0, green: 0.4, blue: 0.0) : .clear,
+                                                    lineWidth: 3)
+                                    )
                             )
 
                         }
@@ -174,6 +180,10 @@ struct JournalCalendarPanel: View {
     
     private func hasStimulation(on date: Date) -> Bool {
         entries(on: date).contains { $0.type == .stimulation }
+    }
+
+    private func hasMovementMeasurement(on date: Date) -> Bool {
+        taskStore.sessions.contains { calendar.isDate($0.date, inSameDayAs: date) }
     }
 
     private func dayBackgroundColor(for date: Date) -> Color {

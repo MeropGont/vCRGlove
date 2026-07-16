@@ -33,10 +33,14 @@ final class SyntheticCaptureSource {
     private var samples: [TimestampedSample] = []
     private var index = 0
     private weak var recorder: TrialRecorder?
+    private var onSample: ((_ value: Double, _ time: Double) -> Void)?
 
     /// Pre-generates a signal long enough for any stop condition and starts
     /// feeding it to the recorder at the signal's sample rate.
-    func start(preset: Preset, feeding recorder: TrialRecorder, seed: UInt64 = .random(in: 0...UInt64.max)) {
+    func start(preset: Preset,
+               feeding recorder: TrialRecorder,
+               onSample: ((_ value: Double, _ time: Double) -> Void)? = nil,
+               seed: UInt64 = .random(in: 0...UInt64.max)) {
         stop()
         var params = preset.params
         params.durationSec = 60   // plenty for 10 reps or any duration mode
@@ -44,6 +48,7 @@ final class SyntheticCaptureSource {
         samples = generator.generate()
         index = 0
         self.recorder = recorder
+        self.onSample = onSample
 
         let interval = 1.0 / params.sampleRateHz
         let t = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
@@ -65,6 +70,8 @@ final class SyntheticCaptureSource {
         }
         let sample = samples[index]
         index += 1
-        recorder.ingest(value: sample.value, at: ProcessInfo.processInfo.systemUptime)
+        let time = ProcessInfo.processInfo.systemUptime
+        recorder.ingest(value: sample.value, at: time)
+        onSample?(sample.value, time)
     }
 }

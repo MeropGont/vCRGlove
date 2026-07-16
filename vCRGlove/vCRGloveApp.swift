@@ -24,6 +24,8 @@ enum Haptics {
 
 @main
 struct vCRGloveApp: App {
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+
     init() {
         _ = PhoneWC.shared
 
@@ -46,7 +48,11 @@ struct vCRGloveApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            if hasSeenOnboarding {
+                MainTabView()
+            } else {
+                OnboardingView()
+            }
         }
     }
 }
