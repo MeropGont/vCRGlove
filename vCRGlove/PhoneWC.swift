@@ -43,6 +43,10 @@ final class PhoneWC: NSObject, WCSessionDelegate {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
                     self?.attemptStartMotionStream(retriesLeft: retriesLeft - 1)
                 }
+            } else {
+                // Fall back to queued delivery; the watch will act on it when it becomes reachable.
+                WCSession.default.transferUserInfo(["type": "startMotionStream"])
+                Logger.shared.log("WC", "Queued startMotionStream via transferUserInfo")
             }
             return
         }
@@ -55,12 +59,15 @@ final class PhoneWC: NSObject, WCSessionDelegate {
     }
 
     func stopMotionStream() {
-        guard WCSession.default.isReachable else { return }
-        WCSession.default.sendMessage(["type": "stopMotionStream"],
-                                      replyHandler: nil,
-                                      errorHandler: { error in
-            Logger.shared.log("WC", "stopMotionStream failed: \(error.localizedDescription)")
-        })
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(["type": "stopMotionStream"],
+                                          replyHandler: nil,
+                                          errorHandler: { error in
+                Logger.shared.log("WC", "stopMotionStream failed: \(error.localizedDescription)")
+            })
+        } else {
+            WCSession.default.transferUserInfo(["type": "stopMotionStream"])
+        }
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {

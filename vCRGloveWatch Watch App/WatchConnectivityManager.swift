@@ -58,8 +58,7 @@ final class WatchConnectivityManager: NSObject, WCSessionDelegate {
     }
 
     /// Phone-initiated commands: start/stop streaming for a movement trial.
-    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
-        guard let type = message["type"] as? String else { return }
+    private func handleCommand(_ type: String) {
         print("WC received command:", type)
         DispatchQueue.main.async {
             switch type {
@@ -68,6 +67,17 @@ final class WatchConnectivityManager: NSObject, WCSessionDelegate {
             default: break
             }
         }
+    }
+
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        guard let type = message["type"] as? String else { return }
+        handleCommand(type)
+    }
+
+    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
+        guard let type = userInfo["type"] as? String else { return }
+        print("WC received queued command:", type)
+        handleCommand(type)
     }
 
     #if os(watchOS)
