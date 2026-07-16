@@ -20,17 +20,24 @@ struct ContentView: View {
                 .monospacedDigit()
 
             HStack {
+                Button(motion.isStreaming ? "Stop Stream" : "Stream") {
+                    motion.isStreaming ? motion.stopStreaming() : motion.startStreaming()
+                }
+
+                Button(motion.isRecording ? "Stop Rec" : "Record") {
+                    motion.isRecording ? motion.stop() : motion.start()
+                }
+            }
+
+            HStack {
                 Button("Ping iPhone") {
                     WatchConnectivityManager.shared.sendPing()
                 }
-                .onAppear { _ = WatchConnectivityManager.shared } // ensure activation
 
-                Button(motion.isRecording ? "Stop" : "Start") {
-                    motion.isRecording ? motion.stop() : motion.start()
-                }
                 Button("Send") {
                     motion.exportRecordingToPhone()
-                }.disabled(motion.isRecording)
+                }
+                .disabled(motion.isRecording)
             }
         }
         .onAppear { _ = WatchConnectivityManager.shared } // ensure WCSession activates

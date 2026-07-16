@@ -43,17 +43,26 @@ final class WatchMotionCapture: ObservableObject {
     private var staleTimer: Timer?
 
     func start(completion: @escaping (Result<Void, CaptureError>) -> Void) {
-        guard PhoneWC.shared.isWatchReachable else {
-            completion(.failure(.watchNotReachable))
-            return
-        }
         watchT0 = nil
         PhoneWC.shared.onMotionBatch = { [weak self] batch in
             self?.ingest(batch)
         }
         PhoneWC.shared.startMotionStream()
         startStaleTimer()
-        completion(.success(()))
+
+        // Give the watch a few seconds to become reachable before failing.
+        if PhoneWC.shared.isWatchReachable {
+            completion(.success(()))
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+                guard let self else { return }
+                if PhoneWC.shared.isWatchReachable || self.isReceiving {
+                    completion(.success(()))
+                } else {
+                    completion(.failure(.watchNotReachable))
+                }
+            }
+        }
     }
 
     func stop() {

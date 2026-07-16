@@ -29,15 +29,38 @@ final class PhoneWC: NSObject, WCSessionDelegate {
     }
 
     func startMotionStream() {
-        guard WCSession.default.isReachable else { return }
+        guard WCSession.default.activationState == .activated else {
+            Logger.shared.log("WC", "Cannot start stream: WCSession not activated yet")
+            return
+        }
+        attemptStartMotionStream(retriesLeft: 10)
+    }
+
+    private func attemptStartMotionStream(retriesLeft: Int) {
+        guard WCSession.default.isReachable else {
+            Logger.shared.log("WC", "Watch not reachable, retries left: \(retriesLeft)")
+            if retriesLeft > 0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                    self?.attemptStartMotionStream(retriesLeft: retriesLeft - 1)
+                }
+            }
+            return
+        }
         WCSession.default.sendMessage(["type": "startMotionStream"],
-                                      replyHandler: nil, errorHandler: nil)
+                                      replyHandler: nil,
+                                      errorHandler: { error in
+            Logger.shared.log("WC", "startMotionStream failed: \(error.localizedDescription)")
+        })
+        Logger.shared.log("WC", "Sent startMotionStream")
     }
 
     func stopMotionStream() {
         guard WCSession.default.isReachable else { return }
         WCSession.default.sendMessage(["type": "stopMotionStream"],
-                                      replyHandler: nil, errorHandler: nil)
+                                      replyHandler: nil,
+                                      errorHandler: { error in
+            Logger.shared.log("WC", "stopMotionStream failed: \(error.localizedDescription)")
+        })
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {

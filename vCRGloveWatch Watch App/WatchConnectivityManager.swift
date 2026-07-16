@@ -40,17 +40,27 @@ final class WatchConnectivityManager: NSObject, WCSessionDelegate {
         let s = WCSession.default
         guard s.isReachable else { return }
         s.sendMessage(["type": "motionBatch", "samples": samples],
-                      replyHandler: nil, errorHandler: nil)
+                      replyHandler: nil,
+                      errorHandler: { error in
+            print("WC sendMotionBatch failed:", error.localizedDescription)
+        })
     }
 
     // MARK: - WCSessionDelegate
     func session(_ session: WCSession,
                  activationDidCompleteWith activationState: WCSessionActivationState,
-                 error: Error?) { }
+                 error: Error?) {
+        if let error {
+            print("WC activation failed:", error.localizedDescription)
+        } else {
+            print("WC activation state:", activationState.rawValue)
+        }
+    }
 
     /// Phone-initiated commands: start/stop streaming for a movement trial.
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
         guard let type = message["type"] as? String else { return }
+        print("WC received command:", type)
         DispatchQueue.main.async {
             switch type {
             case "startMotionStream": MotionService.shared.startStreaming()
@@ -61,6 +71,8 @@ final class WatchConnectivityManager: NSObject, WCSessionDelegate {
     }
 
     #if os(watchOS)
-    func sessionReachabilityDidChange(_ session: WCSession) { }
+    func sessionReachabilityDidChange(_ session: WCSession) {
+        print("WC reachability changed:", session.isReachable)
+    }
     #endif
 }

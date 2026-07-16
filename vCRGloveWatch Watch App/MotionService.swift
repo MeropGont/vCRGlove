@@ -123,9 +123,19 @@ final class MotionService: ObservableObject {
     }
 
     func exportRecordingToPhone() {
-        guard let url = FileManager.default.temporaryDirectory
+        guard let sourceURL = FileManager.default.temporaryDirectory
             .contents?.sorted(by: { $0.path > $1.path }).first else { return } // last file heuristic
-        WatchConnectivityManager.shared.transferFile(url, meta: ["type":"tremor", "sr":"\(Int(samplesPerSec))"])
+
+        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let destURL = documentsURL.appendingPathComponent(sourceURL.lastPathComponent)
+
+        try? FileManager.default.removeItem(at: destURL)
+        do {
+            try FileManager.default.copyItem(at: sourceURL, to: destURL)
+            WatchConnectivityManager.shared.transferFile(destURL, meta: ["type": "tremor", "sr": "\(Int(samplesPerSec))"])
+        } catch {
+            print("Copy failed:", error)
+        }
     }
 }
 
