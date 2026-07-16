@@ -11,7 +11,7 @@ import Combine
 import WatchConnectivity
 import WatchKit
 
-final class MotionService: ObservableObject {
+final class MotionService: NSObject, ObservableObject {
     static let shared = MotionService()
 
     @Published var isRecording = false
@@ -24,6 +24,8 @@ final class MotionService: ObservableObject {
     private var oneSecBuffer = [Double]()
     private var lastWriteTime = CFAbsoluteTimeGetCurrent()
     private var extendedSession: WKExtendedRuntimeSession?
+
+    private override init() { super.init() }
 
     private func csvURL() throws -> URL {
         let fmt = ISO8601DateFormatter()
