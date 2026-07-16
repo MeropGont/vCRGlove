@@ -561,6 +561,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
 				WATCHOS_DEPLOYMENT_TARGET = 10.6;
+				WKBackgroundModes = "self-care-processing";
 			};
 			name = Debug;
 		};
@@ -595,6 +596,7 @@
 				TARGETED_DEVICE_FAMILY = 4;
 				VALIDATE_PRODUCT = YES;
 				WATCHOS_DEPLOYMENT_TARGET = 10.6;
+				WKBackgroundModes = "self-care-processing";
 			};
 			name = Release;
 		};

@@ -9,6 +9,7 @@ import Foundation
 import CoreMotion
 import Combine
 import WatchConnectivity
+import WatchKit
 
 final class MotionService: ObservableObject {
     static let shared = MotionService()
@@ -22,6 +23,7 @@ final class MotionService: ObservableObject {
     private var fileHandle: FileHandle?
     private var oneSecBuffer = [Double]()
     private var lastWriteTime = CFAbsoluteTimeGetCurrent()
+    private var extendedSession: WKExtendedRuntimeSession?
 
     private func csvURL() throws -> URL {
         let fmt = ISO8601DateFormatter()
@@ -99,6 +101,17 @@ final class MotionService: ObservableObject {
         isStreaming = true
         streamBatch.removeAll()
 
+        // Keep the watch app alive while streaming so the display can dim
+        // without the app being suspended and breaking WCSession.
+        let session = WKExtendedRuntimeSession()
+        session.delegate = self
+        extendedSession = session
+        if #available(watchOS 11.0, *) {
+            session.start(at: Date())
+        } else {
+            session.start()
+        }
+
         motion.deviceMotionUpdateInterval = 1.0 / samplesPerSec
         motion.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical, to: queue) { [weak self] dm, _ in
             guard let self, let dm, self.isStreaming else { return }
@@ -116,6 +129,8 @@ final class MotionService: ObservableObject {
         guard isStreaming else { return }
         isStreaming = false
         motion.stopDeviceMotionUpdates()
+        extendedSession?.invalidate()
+        extendedSession = nil
         if !streamBatch.isEmpty {
             WatchConnectivityManager.shared.sendMotionBatch(streamBatch)
             streamBatch.removeAll()
@@ -136,6 +151,21 @@ final class MotionService: ObservableObject {
         } catch {
             print("Copy failed:", error)
         }
+    }
+}
+
+extension MotionService: WKExtendedRuntimeSessionDelegate {
+    func extendedRuntimeSessionDidStart(_ session: WKExtendedRuntimeSession) {
+        print("Extended runtime session started")
+    }
+
+    func extendedRuntimeSessionWillExpire(_ session: WKExtendedRuntimeSession) {
+        print("Extended runtime session will expire")
+    }
+
+    func extendedRuntimeSession(_ session: WKExtendedRuntimeSession, didInvalidateWith reason: WKExtendedRuntimeSessionInvalidationReason, error: Error?) {
+        print("Extended runtime session invalidated:", reason.rawValue, error?.localizedDescription ?? "no error")
+        extendedSession = nil
     }
 }
 
