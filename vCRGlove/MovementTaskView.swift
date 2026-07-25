@@ -98,6 +98,11 @@ struct MovementTaskView: View {
                                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
                                 .padding(6)
                         }
+                    // TODO: Replace placeholder with VideoPlayer(videoURL) once assets are ready.
+                    MovementVideoPlaceholder(taskType: taskType)
+                        .frame(height: 140)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+
                     // Live signal chart — shows exactly what the analyzer sees.
                     LiveSignalChart(monitor: signalMonitor)
                         .frame(height: 56)
@@ -1429,6 +1434,27 @@ private struct WatchStatusView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+/// Placeholder shown under the camera preview during movement tasks.
+/// Swap in a `VideoPlayer` here once the instruction videos are ready.
+private struct MovementVideoPlaceholder: View {
+    let taskType: MovementTaskType
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "play.rectangle.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(.secondary.opacity(0.6))
+            Text("Instruction video for \(taskType.displayName)")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            Text("Coming soon")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
