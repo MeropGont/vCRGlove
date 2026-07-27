@@ -224,7 +224,7 @@ struct MovementTaskView: View {
                 .font(.title3)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-                .padding(.top, usingCamera ? 520 : (usingWatch ? 120 : 0))
+                .padding(.top, usingCamera ? 420 : (usingWatch ? 120 : 0))
             Text("\(n)")
                 .font(.system(size: 96, weight: .bold, design: .rounded))
                 .contentTransition(.numericText())
@@ -315,7 +315,7 @@ struct MovementTaskView: View {
     private var recordingView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 520) }
+            if usingCamera { Color.clear.frame(height: 420) }
             if usingWatch { Color.clear.frame(height: 114) }
             if let recorder {
                 RecordingProgressView(recorder: recorder,
@@ -1088,7 +1088,7 @@ struct MovementSessionFlowView: View {
     private var countdownView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 520) }
+            if usingCamera { Color.clear.frame(height: 420) }
             if usingWatch  { Color.clear.frame(height: 120) }
 
             Text(progressText)
@@ -1120,7 +1120,7 @@ struct MovementSessionFlowView: View {
     private var recordingView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 520) }
+            if usingCamera { Color.clear.frame(height: 420) }
             if usingWatch  { Color.clear.frame(height: 114) }
 
             Text(progressText)
