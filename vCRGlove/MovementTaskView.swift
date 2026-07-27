@@ -109,7 +109,7 @@ struct MovementTaskView: View {
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                 }
                 .padding(.horizontal)
-                .padding(.top, 4)
+                .padding(.top, 60)
             }
             // Persistent watch signal chart: same idea as the camera preview.
             else if usingWatch, let wc = watchCapture {
@@ -127,6 +127,7 @@ struct MovementTaskView: View {
             }
         }
         .navigationTitle("Movement Test")
+        .toolbarBackground(.visible, for: .navigationBar)
         .onChange(of: recorder?.isRecording) { _, isRec in
             if isRec == false, case .recording = phase {
                 phase = .analyzing
@@ -829,13 +830,18 @@ struct MovementSessionFlowView: View {
                         MovementVideoPlaceholder(taskType: currentStep.task)
                             .frame(height: 140)
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+
+                        LiveSignalChart(monitor: signalMonitor)
+                            .frame(height: 56)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                     }
                     .padding(.horizontal)
-                    .padding(.top, 8)
+                    .padding(.top, 60)
                 }
             }
             .navigationTitle("Movement Test")
             .navigationBarTitleDisplayMode(.large)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
@@ -1081,7 +1087,7 @@ struct MovementSessionFlowView: View {
     private var countdownView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 500) }
+            if usingCamera { Color.clear.frame(height: 480) }
             if usingWatch  { Color.clear.frame(height: 120) }
 
             Text(progressText)
@@ -1113,7 +1119,7 @@ struct MovementSessionFlowView: View {
     private var recordingView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 500) }
+            if usingCamera { Color.clear.frame(height: 480) }
             if usingWatch  { Color.clear.frame(height: 114) }
 
             Text(progressText)
@@ -1127,10 +1133,6 @@ struct MovementSessionFlowView: View {
             if let recorder {
                 RecordingProgressView(recorder: recorder, stopCondition: stopCondition)
             }
-
-            LiveSignalChart(monitor: signalMonitor)
-                .frame(height: 56)
-                .padding(.horizontal)
 
             Button(role: .destructive) {
                 recorder?.finish()
