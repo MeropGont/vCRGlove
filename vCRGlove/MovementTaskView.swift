@@ -1141,8 +1141,6 @@ struct MovementSessionFlowView: View {
                 Label("Stop", systemImage: "stop.circle.fill")
                     .font(.headline)
             }
-
-            Spacer()
         }
         .padding(.horizontal)
         .padding(.top, 4)
