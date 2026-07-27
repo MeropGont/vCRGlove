@@ -100,7 +100,7 @@ struct MovementTaskView: View {
                         }
                     // TODO: Replace placeholder with VideoPlayer(videoURL) once assets are ready.
                     MovementVideoPlaceholder(taskType: taskType)
-                        .frame(height: 140)
+                        .frame(height: 100)
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
 
                     // Live signal chart — shows exactly what the analyzer sees.
@@ -109,7 +109,7 @@ struct MovementTaskView: View {
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                 }
                 .padding(.horizontal)
-                .padding(.top, 100)
+                .padding(.top, 60)
             }
             // Persistent watch signal chart: same idea as the camera preview.
             else if usingWatch, let wc = watchCapture {
@@ -829,7 +829,7 @@ struct MovementSessionFlowView: View {
 
                         // TODO: Replace placeholder with VideoPlayer(videoURL) once assets are ready.
                         MovementVideoPlaceholder(taskType: currentStep.task)
-                            .frame(height: 140)
+                            .frame(height: 100)
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
 
                         LiveSignalChart(monitor: signalMonitor)
@@ -837,7 +837,7 @@ struct MovementSessionFlowView: View {
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                     }
                     .padding(.horizontal)
-                    .padding(.top, 100)
+                    .padding(.top, 60)
                 }
             }
             .navigationTitle("Movement Test")
