@@ -109,7 +109,7 @@ struct MovementTaskView: View {
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                 }
                 .padding(.horizontal)
-                .padding(.top, 60)
+                .padding(.top, 100)
             }
             // Persistent watch signal chart: same idea as the camera preview.
             else if usingWatch, let wc = watchCapture {
@@ -127,6 +127,7 @@ struct MovementTaskView: View {
             }
         }
         .navigationTitle("Movement Test")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.visible, for: .navigationBar)
         .onChange(of: recorder?.isRecording) { _, isRec in
             if isRec == false, case .recording = phase {
@@ -223,7 +224,7 @@ struct MovementTaskView: View {
                 .font(.title3)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-                .padding(.top, usingCamera ? 560 : (usingWatch ? 120 : 0))
+                .padding(.top, usingCamera ? 520 : (usingWatch ? 120 : 0))
             Text("\(n)")
                 .font(.system(size: 96, weight: .bold, design: .rounded))
                 .contentTransition(.numericText())
@@ -314,7 +315,7 @@ struct MovementTaskView: View {
     private var recordingView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 560) }
+            if usingCamera { Color.clear.frame(height: 520) }
             if usingWatch { Color.clear.frame(height: 114) }
             if let recorder {
                 RecordingProgressView(recorder: recorder,
@@ -836,11 +837,11 @@ struct MovementSessionFlowView: View {
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                     }
                     .padding(.horizontal)
-                    .padding(.top, 60)
+                    .padding(.top, 100)
                 }
             }
             .navigationTitle("Movement Test")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -1087,7 +1088,7 @@ struct MovementSessionFlowView: View {
     private var countdownView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 480) }
+            if usingCamera { Color.clear.frame(height: 520) }
             if usingWatch  { Color.clear.frame(height: 120) }
 
             Text(progressText)
@@ -1119,7 +1120,7 @@ struct MovementSessionFlowView: View {
     private var recordingView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 480) }
+            if usingCamera { Color.clear.frame(height: 520) }
             if usingWatch  { Color.clear.frame(height: 114) }
 
             Text(progressText)
