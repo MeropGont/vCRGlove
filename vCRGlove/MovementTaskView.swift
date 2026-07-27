@@ -81,7 +81,7 @@ struct MovementTaskView: View {
                         .frame(height: 200)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .overlay {
-                            HandGuideOverlay(capture: cc, taskType: taskType)
+                            HandGuideOverlay(capture: cc, taskType: taskType, side: side)
                         }
                         .overlay {
                             ClippedWarningOverlay(capture: cc)
@@ -222,7 +222,7 @@ struct MovementTaskView: View {
                 .font(.title3)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-                .padding(.top, usingCamera ? 280 : (usingWatch ? 120 : 0))
+                .padding(.top, usingCamera ? 420 : (usingWatch ? 120 : 0))
             Text("\(n)")
                 .font(.system(size: 96, weight: .bold, design: .rounded))
                 .contentTransition(.numericText())
@@ -313,7 +313,7 @@ struct MovementTaskView: View {
     private var recordingView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 274) }
+            if usingCamera { Color.clear.frame(height: 420) }
             if usingWatch { Color.clear.frame(height: 114) }
             if let recorder {
                 RecordingProgressView(recorder: recorder,
@@ -463,6 +463,7 @@ private struct HandDistanceHint: View {
 struct HandGuideOverlay: View {
     @ObservedObject var capture: VisionHandPoseCapture
     let taskType: MovementTaskType
+    let side: BodySide
 
     /// Hand is well placed: detected, fully in frame, and at a good distance.
     private var isPositionedWell: Bool {
@@ -495,10 +496,12 @@ struct HandGuideOverlay: View {
                     .scaledToFit()
                     .frame(height: zone.height * 0.55)
                     .foregroundStyle(color.opacity(good ? 0.25 : 0.55))
+                    // Mirror the silhouette for the left hand so it matches the user's own hand.
+                    .scaleEffect(x: side == .left ? -1 : 1, y: 1)
                     .position(x: zone.midX, y: zone.midY)
 
                 if !good {
-                    Text("Place your hand here")
+                    Text("Place your \(side == .left ? "left" : "right") hand here")
                         .font(.caption.bold())
                         .foregroundStyle(.white)
                         .padding(.vertical, 3)
@@ -819,8 +822,13 @@ struct MovementSessionFlowView: View {
                         CameraPreviewView(session: cc.session)
                             .frame(height: 200)
                             .clipShape(RoundedRectangle(cornerRadius: 14))
-                            .overlay { HandGuideOverlay(capture: cc, taskType: currentStep.task) }
+                            .overlay { HandGuideOverlay(capture: cc, taskType: currentStep.task, side: currentStep.side) }
                             .overlay { ClippedWarningOverlay(capture: cc) }
+
+                        // TODO: Replace placeholder with VideoPlayer(videoURL) once assets are ready.
+                        MovementVideoPlaceholder(taskType: currentStep.task)
+                            .frame(height: 140)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
                     }
                     .padding(.horizontal)
                     .padding(.top, 8)
@@ -1073,7 +1081,7 @@ struct MovementSessionFlowView: View {
     private var countdownView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 280) }
+            if usingCamera { Color.clear.frame(height: 360) }
             if usingWatch  { Color.clear.frame(height: 120) }
 
             Text(progressText)
@@ -1105,7 +1113,7 @@ struct MovementSessionFlowView: View {
     private var recordingView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 274) }
+            if usingCamera { Color.clear.frame(height: 360) }
             if usingWatch  { Color.clear.frame(height: 114) }
 
             Text(progressText)
