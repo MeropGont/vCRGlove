@@ -109,7 +109,7 @@ struct MovementTaskView: View {
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                 }
                 .padding(.horizontal)
-                .padding(.top, 60)
+                .padding(.top, 40)
             }
             // Persistent watch signal chart: same idea as the camera preview.
             else if usingWatch, let wc = watchCapture {
@@ -837,7 +837,7 @@ struct MovementSessionFlowView: View {
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                     }
                     .padding(.horizontal)
-                    .padding(.top, 60)
+                    .padding(.top, 40)
                 }
             }
             .navigationTitle("Movement Test")
