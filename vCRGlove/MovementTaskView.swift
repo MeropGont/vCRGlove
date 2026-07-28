@@ -78,7 +78,7 @@ struct MovementTaskView: View {
             else if usingCamera, let cc = cameraCapture {
                 VStack(spacing: 4) {
                     CameraPreviewView(session: cc.session)
-                        .frame(height: 200)
+                        .frame(height: 160)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .overlay {
                             HandGuideOverlay(capture: cc, taskType: taskType, side: side)
@@ -100,12 +100,12 @@ struct MovementTaskView: View {
                         }
                     // TODO: Replace placeholder with VideoPlayer(videoURL) once assets are ready.
                     MovementVideoPlaceholder(taskType: taskType)
-                        .frame(height: 100)
+                        .frame(height: 80)
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
 
                     // Live signal chart — shows exactly what the analyzer sees.
                     LiveSignalChart(monitor: signalMonitor)
-                        .frame(height: 56)
+                        .frame(height: 40)
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                 }
                 .padding(.horizontal)
@@ -224,7 +224,7 @@ struct MovementTaskView: View {
                 .font(.title3)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-                .padding(.top, usingCamera ? 420 : (usingWatch ? 120 : 0))
+                .padding(.top, usingCamera ? 340 : (usingWatch ? 120 : 0))
             Text("\(n)")
                 .font(.system(size: 96, weight: .bold, design: .rounded))
                 .contentTransition(.numericText())
@@ -315,7 +315,7 @@ struct MovementTaskView: View {
     private var recordingView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 420) }
+            if usingCamera { Color.clear.frame(height: 340) }
             if usingWatch { Color.clear.frame(height: 114) }
             if let recorder {
                 RecordingProgressView(recorder: recorder,
@@ -822,18 +822,18 @@ struct MovementSessionFlowView: View {
                 if usingCamera, let cc = cameraCapture, showsPreview {
                     VStack(spacing: 4) {
                         CameraPreviewView(session: cc.session)
-                            .frame(height: 200)
+                            .frame(height: 160)
                             .clipShape(RoundedRectangle(cornerRadius: 14))
                             .overlay { HandGuideOverlay(capture: cc, taskType: currentStep.task, side: currentStep.side) }
                             .overlay { ClippedWarningOverlay(capture: cc) }
 
                         // TODO: Replace placeholder with VideoPlayer(videoURL) once assets are ready.
                         MovementVideoPlaceholder(taskType: currentStep.task)
-                            .frame(height: 100)
+                            .frame(height: 80)
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
 
                         LiveSignalChart(monitor: signalMonitor)
-                            .frame(height: 56)
+                            .frame(height: 40)
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                     }
                     .padding(.horizontal)
@@ -1088,7 +1088,7 @@ struct MovementSessionFlowView: View {
     private var countdownView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 420) }
+            if usingCamera { Color.clear.frame(height: 340) }
             if usingWatch  { Color.clear.frame(height: 120) }
 
             Text(progressText)
@@ -1120,7 +1120,7 @@ struct MovementSessionFlowView: View {
     private var recordingView: some View {
         VStack(spacing: 24) {
             // Top padding so content doesn't overlap the persistent preview overlay.
-            if usingCamera { Color.clear.frame(height: 420) }
+            if usingCamera { Color.clear.frame(height: 340) }
             if usingWatch  { Color.clear.frame(height: 114) }
 
             Text(progressText)
