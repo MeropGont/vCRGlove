@@ -55,6 +55,10 @@ final class TrialRecorder: ObservableObject {
     /// Serial queue that owns all mutable state; `ingest` is safe to call from any thread.
     private let recordQueue = DispatchQueue(label: "vcr.trialrecorder", qos: .userInitiated)
 
+    /// Fires every 0.5 s to enforce the duration / safety timeout even when no samples
+    /// are arriving (e.g. the camera or watch feed stalls).
+    private var durationTimer: DispatchSourceTimer?
+
     /// Called when the stop condition is met (or `finish()` is invoked manually).
     var onComplete: ((Trial) -> Void)?
 
@@ -79,12 +83,42 @@ final class TrialRecorder: ObservableObject {
             self.samplesSinceLastAnalysis = 0
             self.startWallClock = Date()
             self.startMonotonic = ProcessInfo.processInfo.systemUptime
+            self.startDurationTimer()
             DispatchQueue.main.async {
                 self.liveCycleCount = 0
                 self.elapsed = 0
                 self.isRecording = true
             }
         }
+    }
+
+    private func startDurationTimer() {
+        durationTimer?.cancel()
+        let timer = DispatchSource.makeTimerSource(queue: recordQueue)
+        timer.schedule(deadline: .now() + .milliseconds(500), repeating: .milliseconds(500))
+        timer.setEventHandler { [weak self] in
+            guard let self, self.isActive else { return }
+            let elapsed = ProcessInfo.processInfo.systemUptime - self.startMonotonic
+            DispatchQueue.main.async {
+                self.elapsed = elapsed
+            }
+            switch self.stopCondition.mode {
+            case .duration:
+                if elapsed >= self.stopCondition.targetDuration {
+                    self._finish()
+                }
+            case .repetitions:
+                if elapsed >= Self.repetitionsSafetyTimeoutSec {
+                    EventStore.shared.append(
+                        type: "PERF", tag: "safety_timeout",
+                        message: String(format: "Repetition safety timeout hit after %.1f s", elapsed),
+                        details: ["duration": String(format: "%.1f", elapsed)])
+                    self._finish()
+                }
+            }
+        }
+        timer.resume()
+        durationTimer = timer
     }
 
     /// Feed one sample. `at` is an absolute monotonic time (systemUptime);
@@ -143,6 +177,8 @@ final class TrialRecorder: ObservableObject {
     private func _finish() {
         guard isActive else { return }
         isActive = false
+        durationTimer?.cancel()
+        durationTimer = nil
 
         let finishStart = CFAbsoluteTimeGetCurrent()
         print("[PERF] _finish() started, buffer samples: \(buffer.count)")
