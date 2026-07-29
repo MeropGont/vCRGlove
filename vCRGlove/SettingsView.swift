@@ -134,15 +134,32 @@ private struct VCRSettingsView: View {
 
 private struct ProfileSettingsView: View {
     @Binding var patientID: String
+    @StateObject private var appSettings = AppSettings.shared
 
     var body: some View {
         Form {
             Section("Profile") {
                 TextField("ID", text: $patientID)
-                Text("Language: English / Deutsch")
-                    .foregroundStyle(.secondary)
                 Text("Avatar selection will go here.")
                     .foregroundStyle(.secondary)
+            }
+
+            Section("Language") {
+                Picker("Language", selection: $appSettings.language) {
+                    ForEach(AppLanguage.allCases) { lang in
+                        Text(lang.displayName).tag(lang)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
+            Section("Font Size") {
+                Picker("Font Size", selection: $appSettings.fontSize) {
+                    ForEach(AppFontSize.allCases) { size in
+                        Text(size.displayName).tag(size)
+                    }
+                }
+                .pickerStyle(.segmented)
             }
         }
         .navigationTitle("Profile")
