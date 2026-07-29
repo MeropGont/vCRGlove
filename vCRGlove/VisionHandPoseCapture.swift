@@ -87,9 +87,12 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
                 return
             }
             self.videoQueue.async {
+                let start = CFAbsoluteTimeGetCurrent()
                 do {
                     try self.configureSessionIfNeeded()
                     self.session.startRunning()
+                    let elapsed = CFAbsoluteTimeGetCurrent() - start
+                    print("[PERF] camera session started in \(String(format: "%.3f", elapsed)) s")
                     DispatchQueue.main.async {
                         self.isSessionRunning = true
                         completion(.success(()))
@@ -108,7 +111,10 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
                 return
             }
             if self.session.isRunning {
+                let start = CFAbsoluteTimeGetCurrent()
                 self.session.stopRunning()
+                let elapsed = CFAbsoluteTimeGetCurrent() - start
+                print("[PERF] camera session stopped in \(String(format: "%.3f", elapsed)) s")
                 DispatchQueue.main.async { self.isSessionRunning = false }
             }
             DispatchQueue.main.async { completion?() }
