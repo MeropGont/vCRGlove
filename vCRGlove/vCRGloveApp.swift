@@ -247,6 +247,81 @@ let Translations: [String: [String: String]] = [
     "Lower values indicate steadier movement.": ["de": "Niedrigere Werte bedeuten gleichmäßigere Bewegungen."],
     "No recordings yet": ["de": "Noch keine Aufnahmen"],
     "Unspecified": ["de": "Nicht angegeben"],
+
+    // Journal / log views
+    "Daily Check-In": ["de": "Tägliche Abfrage"],
+    "How are you today?": ["de": "Wie geht es Ihnen heute?"],
+    "Overall symptom intensity": ["de": "Gesamtsymptomstärke"],
+    "Which symptoms are present?": ["de": "Welche Symptome sind vorhanden?"],
+    "Save Check-In": ["de": "Check-In speichern"],
+    "Check-In": ["de": "Check-In"],
+    "Medication": ["de": "Medikation"],
+    "Time": ["de": "Uhrzeit"],
+    "What happened?": ["de": "Was ist passiert?"],
+    "How are you right now?": ["de": "Wie geht es Ihnen gerade?"],
+    "Anything that may affect it?": ["de": "Etwas, das es beeinflussen könnte?"],
+    "Optional note": ["de": "Optionale Notiz"],
+    "Save Medication Log": ["de": "Medikation speichern"],
+    "Symptom Episode": ["de": "Symptom-Episode"],
+    "Medication state": ["de": "Medikamentenstatus"],
+    "Add details": ["de": "Details hinzufügen"],
+    "Save Symptom Episode": ["de": "Symptom-Episode speichern"],
+    "Symptom": ["de": "Symptom"],
+
+    // Mood and severity
+    "Very Bad": ["de": "Sehr schlecht"],
+    "Bad": ["de": "Schlecht"],
+    "Neutral": ["de": "Neutral"],
+    "Good": ["de": "Gut"],
+    "Very Good": ["de": "Sehr gut"],
+    "Not present": ["de": "Nicht vorhanden"],
+    "Mild": ["de": "Mild"],
+    "Moderate": ["de": "Mäßig"],
+    "Severe": ["de": "Schwer"],
+
+    // Symptoms
+    "Tremor": ["de": "Tremor"],
+    "Stiffness": ["de": "Steifigkeit"],
+    "Slowness": ["de": "Langsamkeit"],
+    "Freezing": ["de": "Freezing"],
+    "Balance": ["de": "Gleichgewicht"],
+    "Swallowing": ["de": "Schlucken"],
+    "Cramps": ["de": "Krämpfe"],
+    "Fatigue": ["de": "Müdigkeit"],
+    "Sleep": ["de": "Schlaf"],
+    "Concentration": ["de": "Konzentration"],
+    "Low Mood": ["de": "Niedergeschlagenheit"],
+    "Anxiety": ["de": "Angst"],
+    "Dizziness": ["de": "Schwindel"],
+    "Pain": ["de": "Schmerzen"],
+    "Walking difficulty": ["de": "Schwierigkeiten beim Gehen"],
+    "Balance problems": ["de": "Gleichgewichtsprobleme"],
+    "Dyskinesia": ["de": "Dyskinesie"],
+
+    // Medication / motor states
+    "Took usual medication": ["de": "Medikamente wie üblich eingenommen"],
+    "Took medication late": ["de": "Medikamente verspätet eingenommen"],
+    "Missed medication": ["de": "Medikamente vergessen"],
+    "Took extra/rescue medication": ["de": "Extra-/Rettungsmedikament eingenommen"],
+    "ON / medication working": ["de": "ON / Medikament wirkt"],
+    "OFF / symptoms are back": ["de": "OFF / Symptome sind zurück"],
+    "Dyskinesia / too much movement": ["de": "Dyskinesie / zu viel Bewegung"],
+    "Not sure": ["de": "Unsicher"],
+
+    // Medication factors
+    "With food": ["de": "Mit Essen"],
+    "High-protein meal": ["de": "Eiweißreiche Mahlzeit"],
+    "Stress": ["de": "Stress"],
+    "Poor sleep": ["de": "Schlechter Schlaf"],
+    "Constipation": ["de": "Verstopfung"],
+    "Exercise/activity": ["de": "Bewegung/Aktivität"],
+
+    // Symptom episode types
+    "OFF episode": ["de": "OFF-Phase"],
+    "Fall / near fall": ["de": "Sturz / beinahe gestürzt"],
+    "Tremor episode": ["de": "Tremor-Episode"],
+    "Anxiety / panic": ["de": "Angst / Panik"],
+    "Device issue": ["de": "Geräteproblem"],
 ]
 
 // MARK: - Bundle swizzling for in-app language switch

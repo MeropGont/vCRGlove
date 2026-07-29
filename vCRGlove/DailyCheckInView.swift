@@ -56,7 +56,7 @@ struct DailyCheckInView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Overall symptom intensity")
+                    Text(L10n("Overall symptom intensity"))
                         .font(.headline)
 
                     ForEach(SymptomSeverity.allCases, id: \.self) { severity in
@@ -82,7 +82,7 @@ struct DailyCheckInView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Which symptoms are present?")
+                    Text(L10n("Which symptoms are present?"))
                         .font(.headline)
 
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 140))], spacing: 10) {
@@ -95,7 +95,7 @@ struct DailyCheckInView: View {
                                 }
                             } label: {
                                 HStack {
-                                    Text(symptom)
+                                    Text(L10n(symptom))
                                     Spacer()
 
                                     if selectedSymptoms.contains(symptom) {
@@ -127,7 +127,7 @@ struct DailyCheckInView: View {
             .padding(.bottom, 90)
         }
         .safeAreaInset(edge: .bottom) {
-            Button("Save Check-In") {
+            Button(L10n("Save Check-In")) {
                 let entry = JournalEntry(
                     date: entryDate,
                     type: .dailyCheckIn,
@@ -145,7 +145,7 @@ struct DailyCheckInView: View {
             .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)
         }
-        .navigationTitle("Check-In")
+        .navigationTitle(L10n("Check-In"))
         .navigationBarTitleDisplayMode(.inline)
     }
 }
