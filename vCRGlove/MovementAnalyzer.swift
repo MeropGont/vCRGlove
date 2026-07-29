@@ -49,7 +49,8 @@ struct MovementAnalyzer {
         let raw   = samples.map { $0.value }
 
         // Convert time-domain smoothing to a sample window via the mean dt.
-        let span = times.last! - times.first!
+        guard let firstTime = times.first, let lastTime = times.last else { return .empty }
+        let span = lastTime - firstTime
         let meanDt = span > 0 ? span / Double(samples.count - 1) : 0
         let window = meanDt > 0
             ? max(3, Int((config.smoothingSec / meanDt).rounded()))
@@ -96,7 +97,10 @@ struct MovementAnalyzer {
         let pauses = countPauses(durations, factor: config.pauseFactor)
 
         // Onset latency: time from recording start to first detected cycle.
-        let onset = times[events.first!] - times.first!
+        guard let firstEventIdx = events.first,
+              let firstTime = times.first,
+              firstEventIdx < times.count else { return .empty }
+        let onset = times[firstEventIdx] - firstTime
 
         let quality = qualityIndex(frequency: frequency,
                                    rhythmCV: cv,

@@ -133,9 +133,26 @@ struct MovementTaskView: View {
         .navigationTitle("Movement Test")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.visible, for: .navigationBar)
-        .onChange(of: recorder?.isRecording) { _, isRec in
-            if isRec == false, case .recording = phase {
-                phase = .analyzing
+        .onChange(of: recorder?.isRecording) { oldIsRec, newIsRec in
+            if oldIsRec == true, newIsRec == false, case .recording = phase {
+                // Stop the camera/watch BEFORE the preview overlay disappears. If the
+                // AVCaptureSession is still running when the preview layer is torn down,
+                // the main thread blocks until the session stops.
+                let cam = self.cameraCapture
+                let watch = self.watchCapture
+                Task.detached(priority: .userInitiated) {
+                    let group = DispatchGroup()
+                    if let cam { group.enter(); cam.stop { group.leave() } }
+                    if let watch { group.enter(); watch.stop { group.leave() } }
+                    group.notify(queue: .main) {
+                        self.cameraCapture = nil
+                        self.watchCapture = nil
+                        if case .recording = self.phase {
+                            self.phase = .analyzing
+                        }
+                        print("[PERF] single-task hardware stopped; phase now \(String(describing: self.phase))")
+                    }
+                }
             }
         }
         .toolbar {
@@ -369,14 +386,7 @@ struct MovementTaskView: View {
                               source: activeSignalSource,
                               stopCondition: stopCondition)
         r.onComplete = { trial in
-            let cam = cameraCapture
-            let watch = watchCapture
-            cameraCapture = nil
-            watchCapture = nil
-            Task.detached(priority: .userInitiated) {
-                cam?.stop()
-                watch?.stop()
-            }
+            // Hardware is already being stopped by the .isRecording onChange.
             phase = .result(trial)
             EventStore.shared.append(
                 type: "TASK", tag: "trial_completed",
@@ -598,13 +608,11 @@ struct LiveSignalChart: View {
     var body: some View {
         Canvas { context, size in
             let samples = monitor.window
-            guard samples.count >= 2 else { return }
-
-            let tMax = samples.last!.t
+            guard samples.count >= 2,
+                  let tMax = samples.last?.t,
+                  let vMin = samples.map(\.value).min(),
+                  let vMax = samples.map(\.value).max() else { return }
             let tMin = tMax - monitor.windowSec
-            let values = samples.map(\.value)
-            let vMin = values.min()!
-            let vMax = values.max()!
             let vRange = max(vMax - vMin, 0.001)
 
             var path = Path()
@@ -1544,6 +1552,7 @@ private struct HandCalibrationView: View {
     @State private var progress: Double = 0
     @State private var samples: [Double] = []
     @State private var isCollecting = true
+    @State private var isActive = true
     @State private var error: String?
 
     let onComplete: () -> Void
@@ -1565,7 +1574,7 @@ private struct HandCalibrationView: View {
                     .foregroundStyle(.red)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
-            } else {
+            } else if capture.isSessionRunning {
                 CameraPreviewView(session: capture.session)
                     .frame(height: 200)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
@@ -1581,17 +1590,23 @@ private struct HandCalibrationView: View {
 
                 ProgressView(value: progress, total: 2.0)
                     .padding(.horizontal)
-                    .padding(.horizontal)
+            } else {
+                ProgressView("Starting camera…")
             }
 
             Spacer()
         }
         .padding()
         .onAppear(perform: start)
+        .onDisappear {
+            isActive = false
+            capture.stop()
+        }
     }
 
     private func start() {
-        capture.start(taskType: .fingerTap) { result in
+        capture.start(taskType: .fingerTap) { [self] result in
+            guard isActive else { return }
             switch result {
             case .success:
                 collectForTwoSeconds()
@@ -1604,7 +1619,7 @@ private struct HandCalibrationView: View {
     private func collectForTwoSeconds() {
         let start = ProcessInfo.processInfo.systemUptime
         let timer = Timer(timeInterval: 0.05, repeats: true) { [weak capture] t in
-            guard let capture else {
+            guard isActive, let capture else {
                 t.invalidate()
                 return
             }
@@ -1623,13 +1638,15 @@ private struct HandCalibrationView: View {
     }
 
     private func finish() {
+        guard isActive else { return }
         let avg = samples.isEmpty ? 0 : samples.reduce(0, +) / Double(samples.count)
         if avg > 0.005 {
             HandCalibrationStore.shared.set(scale: avg)
         }
         capture.stop()
         isCollecting = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [self] in
+            guard isActive else { return }
             onComplete()
         }
     }
