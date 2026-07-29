@@ -106,25 +106,25 @@ struct PatientVCRView: View {
     var body: some View {
         VStack(spacing: 18) {
             VStack(spacing: 6) {
-                Text("vCR Session")
+                Text(L10n("vCR Session"))
                     .font(.largeTitle.bold())
 
                 Text(statusText)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
-                
+
                 if let sessionMessage {
-                    Text(sessionMessage)
+                    Text(L10n(sessionMessage))
                         .font(.caption)
                         .foregroundStyle(.orange)
                         .multilineTextAlignment(.center)
                 }
 
             }
-            
+
             if let timingCompromiseMessage = vm.timingCompromiseMessage {
-                Text(timingCompromiseMessage)
+                Text(L10n(timingCompromiseMessage))
                     .font(.caption)
                     .foregroundStyle(.orange)
                     .multilineTextAlignment(.center)
@@ -141,7 +141,7 @@ struct PatientVCRView: View {
 
             Spacer()
 
-            Text("Keep this app open during stimulation.")
+            Text(L10n("Keep this app open during stimulation."))
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -162,7 +162,7 @@ struct PatientVCRView: View {
     private func monitorPatientSession() {
         if !isSessionRunning {
             if sessionWasStarted && remainingSeconds == 0 {
-                sessionMessage = "Great job. Your vCR session is complete for today."
+                sessionMessage = L10n("Great job. Your vCR session is complete for today.")
                 Logger.shared.log("vCR", "Patient session completed")
                 patientSessionActive = false
                 sessionWasStarted = false
@@ -179,7 +179,7 @@ struct PatientVCRView: View {
             missingActivePositions.removeAll()
         } else if stillActivePositions.isEmpty {
             if missingActivePositions == currentlyActive {
-                sessionMessage = "Session interrupted because both gloves disconnected."
+                sessionMessage = L10n("Session interrupted because both gloves disconnected.")
                 Logger.shared.log("vCR", "Patient session interrupted: no active gloves connected")
                 stopSession()
                 patientSessionActive = false
@@ -244,7 +244,7 @@ struct PatientVCRView: View {
                             .fill(isSessionPaused ? Color.orange : Color.indigo)
                             .frame(width: 10, height: 10)
 
-                        Text(isSessionPaused ? "Paused" : "Stimulation running")
+                        Text(isSessionPaused ? L10n("Paused") : L10n("Stimulation running"))
                             .font(.headline)
 
                         Spacer()
@@ -255,7 +255,7 @@ struct PatientVCRView: View {
                         .monospacedDigit()
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Text("Time remaining")
+                    Text(L10n("Time remaining"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -266,7 +266,7 @@ struct PatientVCRView: View {
 
                 HStack(spacing: 12) {
                     sessionActionButton(
-                        title: isSessionPaused ? "Resume" : "Pause",
+                        title: isSessionPaused ? L10n("Resume") : L10n("Pause"),
                         systemImage: isSessionPaused ? "play.fill" : "pause.fill",
                         fill: isSessionPaused ? .green : .orange
                     ) {
@@ -278,10 +278,10 @@ struct PatientVCRView: View {
 
             } else {
                 VStack(spacing: 8) {
-                    Text("Ready")
+                    Text(L10n("Ready"))
                         .font(.title2.bold())
 
-                    Text(readyGloves.isEmpty ? "Connect at least one glove to begin" : "4 h vCR session")
+                    Text(readyGloves.isEmpty ? L10n("Connect at least one glove to begin") : String(format: L10n("%d h vCR session"), 4))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -289,7 +289,7 @@ struct PatientVCRView: View {
                 Button {
                     startSession()
                 } label: {
-                    Label("Start vCR", systemImage: "play.fill")
+                    Label(L10n("Start vCR"), systemImage: "play.fill")
                         .font(.title3.bold())
                         .frame(maxWidth: .infinity)
                         .frame(height: 58)
@@ -309,7 +309,7 @@ struct PatientVCRView: View {
         NavigationLink {
             SupportSettingsView(patientID: patientID, initialTopic: "Finger check")
         } label: {
-            Label("Something not working?", systemImage: "questionmark.circle")
+            Label(L10n("Something not working?"), systemImage: "questionmark.circle")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -346,7 +346,7 @@ struct PatientVCRView: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: 14))
 
-            Label("Hold to Stop", systemImage: "stop.fill")
+            Label(L10n("Hold to Stop"), systemImage: "stop.fill")
                 .font(.headline)
                 .foregroundStyle(stopProgress > 0.45 ? .white : .primary)
         }
@@ -376,7 +376,7 @@ struct PatientVCRView: View {
             }
         } label: {
             Label(
-                vm.scanning ? "STOP SCAN" : "SCAN FOR GLOVES",
+                L10n(vm.scanning ? "STOP SCAN" : "SCAN FOR GLOVES"),
                 systemImage: vm.scanning ? "stop.circle.fill" : "dot.radiowaves.left.and.right"
             )
             .font(.headline)
@@ -412,7 +412,7 @@ struct PatientVCRView: View {
                 }
 
 
-            Text("\(title) glove")
+            Text(L10n("\(title) glove"))
                 .font(.headline)
 
             Text(statusText(for: glove, isStimulating: isStimulating))
@@ -420,7 +420,7 @@ struct PatientVCRView: View {
                 .foregroundStyle(statusColor(isReady: isReady, isStimulating: isStimulating))
             
             if canBuzz {
-                Text("Tap to test buzz")
+                Text(L10n("Tap to test buzz"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -464,18 +464,18 @@ struct PatientVCRView: View {
 
     private func statusText(for glove: HDevice?, isStimulating: Bool) -> String {
         if isStimulating {
-            return "Stimulating"
+            return L10n("Stimulating")
         }
 
         if glove?.isReadyForStimulation == true {
-            return "Ready"
+            return L10n("Ready")
         }
 
         if glove == nil {
-            return "Not detected"
+            return L10n("Not detected")
         }
 
-        return "Disconnected"
+        return L10n("Disconnected")
     }
 
     
@@ -487,10 +487,10 @@ struct PatientVCRView: View {
                 .font(.system(size: 42))
                 .foregroundStyle(ready ? .green : .red)
 
-            Text("\(title) glove")
+            Text(L10n("\(title) glove"))
                 .font(.headline)
 
-            Text(device?.connectionStatusText ?? "Not detected")
+            Text(device?.connectionStatusText ?? L10n("Not detected"))
                 .font(.caption)
                 .foregroundStyle(ready ? .green : .secondary)
         }
@@ -506,10 +506,10 @@ struct PatientVCRView: View {
         }
 
         if readyGloves.isEmpty {
-            return "Scan and connect gloves before starting."
+            return L10n("Scan and connect gloves before starting.")
         }
 
-        return "\(readyGloves.count) glove(s) ready."
+        return String(format: L10n("%d glove(s) ready."), readyGloves.count)
     }
 
     private func applyPatientPreset() {
@@ -535,8 +535,8 @@ struct PatientVCRView: View {
 
         let entry = JournalEntry(
             type: .stimulation,
-            note: "vCR session started with \(readyGloves.count) glove(s)"
-        )
+            note: String(format: L10n("vCR session started with %d glove(s)"), readyGloves.count)
+        }
 
         JournalStore.shared.add(entry)
         
