@@ -130,7 +130,7 @@ struct MovementTaskView: View {
                 .padding(.top, 4)
             }
         }
-        .navigationTitle("Movement Test")
+        .navigationTitle(L10n("Movement Test"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.visible, for: .navigationBar)
         .onChange(of: recorder?.isRecording) { oldIsRec, newIsRec in
@@ -160,7 +160,7 @@ struct MovementTaskView: View {
                 NavigationLink {
                     MovementTrendView()
                 } label: {
-                    Label("Trends", systemImage: "chart.xyaxis.line")
+                    Label(L10n("Trends"), systemImage: "chart.xyaxis.line")
                 }
             }
         }
@@ -175,24 +175,24 @@ struct MovementTaskView: View {
     private var setupView: some View {
         Form {
             Section("Task") {
-                Picker("Movement", selection: $taskType) {
+                Picker(L10n("Movement"), selection: $taskType) {
                     ForEach(MovementTaskType.allCases) { t in
                         Text("\(t.rawValue)  \(t.displayName)").tag(t)
                     }
                 }
-                Picker("Hand", selection: $side) {
-                    Text("Left").tag(BodySide.left)
-                    Text("Right").tag(BodySide.right)
+                Picker(L10n("Hand"), selection: $side) {
+                    Text(BodySide.left.displayName).tag(BodySide.left)
+                    Text(BodySide.right.displayName).tag(BodySide.right)
                 }
                 .pickerStyle(.segmented)
             }
 
             Section("Protocol") {
-                LabeledContent("Stop after", value: "10 repetitions")
+                LabeledContent(L10n("Stop after"), value: L10n("10 repetitions"))
             }
 
             Section("Context") {
-                Picker("Relative to stimulation", selection: $context) {
+                Picker(L10n("Relative to stimulation"), selection: $context) {
                     ForEach(StimulationContext.allCases) { c in
                         Text(contextLabel(c)).tag(c)
                     }
@@ -201,26 +201,26 @@ struct MovementTaskView: View {
 
             Section {
                 if usingCamera {
-                    Text("This task uses the front camera to track your hand. No video is stored — only movement measurements.")
+                    Text(L10n("This task uses the front camera to track your hand. No video is stored — only movement measurements."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else if usingWatch {
-                    Text("Wear the watch on the tested arm and keep the vCRGlove watch app open during the recording.")
+                    Text(L10n("Wear the watch on the tested arm and keep the vCRGlove watch app open during the recording."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             } header: {
-                Text("Sensor")
+                Text(L10n("Sensor"))
             }
 
             if usingCamera {
                 Section("Calibration") {
                     if HandCalibrationStore.shared.isCalibrated {
                         HStack {
-                            Text("Hand scale calibrated")
+                            Text(L10n("Hand scale calibrated"))
                                 .foregroundStyle(.green)
                             Spacer()
-                            Button("Recalibrate") {
+                            Button(L10n("Recalibrate")) {
                                 isCalibrating = true
                             }
                         }
@@ -228,7 +228,7 @@ struct MovementTaskView: View {
                         Button {
                             isCalibrating = true
                         } label: {
-                            Label("Calibrate hand size", systemImage: "hand.raised")
+                            Label(L10n("Calibrate hand size"), systemImage: "hand.raised")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
@@ -240,7 +240,7 @@ struct MovementTaskView: View {
                 Button {
                     startCountdown()
                 } label: {
-                    Label("Start", systemImage: "record.circle")
+                    Label(L10n("Start"), systemImage: "record.circle")
                         .frame(maxWidth: .infinity)
                         .font(.headline)
                 }
@@ -275,7 +275,7 @@ struct MovementTaskView: View {
             Text("\(n)")
                 .font(.system(size: 96, weight: .bold, design: .rounded))
                 .contentTransition(.numericText())
-            Button("Cancel", role: .cancel) { cancelEverything() }
+            Button(L10n("Cancel"), role: .cancel) { cancelEverything() }
         }
     }
 
@@ -349,7 +349,7 @@ struct MovementTaskView: View {
             Spacer()
             ProgressView()
                 .scaleEffect(1.6)
-            Text("Analysing movement…")
+            Text(L10n("Analysing movement…"))
                 .font(.headline)
                 .foregroundStyle(.secondary)
             Spacer()
@@ -371,7 +371,7 @@ struct MovementTaskView: View {
             Button(role: .destructive) {
                 recorder?.finish()
             } label: {
-                Label("Stop", systemImage: "stop.circle.fill")
+                Label(L10n("Stop"), systemImage: "stop.circle.fill")
                     .font(.headline)
             }
         }
@@ -543,7 +543,7 @@ struct HandGuideOverlay: View {
                     .position(x: zone.midX, y: zone.midY)
 
                 if !good {
-                    Text("Place your \(side == .left ? "left" : "right") hand here")
+                    Text(String(format: L10n("Place your %@ hand here"), side == .left ? L10n("left") : L10n("right")))
                         .font(.caption.bold())
                         .foregroundStyle(.white)
                         .padding(.vertical, 3)
@@ -564,8 +564,8 @@ private struct WatchStreamHint: View {
     @ObservedObject var capture: WatchMotionCapture
 
     var body: some View {
-        Label(capture.isReceiving ? "Watch connected — receiving motion"
-                                  : "Waiting for watch… open the watch app",
+        Label(capture.isReceiving ? L10n("Watch connected — receiving motion")
+                                  : L10n("Waiting for watch… open the watch app"),
               systemImage: capture.isReceiving ? "applewatch.radiowaves.left.and.right" : "applewatch.slash")
             .font(.caption.bold())
             .foregroundStyle(capture.isReceiving ? .green : .orange)
@@ -585,7 +585,7 @@ struct ClippedWarningOverlay: View {
                     .strokeBorder(Color.red, lineWidth: 4)
 
                 VStack {
-                    Label("Keep your whole hand in the frame!", systemImage: "exclamationmark.triangle.fill")
+                    Label(L10n("Keep your whole hand in the frame!"), systemImage: "exclamationmark.triangle.fill")
                         .font(.subheadline.bold())
                         .foregroundStyle(.white)
                         .padding(.vertical, 6)
@@ -627,7 +627,7 @@ struct LiveSignalChart: View {
         .padding(.horizontal, 6)
         .overlay {
             if monitor.window.count < 2 {
-                Text("Waiting for signal…")
+                Text(L10n("Waiting for signal…"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -648,7 +648,7 @@ struct RecordingProgressView: View {
                 .symbolEffect(.variableColor.iterative, isActive: recorder.isRecording)
                 .foregroundStyle(.tint)
 
-            Text("Recording…")
+            Text(L10n("Recording…"))
                 .font(.title2.bold())
 
             switch stopCondition.mode {
@@ -681,35 +681,35 @@ struct MovementTrialResultView: View {
     var body: some View {
         Form {
             Section {
-                LabeledContent("Task", value: "\(trial.taskType.rawValue) \(trial.taskType.displayName)")
-                LabeledContent("Hand", value: trial.side.rawValue.capitalized)
-                LabeledContent("Duration", value: String(format: "%.1f s", trial.samples.last?.t ?? 0))
+                LabeledContent(L10n("Task"), value: "\(trial.taskType.rawValue) \(trial.taskType.displayName)")
+                LabeledContent(L10n("Hand"), value: trial.side.displayName)
+                LabeledContent(L10n("Duration"), value: String(format: L10n("%.1f s"), trial.samples.last?.t ?? 0))
             } header: {
-                Text("Trial")
+                Text(L10n("Trial"))
             }
 
             Section {
                 metricRow("Cycles", "\(trial.metrics.cycleCount)")
-                metricRow("Speed", String(format: "%.2f Hz", trial.metrics.frequencyHz))
-                metricRow("Mean amplitude", String(format: "%.3f", trial.metrics.meanAmplitude))
-                metricRow("Amplitude decrement", String(format: "%.3f /cycle", trial.metrics.amplitudeDecrementSlope))
-                metricRow("Rhythm variability", String(format: "%.2f", trial.metrics.rhythmCV))
+                metricRow("Speed", String(format: L10n("%.2f Hz"), trial.metrics.frequencyHz))
+                metricRow("Mean amplitude", String(format: L10n("%.3f"), trial.metrics.meanAmplitude))
+                metricRow("Amplitude decrement", String(format: L10n("%.3f /cycle"), trial.metrics.amplitudeDecrementSlope))
+                metricRow("Rhythm variability", String(format: L10n("%.2f"), trial.metrics.rhythmCV))
                 metricRow("Pauses", "\(trial.metrics.pauseCount)")
-                metricRow("Onset latency", String(format: "%.2f s", trial.metrics.onsetLatencySec))
+                metricRow("Onset latency", String(format: L10n("%.2f s"), trial.metrics.onsetLatencySec))
             } header: {
-                Text("Metrics")
+                Text(L10n("Metrics"))
             } footer: {
-                Text("These values describe this recording only. They are not a clinical rating.")
+                Text(L10n("These values describe this recording only. They are not a clinical rating."))
             }
 
             Section {
                 Gauge(value: trial.metrics.qualityIndex) {
-                    Text("Movement quality (heuristic)")
+                    Text(L10n("Movement quality (heuristic)"))
                 }
                 .gaugeStyle(.accessoryLinear)
                 .tint(Gradient(colors: [.red, .orange, .green]))
             } footer: {
-                Text("Heuristic 0–1 index for personal trends — not a validated UPDRS score.")
+                Text(L10n("Heuristic 0–1 index for personal trends — not a validated UPDRS score."))
             }
 
             Section {
@@ -728,12 +728,12 @@ struct MovementTrialResultView: View {
                 }
             }
         }
-        .navigationTitle("Result")
+        .navigationTitle(L10n("Result"))
         .navigationBarBackButtonHidden(true)
     }
 
     private func metricRow(_ label: String, _ value: String) -> some View {
-        LabeledContent(label, value: value)
+        LabeledContent(L10n(label), value: value)
     }
 }
 
@@ -883,7 +883,7 @@ struct MovementSessionFlowView: View {
                     .padding(.top, 40)
                 }
             }
-            .navigationTitle("Movement Test")
+            .navigationTitle(L10n("Movement Test"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
@@ -891,7 +891,7 @@ struct MovementSessionFlowView: View {
                     NavigationLink {
                         MovementTrendView()
                     } label: {
-                        Label("Trends", systemImage: "chart.xyaxis.line")
+                        Label(L10n("Trends"), systemImage: "chart.xyaxis.line")
                     }
                 }
             }
@@ -937,19 +937,19 @@ struct MovementSessionFlowView: View {
                 .font(.system(size: 72))
                 .foregroundStyle(.tint)
 
-            Text("Movement Session")
+            Text(L10n("Movement Session"))
                 .font(.largeTitle.bold())
 
-            Text("We will guide you through 6 short hand recordings. It takes about 2 minutes.")
+            Text(L10n("We will guide you through 6 short hand recordings. It takes about 2 minutes."))
                 .font(.title3)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 32)
 
             VStack(alignment: .leading, spacing: 12) {
-                bullet("Tap index finger on thumb")
-                bullet("Open and close your fist")
-                bullet("Rotate forearm palm-up / palm-down")
+                bullet(L10n("Tap index finger on thumb"))
+                bullet(L10n("Open and close your fist"))
+                bullet(L10n("Rotate forearm palm-up / palm-down"))
             }
             .padding(.horizontal, 32)
 
@@ -958,10 +958,10 @@ struct MovementSessionFlowView: View {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundStyle(.green)
-                        Text("Hand scale calibrated")
+                        Text(L10n("Hand scale calibrated"))
                             .foregroundStyle(.green)
                         Spacer()
-                        Button("Recalibrate") {
+                        Button(L10n("Recalibrate")) {
                             isCalibrating = true
                         }
                     }
@@ -970,7 +970,7 @@ struct MovementSessionFlowView: View {
                     Button {
                         isCalibrating = true
                     } label: {
-                        Label("Calibrate hand size", systemImage: "hand.raised")
+                        Label(L10n("Calibrate hand size"), systemImage: "hand.raised")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                     }
@@ -984,7 +984,7 @@ struct MovementSessionFlowView: View {
             Button {
                 phase = .contextSelection
             } label: {
-                Label("Start", systemImage: "arrow.right.circle.fill")
+                Label(L10n("Start"), systemImage: "arrow.right.circle.fill")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -998,7 +998,7 @@ struct MovementSessionFlowView: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(.green)
-            Text(text)
+            Text(L10n(text))
                 .font(.body)
         }
     }
@@ -1007,11 +1007,11 @@ struct MovementSessionFlowView: View {
 
     private var contextSelectionView: some View {
         VStack(spacing: 24) {
-            Text("When is this measurement?")
+            Text(L10n("When is this measurement?"))
                 .font(.title2.bold())
                 .padding(.top, 40)
 
-            Text("Pick the context once. All 6 recordings of this session will be tagged the same way.")
+            Text(L10n("Pick the context once. All 6 recordings of this session will be tagged the same way."))
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -1093,7 +1093,7 @@ struct MovementSessionFlowView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
-            Text("Bitte führen Sie die Bewegung so schnell und so weit wie möglich aus.")
+            Text(L10n("Please perform the movement as fast and as far as possible."))
                 .font(.title3.bold())
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.primary)
@@ -1109,7 +1109,7 @@ struct MovementSessionFlowView: View {
             .padding(.top, 8)
 
             if usingCamera {
-                Text("Hold your hand in front of the camera so it fills the frame.")
+                Text(L10n("Hold your hand in front of the camera so it fills the frame."))
                     .font(.callout)
                     .foregroundStyle(.secondary)
             } else if usingWatch {
@@ -1124,7 +1124,7 @@ struct MovementSessionFlowView: View {
                 Button {
                     startCountdown(step: currentStepIndex)
                 } label: {
-                    Label("Start Recording", systemImage: "record.circle")
+                    Label(L10n("Start Recording"), systemImage: "record.circle")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }
@@ -1133,7 +1133,7 @@ struct MovementSessionFlowView: View {
                 Button {
                     skipStep()
                 } label: {
-                    Text("Skip this measurement")
+                    Text(L10n("Skip this measurement"))
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
@@ -1228,7 +1228,7 @@ struct MovementSessionFlowView: View {
             Button(role: .destructive) {
                 recorder?.finish()
             } label: {
-                Label("Stop", systemImage: "stop.circle.fill")
+                Label(L10n("Stop"), systemImage: "stop.circle.fill")
                     .font(.headline)
             }
         }
@@ -1243,7 +1243,7 @@ struct MovementSessionFlowView: View {
             Spacer()
             ProgressView()
                 .scaleEffect(1.6)
-            Text("Analysing movement…")
+            Text(L10n("Analysing movement…"))
                 .font(.headline)
                 .foregroundStyle(.secondary)
             Spacer()
@@ -1296,7 +1296,7 @@ struct MovementSessionFlowView: View {
                 .font(.system(size: 64))
                 .foregroundStyle(.green)
 
-            Text("All done!")
+            Text(L10n("All done!"))
                 .font(.largeTitle.bold())
 
             Text(String(format: L10n("%d recordings are ready to be saved as one session."), trials.count))
@@ -1311,14 +1311,14 @@ struct MovementSessionFlowView: View {
                         HStack {
                             Text(trial.taskType.displayName)
                             Spacer()
-                            Text(trial.side.rawValue.capitalized)
+                            Text(trial.side.displayName)
                                 .foregroundStyle(.secondary)
                         }
                     }
                 }
 
                 Section {
-                    LabeledContent("Context", value: contextTitle(context))
+                    LabeledContent(L10n("Context"), value: contextTitle(context))
                 }
             }
             .scrollContentBackground(.hidden)
@@ -1330,7 +1330,7 @@ struct MovementSessionFlowView: View {
                 Button {
                     saveSession()
                 } label: {
-                    Label("Save Session", systemImage: "checkmark.circle.fill")
+                    Label(L10n("Save Session"), systemImage: "checkmark.circle.fill")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }
@@ -1340,7 +1340,7 @@ struct MovementSessionFlowView: View {
                 Button(role: .destructive) {
                     resetFlow()
                 } label: {
-                    Text(trials.isEmpty ? "Start over" : "Discard")
+                    Text(trials.isEmpty ? L10n("Start over") : L10n("Discard"))
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -1535,10 +1535,10 @@ private struct MovementVideoPlaceholder: View {
             Image(systemName: "play.rectangle.fill")
                 .font(.system(size: 40))
                 .foregroundStyle(.secondary.opacity(0.6))
-            Text("Instruction video for \(taskType.displayName)")
+            Text(String(format: L10n("Instruction video for %@"), taskType.displayName))
                 .font(.callout)
                 .foregroundStyle(.secondary)
-            Text("Coming soon")
+            Text(L10n("Coming soon"))
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
@@ -1562,16 +1562,16 @@ private struct HandCalibrationView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            Text("Hand calibration")
+            Text(L10n("Hand calibration"))
                 .font(.largeTitle.bold())
-            Text("Hold your hand steady in front of the camera for 2 seconds.")
+            Text(L10n("Hold your hand steady in front of the camera for 2 seconds."))
                 .font(.headline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
             if let error {
-                Text(error)
+                Text(L10n(error))
                     .foregroundStyle(.red)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
@@ -1586,7 +1586,7 @@ private struct HandCalibrationView: View {
                         }
                     }
 
-                Text(isCollecting ? "Calibrating…" : "Done")
+                Text(isCollecting ? L10n("Calibrating…") : L10n("Done"))
                     .font(.title2.bold())
 
                 ProgressView(value: progress, total: 2.0)

@@ -237,6 +237,91 @@ let Translations: [String: [String: String]] = [
     "%d recordings are ready to be saved as one session.": ["de": "%d Aufnahmen können als eine Sitzung gespeichert werden."],
     "Recordings": ["de": "Aufnahmen"],
 
+    // Body side
+    "Left": ["de": "Links"],
+    "Right": ["de": "Rechts"],
+    "left": ["de": "linke"],
+    "right": ["de": "rechte"],
+
+    // Setup / form
+    "Task": ["de": "Aufgabe"],
+    "Protocol": ["de": "Protokoll"],
+    "Context": ["de": "Kontext"],
+    "Calibration": ["de": "Kalibrierung"],
+    "Sensor": ["de": "Sensor"],
+    "Movement": ["de": "Bewegung"],
+    "Hand": ["de": "Hand"],
+    "Relative to stimulation": ["de": "Relativ zur Stimulation"],
+    "Stop after": ["de": "Stoppen nach"],
+    "10 repetitions": ["de": "10 Wiederholungen"],
+    "This task uses the front camera to track your hand. No video is stored — only movement measurements.": ["de": "Diese Aufgabe verwendet die Frontkamera, um Ihre Hand zu verfolgen. Es wird kein Video gespeichert — nur Bewegungsmessungen."],
+    "Wear the watch on the tested arm and keep the vCRGlove watch app open during the recording.": ["de": "Tragen Sie die Uhr am getesteten Arm und halten Sie die vCRGlove Watch-App während der Aufnahme geöffnet."],
+    "Hand scale calibrated": ["de": "Handmaßstab kalibriert"],
+    "Recalibrate": ["de": "Neu kalibrieren"],
+    "Calibrate hand size": ["de": "Handgröße kalibrieren"],
+    "Start": ["de": "Start"],
+
+    // Countdown / recording
+    "Analysing movement…": ["de": "Bewegung wird analysiert…"],
+    "Recording…": ["de": "Aufnahme läuft…"],
+    "Place your %@ hand here": ["de": "Halten Sie Ihre %@ Hand hierher"],
+
+    // Result
+    "Trial": ["de": "Messung"],
+    "Metrics": ["de": "Kennzahlen"],
+    "These values describe this recording only. They are not a clinical rating.": ["de": "Diese Werte beschreiben nur diese Aufnahme. Sie sind keine klinische Bewertung."],
+    "Movement quality (heuristic)": ["de": "Bewegungsqualität (heuristisch)"],
+    "Heuristic 0–1 index for personal trends — not a validated UPDRS score.": ["de": "Heuristischer 0–1-Index für persönliche Trends — kein validierter UPDRS-Score."],
+    "Speed": ["de": "Geschwindigkeit"],
+    "Amplitude": ["de": "Amplitude"],
+    "Mean amplitude": ["de": "Mittlere Amplitude"],
+    "Cycles": ["de": "Zyklen"],
+    "%.2f Hz": ["de": "%.2f Hz"],
+    "%.3f": ["de": "%.3f"],
+    "%.3f /cycle": ["de": "%.3f /Zyklus"],
+    "%.2f": ["de": "%.2f"],
+    "%.2f s": ["de": "%.2f s"],
+
+    // Session flow
+    "Movement Test": ["de": "Bewegungstest"],
+    "Movement Session": ["de": "Bewegungssitzung"],
+    "We will guide you through 6 short hand recordings. It takes about 2 minutes.": ["de": "Wir führen Sie durch 6 kurze Handaufnahmen. Es dauert etwa 2 Minuten."],
+    "Tap index finger on thumb": ["de": "Zeigefinger auf Daumen tippen"],
+    "Open and close your fist": ["de": "Faust öffnen und schließen"],
+    "Rotate forearm palm-up / palm-down": ["de": "Unterarm Handfläche-oben/unten drehen"],
+    "When is this measurement?": ["de": "Wann ist diese Messung?"],
+    "Pick the context once. All 6 recordings of this session will be tagged the same way.": ["de": "Wählen Sie den Kontext einmal. Alle 6 Aufnahmen dieser Sitzung werden gleich markiert."],
+    "Please perform the movement as fast and as far as possible.": ["de": "Bitte führen Sie die Bewegung so schnell und so weit wie möglich aus."],
+    "Hold your hand in front of the camera so it fills the frame.": ["de": "Halten Sie Ihre Hand vor die Kamera, sodass sie das Bild ausfüllt."],
+    "Skip this measurement": ["de": "Diese Messung überspringen"],
+
+    // Summary
+    "All done!": ["de": "Fertig!"],
+    "Save Session": ["de": "Sitzung speichern"],
+    "Start over": ["de": "Neu starten"],
+
+    // Placeholder / calibration
+    "Instruction video for %@": ["de": "Anleitungsvideo für %@"],
+    "Coming soon": ["de": "Demnächst verfügbar"],
+    "Hand calibration": ["de": "Handkalibrierung"],
+    "Hold your hand steady in front of the camera for 2 seconds.": ["de": "Halten Sie Ihre Hand 2 Sekunden ruhig vor die Kamera."],
+    "Calibrating…": ["de": "Kalibriere…"],
+    "Done": ["de": "Fertig"],
+    "Starting camera…": ["de": "Kamera wird gestartet…"],
+
+    // Camera / watch hints
+    "Watch connected — receiving motion": ["de": "Uhr verbunden — Bewegung empfangen"],
+    "Waiting for watch… open the watch app": ["de": "Warte auf Uhr… öffnen Sie die Watch-App"],
+    "Keep your whole hand in the frame!": ["de": "Halten Sie die ganze Hand im Bild!"],
+    "Waiting for signal…": ["de": "Warte auf Signal…"],
+
+    // Glove status
+    "Ready": ["de": "Bereit"],
+    "Detected": ["de": "Erkannt"],
+    "Disconnected": ["de": "Getrennt"],
+    "Not detected": ["de": "Nicht erkannt"],
+    "Stimulating": ["de": "Stimulation läuft"],
+
     // MovementTrendView
     "Amplitude decrement": ["de": "Amplitudenabfall"],
     "Rhythm variability": ["de": "Rhythmusvariabilität"],

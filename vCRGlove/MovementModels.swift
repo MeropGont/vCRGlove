@@ -46,6 +46,13 @@ enum SignalSource: String, Codable {
 enum BodySide: String, CaseIterable, Codable, Identifiable {
     case left, right
     var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .left:  return L10n("Left")
+        case .right: return L10n("Right")
+        }
+    }
 }
 
 /// Relation of a recording to the vCR stimulation, for pre/post comparisons.
