@@ -246,7 +246,7 @@ struct MovementTaskView: View {
                 }
             } footer: {
                 if let cameraError {
-                    Text(cameraError).foregroundStyle(.red)
+                    Text(L10n(cameraError)).foregroundStyle(.red)
                 }
             }
         }
@@ -254,10 +254,10 @@ struct MovementTaskView: View {
 
     private func contextLabel(_ c: StimulationContext) -> String {
         switch c {
-        case .baseline:    return "Baseline (before any stimulation)"
-        case .preStim:     return "Before session"
-        case .postStim:    return "After session"
-        case .unspecified: return "Not specified"
+        case .baseline:    return L10n("Baseline (before any stimulation)")
+        case .preStim:     return L10n("Before session")
+        case .postStim:    return L10n("After session")
+        case .unspecified: return L10n("Not specified")
         }
     }
 
@@ -282,11 +282,11 @@ struct MovementTaskView: View {
     private var taskInstruction: String {
         switch taskType {
         case .fingerTap:
-            return "Tap your index finger on your thumb as fast and as big as possible."
+            return L10n("Tap your index finger on your thumb as fast and as big as possible.")
         case .handOpenClose:
-            return "Open and close your fist as fast and as fully as possible."
+            return L10n("Open and close your fist as fast and as fully as possible.")
         case .pronationSupination:
-            return "Rotate your forearm palm-up / palm-down as fast and as fully as possible."
+            return L10n("Rotate your forearm palm-up / palm-down as fast and as fully as possible.")
         }
     }
 
@@ -653,12 +653,12 @@ struct RecordingProgressView: View {
 
             switch stopCondition.mode {
             case .repetitions:
-                Text("\(recorder.liveCycleCount) / \(stopCondition.targetReps) repetitions")
+                Text(String(format: L10n("%d / %d repetitions"), recorder.liveCycleCount, stopCondition.targetReps))
                     .font(.title3.monospacedDigit())
                 ProgressView(value: Double(min(recorder.liveCycleCount, stopCondition.targetReps)),
                              total: Double(stopCondition.targetReps))
             case .duration:
-                Text(String(format: "%.1f / %.0f s", min(recorder.elapsed, stopCondition.targetDuration), stopCondition.targetDuration))
+                Text(String(format: L10n("%.1f / %.0f s"), min(recorder.elapsed, stopCondition.targetDuration), stopCondition.targetDuration))
                     .font(.title3.monospacedDigit())
                 let progress = max(0.0, min(recorder.elapsed, stopCondition.targetDuration))
                 ProgressView(value: progress,
@@ -716,14 +716,14 @@ struct MovementTrialResultView: View {
                 Button {
                     onSave()
                 } label: {
-                    Label(saveTitle, systemImage: "checkmark.circle.fill")
+                    Label(L10n(saveTitle), systemImage: "checkmark.circle.fill")
                         .frame(maxWidth: .infinity)
                         .font(.headline)
                 }
                 Button(role: .destructive) {
                     onDiscard()
                 } label: {
-                    Text(discardTitle)
+                    Text(L10n(discardTitle))
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -828,7 +828,7 @@ struct MovementSessionFlowView: View {
     private var stopCondition: StopCondition { .thirtySec }
 
     private var progressText: String {
-        "Step \(currentStepIndex + 1) of \(steps.count)"
+        String(format: L10n("Step %d of %d"), currentStepIndex + 1, steps.count)
     }
 
     private var isLastStep: Bool {
@@ -1054,19 +1054,19 @@ struct MovementSessionFlowView: View {
 
     private func contextTitle(_ c: StimulationContext) -> String {
         switch c {
-        case .baseline:    return "Baseline"
-        case .preStim:     return "Before stimulation"
-        case .postStim:    return "After stimulation"
-        case .unspecified: return "Not specified"
+        case .baseline:    return L10n("Baseline")
+        case .preStim:     return L10n("Before stimulation")
+        case .postStim:    return L10n("After stimulation")
+        case .unspecified: return L10n("Not specified")
         }
     }
 
     private func contextSubtitle(_ c: StimulationContext) -> String {
         switch c {
-        case .baseline:    return "No stimulation yet today"
-        case .preStim:     return "Before your vCR / medication session"
-        case .postStim:    return "After your vCR / medication session"
-        case .unspecified: return "Use when none of the above applies"
+        case .baseline:    return L10n("No stimulation yet today")
+        case .preStim:     return L10n("Before your vCR / medication session")
+        case .postStim:    return L10n("After your vCR / medication session")
+        case .unspecified: return L10n("Use when none of the above applies")
         }
     }
 
@@ -1103,7 +1103,7 @@ struct MovementSessionFlowView: View {
                 Image(systemName: "hand.raised.fill")
                     .font(.title)
                     .scaleEffect(x: step.side == .left ? -1 : 1, y: 1)
-                Text("\(step.side.rawValue.capitalized) hand")
+                Text(L10n("\(step.side.rawValue.capitalized) hand"))
                     .font(.title2.bold())
             }
             .padding(.top, 8)
@@ -1113,7 +1113,7 @@ struct MovementSessionFlowView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
             } else if usingWatch {
-                Text("Wear the watch on your \(step.side.rawValue) arm and keep the watch app open.")
+                Text(L10n("Wear the watch on your \(step.side.rawValue) arm and keep the watch app open."))
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -1144,6 +1144,7 @@ struct MovementSessionFlowView: View {
         }
     }
 
+
     private func skipStep() {
         if isLastStep {
             phase = .summary
@@ -1164,11 +1165,11 @@ struct MovementSessionFlowView: View {
     private func taskInstruction(_ task: MovementTaskType) -> String {
         switch task {
         case .fingerTap:
-            return "Tap your index finger on your thumb as fast and as big as possible."
+            return L10n("Tap your index finger on your thumb as fast and as big as possible.")
         case .handOpenClose:
-            return "Open and close your fist as fast and as fully as possible."
+            return L10n("Open and close your fist as fast and as fully as possible.")
         case .pronationSupination:
-            return "Rotate your forearm palm-up / palm-down as fast and as fully as possible."
+            return L10n("Rotate your forearm palm-up / palm-down as fast and as fully as possible.")
         }
     }
 
@@ -1298,7 +1299,7 @@ struct MovementSessionFlowView: View {
             Text("All done!")
                 .font(.largeTitle.bold())
 
-            Text("\(trials.count) recordings are ready to be saved as one session.")
+            Text(String(format: L10n("%d recordings are ready to be saved as one session."), trials.count))
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

@@ -195,6 +195,47 @@ let Translations: [String: [String: String]] = [
     "OPEN TODAY'S LOG": ["de": "HEUTIGEN EINTRAG ÖFFNEN"],
     "Last check-in": ["de": "Letzter Eintrag"],
     "Your most recent check-in will appear here.": ["de": "Ihr letzter Eintrag wird hier angezeigt."],
+
+    // Movement task instructions
+    "Tap your index finger on your thumb as fast and as big as possible.": ["de": "Tippen Sie mit dem Zeigefinger auf den Daumen so schnell und so groß wie möglich."],
+    "Open and close your fist as fast and as fully as possible.": ["de": "Öffnen und schließen Sie die Faust so schnell und so weit wie möglich."],
+    "Rotate your forearm palm-up / palm-down as fast and as fully as possible.": ["de": "Drehen Sie den Unterarm Handfläche-oben / Handfläche-unten so schnell und so weit wie möglich."],
+
+    // Movement task display names / context
+    "Finger Tapping": ["de": "Finger-Tapping"],
+    "Hand Open/Close": ["de": "Hand öffnen/schließen"],
+    "Pronation/Supination": ["de": "Pronation/Supination"],
+    "Cancel": ["de": "Abbrechen"],
+    "Result": ["de": "Ergebnis"],
+    "Save": ["de": "Speichern"],
+    "Use & Finish": ["de": "Übernehmen & Beenden"],
+    "Use & Continue": ["de": "Übernehmen & Weiter"],
+    "Discard": ["de": "Verwerfen"],
+    "Retake": ["de": "Wiederholen"],
+
+    // Hand side helpers
+    "Left hand": ["de": "Linke Hand"],
+    "Right hand": ["de": "Rechte Hand"],
+    "Wear the watch on your left arm and keep the watch app open.": ["de": "Tragen Sie die Uhr am linken Arm und halten Sie die Watch-App geöffnet."],
+    "Wear the watch on your right arm and keep the watch app open.": ["de": "Tragen Sie die Uhr am rechten Arm und halten Sie die Watch-App geöffnet."],
+
+    // Recording context labels
+    "Baseline (before any stimulation)": ["de": "Baseline (vor jeder Stimulation)"],
+    "Before session": ["de": "Vor der Sitzung"],
+    "After session": ["de": "Nach der Sitzung"],
+    "Not specified": ["de": "Nicht angegeben"],
+    "Baseline": ["de": "Baseline"],
+    "Before stimulation": ["de": "Vor der Stimulation"],
+    "After stimulation": ["de": "Nach der Stimulation"],
+    "No stimulation yet today": ["de": "Heute noch keine Stimulation"],
+    "Before your vCR / medication session": ["de": "Vor Ihrer vCR-/Medikamenten-Sitzung"],
+    "After your vCR / medication session": ["de": "Nach Ihrer vCR-/Medikamenten-Sitzung"],
+    "Use when none of the above applies": ["de": "Verwenden, wenn nichts anderes zutrifft"],
+    "Step %d of %d": ["de": "Schritt %d von %d"],
+    "%d / %d repetitions": ["de": "%d / %d Wiederholungen"],
+    "%.1f / %.0f s": ["de": "%.1f / %.0f s"],
+    "%d recordings are ready to be saved as one session.": ["de": "%d Aufnahmen können als eine Sitzung gespeichert werden."],
+    "Recordings": ["de": "Aufnahmen"],
 ]
 
 // MARK: - Bundle swizzling for in-app language switch

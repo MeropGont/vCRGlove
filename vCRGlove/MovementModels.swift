@@ -22,9 +22,9 @@ enum MovementTaskType: String, CaseIterable, Codable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .fingerTap:           return "Finger Tapping"
-        case .handOpenClose:       return "Hand Open/Close"
-        case .pronationSupination: return "Pronation/Supination"
+        case .fingerTap:           return L10n("Finger Tapping")
+        case .handOpenClose:       return L10n("Hand Open/Close")
+        case .pronationSupination: return L10n("Pronation/Supination")
         }
     }
 
