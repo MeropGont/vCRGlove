@@ -267,10 +267,14 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
 
     /// Reduces one hand pose to the task's 1-D signal, normalized by hand
     /// size (wrist ↔ middle-finger MCP) so camera distance cancels out.
+    /// Uses a one-time calibration if available, otherwise the live frame value.
     private func scalar(from observation: VNHumanHandPoseObservation) -> Double? {
         guard let wrist = point(observation, .wrist),
               let middleMCP = point(observation, .middleMCP) else { return nil }
-        let handScale = distance(wrist, middleMCP)
+        let liveScale = distance(wrist, middleMCP)
+        let handScale = HandCalibrationStore.shared.isCalibrated
+            ? HandCalibrationStore.shared.scale
+            : liveScale
         guard handScale > 0.005 else { return nil }   // degenerate / hand too small/edge-on
 
         switch taskType {
@@ -306,5 +310,35 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
     private func distance(_ a: CGPoint, _ b: CGPoint) -> Double {
         let dx = a.x - b.x, dy = a.y - b.y
         return (dx * dx + dy * dy).squareRoot()
+    }
+}
+
+// MARK: - Hand calibration store
+
+/// One-time hand-scale calibration. Persists the wrist↔middleMCP distance so
+/// the camera-derived signal is normalized against a stable, user-specific
+/// reference instead of the per-frame (potentially noisy) live value.
+final class HandCalibrationStore: ObservableObject {
+    static let shared = HandCalibrationStore()
+
+    private let key = "calibratedHandScale"
+
+    @Published private(set) var scale: Double {
+        didSet { UserDefaults.standard.set(scale, forKey: key) }
+    }
+
+    var isCalibrated: Bool { scale > 0.005 }
+
+    private init() {
+        scale = UserDefaults.standard.double(forKey: key)
+    }
+
+    func set(scale: Double) {
+        self.scale = scale
+    }
+
+    func clear() {
+        scale = 0
+        UserDefaults.standard.removeObject(forKey: key)
     }
 }

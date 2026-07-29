@@ -39,6 +39,7 @@ struct MovementTaskView: View {
     @State private var countdownTimer: Timer?
     @State private var cameraError: String?
     @StateObject private var signalMonitor = LiveSignalMonitor()
+    @State private var isCalibrating = false
 
     private var usingCamera: Bool { activeSignalSource == .camera }
     private var usingWatch: Bool { activeSignalSource == .watchMotion }
@@ -147,6 +148,9 @@ struct MovementTaskView: View {
             }
         }
         .onDisappear { cancelEverything() }
+        .sheet(isPresented: $isCalibrating) {
+            HandCalibrationView { isCalibrating = false }
+        }
     }
 
     // MARK: - Setup
@@ -190,6 +194,29 @@ struct MovementTaskView: View {
                 }
             } header: {
                 Text("Sensor")
+            }
+
+            if usingCamera {
+                Section("Calibration") {
+                    if HandCalibrationStore.shared.isCalibrated {
+                        HStack {
+                            Text("Hand scale calibrated")
+                                .foregroundStyle(.green)
+                            Spacer()
+                            Button("Recalibrate") {
+                                isCalibrating = true
+                            }
+                        }
+                    } else {
+                        Button {
+                            isCalibrating = true
+                        } label: {
+                            Label("Calibrate hand size", systemImage: "hand.raised")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
             }
 
             Section {
@@ -762,6 +789,7 @@ struct MovementSessionFlowView: View {
     @State private var countdownRemaining: Int = 3
     @State private var cameraError: String?
     @StateObject private var signalMonitor = LiveSignalMonitor()
+    @State private var isCalibrating = false
 
     // MARK: - Computed helpers
 
@@ -780,6 +808,14 @@ struct MovementSessionFlowView: View {
     private var usingCamera: Bool { activeSignalSource == .camera }
     private var usingWatch: Bool   { activeSignalSource == .watchMotion }
     private var usingSynthetic: Bool { activeSignalSource == .synthetic }
+
+    private var flowUsesCamera: Bool {
+        #if targetEnvironment(simulator)
+        false
+        #else
+        steps.contains { $0.task.preferredSource == .camera }
+        #endif
+    }
 
     private var stopCondition: StopCondition { .thirtySec }
 
@@ -879,6 +915,9 @@ struct MovementSessionFlowView: View {
             }
         }
         .onDisappear { cancelEverything() }
+        .sheet(isPresented: $isCalibrating) {
+            HandCalibrationView { isCalibrating = false }
+        }
     }
 
     // MARK: - Intro
@@ -905,6 +944,32 @@ struct MovementSessionFlowView: View {
                 bullet("Rotate forearm palm-up / palm-down")
             }
             .padding(.horizontal, 32)
+
+            if flowUsesCamera {
+                if HandCalibrationStore.shared.isCalibrated {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                        Text("Hand scale calibrated")
+                            .foregroundStyle(.green)
+                        Spacer()
+                        Button("Recalibrate") {
+                            isCalibrating = true
+                        }
+                    }
+                    .padding(.horizontal, 32)
+                } else {
+                    Button {
+                        isCalibrating = true
+                    } label: {
+                        Label("Calibrate hand size", systemImage: "hand.raised")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .padding(.horizontal, 32)
+                }
+            }
 
             Spacer()
 
@@ -1469,6 +1534,104 @@ private struct MovementVideoPlaceholder: View {
                 .foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+// MARK: - One-time hand scale calibration
+
+private struct HandCalibrationView: View {
+    @StateObject private var capture = VisionHandPoseCapture()
+    @State private var progress: Double = 0
+    @State private var samples: [Double] = []
+    @State private var isCollecting = true
+    @State private var error: String?
+
+    let onComplete: () -> Void
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            Text("Hand calibration")
+                .font(.largeTitle.bold())
+            Text("Hold your hand steady in front of the camera for 2 seconds.")
+                .font(.headline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            if let error {
+                Text(error)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            } else {
+                CameraPreviewView(session: capture.session)
+                    .frame(height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .overlay {
+                        if capture.isHandVisible {
+                            RoundedRectangle(cornerRadius: 14)
+                                .strokeBorder(Color.green, lineWidth: 4)
+                        }
+                    }
+
+                Text(isCollecting ? "Calibrating…" : "Done")
+                    .font(.title2.bold())
+
+                ProgressView(value: progress, total: 2.0)
+                    .padding(.horizontal)
+                    .padding(.horizontal)
+            }
+
+            Spacer()
+        }
+        .padding()
+        .onAppear(perform: start)
+    }
+
+    private func start() {
+        capture.start(taskType: .fingerTap) { result in
+            switch result {
+            case .success:
+                collectForTwoSeconds()
+            case .failure(let err):
+                error = err.localizedDescription
+            }
+        }
+    }
+
+    private func collectForTwoSeconds() {
+        let start = ProcessInfo.processInfo.systemUptime
+        let timer = Timer(timeInterval: 0.05, repeats: true) { [weak capture] t in
+            guard let capture else {
+                t.invalidate()
+                return
+            }
+            let elapsed = ProcessInfo.processInfo.systemUptime - start
+            self.progress = min(elapsed, 2.0)
+
+            if capture.isHandVisible, capture.handScale > 0.005 {
+                self.samples.append(capture.handScale)
+            }
+
+            guard elapsed >= 2.0 else { return }
+            t.invalidate()
+            finish()
+        }
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    private func finish() {
+        let avg = samples.isEmpty ? 0 : samples.reduce(0, +) / Double(samples.count)
+        if avg > 0.005 {
+            HandCalibrationStore.shared.set(scale: avg)
+        }
+        capture.stop()
+        isCollecting = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            onComplete()
+        }
     }
 }
 
