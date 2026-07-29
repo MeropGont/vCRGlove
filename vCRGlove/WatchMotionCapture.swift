@@ -90,6 +90,7 @@ final class WatchMotionCapture: ObservableObject {
     }
 
     private func startStaleTimer() {
+        // Invalidate any previous timer so we never accumulate stale timers across restarts.
         staleTimer?.invalidate()
         let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
             guard let self else { return }
