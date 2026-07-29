@@ -43,6 +43,13 @@ struct MovementTaskView: View {
     private var usingCamera: Bool { activeSignalSource == .camera }
     private var usingWatch: Bool { activeSignalSource == .watchMotion }
 
+    private var showsPreview: Bool {
+        switch phase {
+        case .countdown, .recording: return true
+        default:                     return false
+        }
+    }
+
     private var activeSignalSource: SignalSource {
         taskType.preferredSource
     }
@@ -71,11 +78,7 @@ struct MovementTaskView: View {
 
             // Persistent camera preview: shown during countdown + recording only.
             // Lives outside the phase-switch so SwiftUI never tears it down.
-            if usingCamera, cameraCapture != nil,
-               case .setup = phase { EmptyView() }
-            else if usingCamera, cameraCapture != nil,
-               case .analyzing = phase { EmptyView() }
-            else if usingCamera, let cc = cameraCapture {
+            if usingCamera, let cc = cameraCapture, showsPreview, cc.isSessionRunning {
                 VStack(spacing: 4) {
                     CameraPreviewView(session: cc.session)
                         .frame(height: 160)
@@ -112,7 +115,7 @@ struct MovementTaskView: View {
                 .padding(.top, 40)
             }
             // Persistent watch signal chart: same idea as the camera preview.
-            else if usingWatch, let wc = watchCapture {
+            else if usingWatch, let wc = watchCapture, showsPreview {
                 VStack(spacing: 4) {
                     WatchStreamHint(capture: wc)
                         .padding(8)
@@ -627,7 +630,8 @@ struct RecordingProgressView: View {
             case .duration:
                 Text(String(format: "%.1f / %.0f s", min(recorder.elapsed, stopCondition.targetDuration), stopCondition.targetDuration))
                     .font(.title3.monospacedDigit())
-                ProgressView(value: min(recorder.elapsed, stopCondition.targetDuration),
+                let progress = max(0.0, min(recorder.elapsed, stopCondition.targetDuration))
+                ProgressView(value: progress,
                              total: stopCondition.targetDuration)
             }
         }
@@ -819,7 +823,7 @@ struct MovementSessionFlowView: View {
 
                 // Persistent camera preview: shown during countdown + recording,
                 // exactly like the original single-task view.
-                if usingCamera, let cc = cameraCapture, showsPreview {
+                if usingCamera, let cc = cameraCapture, showsPreview, cc.isSessionRunning {
                     VStack(spacing: 4) {
                         CameraPreviewView(session: cc.session)
                             .frame(height: 160)

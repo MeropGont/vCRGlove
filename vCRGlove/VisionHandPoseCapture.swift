@@ -49,6 +49,9 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
     /// True while task-relevant joints are cut off by the frame edge — the
     /// signal is unreliable then and the UI should warn immediately.
     @Published private(set) var isHandClipped = false
+    /// True once `session.startRunning()` has returned. The preview should only
+    /// be attached/removed while the session is in a known running state.
+    @Published private(set) var isSessionRunning = false
 
     /// One normalized scalar per processed frame. Called on the main queue.
     /// `time` is in the host/monotonic clock (comparable to systemUptime).
@@ -87,7 +90,10 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
                 do {
                     try self.configureSessionIfNeeded()
                     self.session.startRunning()
-                    DispatchQueue.main.async { completion(.success(())) }
+                    DispatchQueue.main.async {
+                        self.isSessionRunning = true
+                        completion(.success(()))
+                    }
                 } catch {
                     DispatchQueue.main.async { completion(.failure(.noCamera)) }
                 }
@@ -99,6 +105,7 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
         videoQueue.async { [weak self] in
             guard let self, self.session.isRunning else { return }
             self.session.stopRunning()
+            DispatchQueue.main.async { self.isSessionRunning = false }
         }
     }
 
