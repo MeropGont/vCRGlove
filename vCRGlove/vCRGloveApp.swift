@@ -236,6 +236,17 @@ let Translations: [String: [String: String]] = [
     "%.1f / %.0f s": ["de": "%.1f / %.0f s"],
     "%d recordings are ready to be saved as one session.": ["de": "%d Aufnahmen können als eine Sitzung gespeichert werden."],
     "Recordings": ["de": "Aufnahmen"],
+
+    // MovementTrendView
+    "Amplitude decrement": ["de": "Amplitudenabfall"],
+    "Rhythm variability": ["de": "Rhythmusvariabilität"],
+    "Onset latency": ["de": "Anflutzeit"],
+    "Quality index": ["de": "Qualitätsindex"],
+    "%@ over time": ["de": "%@ über die Zeit"],
+    "Higher values indicate faster/larger movement.": ["de": "Höhere Werte bedeuten schnellere oder größere Bewegungen."],
+    "Lower values indicate steadier movement.": ["de": "Niedrigere Werte bedeuten gleichmäßigere Bewegungen."],
+    "No recordings yet": ["de": "Noch keine Aufnahmen"],
+    "Unspecified": ["de": "Nicht angegeben"],
 ]
 
 // MARK: - Bundle swizzling for in-app language switch

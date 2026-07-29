@@ -20,13 +20,13 @@ enum TrendMetric: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .frequency: return "Speed"
-        case .amplitude: return "Amplitude"
-        case .rhythm:    return "Rhythm variability"
-        case .decrement: return "Amplitude decrement"
-        case .pauses:    return "Pauses"
-        case .onset:     return "Onset latency"
-        case .quality:   return "Quality index"
+        case .frequency: return L10n("Speed")
+        case .amplitude: return L10n("Amplitude")
+        case .rhythm:    return L10n("Rhythm variability")
+        case .decrement: return L10n("Amplitude decrement")
+        case .pauses:    return L10n("Pauses")
+        case .onset:     return L10n("Onset latency")
+        case .quality:   return L10n("Quality index")
         }
     }
 
@@ -111,12 +111,12 @@ struct MovementTrendView: View {
                         .padding(.vertical, 8)
                 }
             } header: {
-                Text("\(metric.displayName) over time")
+                Text(String(format: L10n("%@ over time"), metric.displayName))
             } footer: {
                 if !points.isEmpty {
-                    Text(metric.higherIsBetter
+                    Text(L10n(metric.higherIsBetter
                          ? "Higher values indicate faster/larger movement."
-                         : "Lower values indicate steadier movement.")
+                         : "Lower values indicate steadier movement."))
                 }
             }
 
