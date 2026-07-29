@@ -69,12 +69,12 @@ struct OnboardingView: View {
                     .accessibilityHidden(true)
 
                 VStack(spacing: 20) {
-                    Text(pages[pageIndex].title)
+                    Text(L10n(pages[pageIndex].title))
                         .font(.title.bold())
                         .multilineTextAlignment(.center)
                         .foregroundStyle(.primary)
 
-                    Text(pages[pageIndex].bodyText)
+                    Text(L10n(pages[pageIndex].bodyText))
                         .font(.title3)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
@@ -94,7 +94,7 @@ struct OnboardingView: View {
                             hasSeenOnboarding = true
                         }
                     } label: {
-                        Text(pageIndex < pages.count - 1 ? "Weiter" : "App starten")
+                        Text(L10n(pageIndex < pages.count - 1 ? "Weiter" : "App starten"))
                             .font(.title3.bold())
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
@@ -106,7 +106,7 @@ struct OnboardingView: View {
                         Button {
                             hasSeenOnboarding = true
                         } label: {
-                            Text("Überspringen")
+                            Text(L10n("Überspringen"))
                                 .font(.title3)
                                 .foregroundStyle(.secondary)
                         }
