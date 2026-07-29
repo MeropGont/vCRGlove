@@ -536,8 +536,8 @@ private struct WatchStreamHint: View {
 }
 
 /// Immediate warning when fingers leave the camera frame: red border around
-/// the preview, banner, and a haptic tap — cycles are NOT counted while the
-/// hand is clipped, so the user must notice right away.
+/// the preview and banner — cycles are NOT counted while the hand is clipped,
+/// so the user must notice right away.
 struct ClippedWarningOverlay: View {
     @ObservedObject var capture: VisionHandPoseCapture
 
@@ -560,11 +560,6 @@ struct ClippedWarningOverlay: View {
             }
         }
         .animation(.easeInOut(duration: 0.15), value: capture.isHandClipped)
-        .onChange(of: capture.isHandClipped) { _, clipped in
-            if clipped {
-                UINotificationFeedbackGenerator().notificationOccurred(.warning)
-            }
-        }
     }
 }
 
@@ -862,19 +857,25 @@ struct MovementSessionFlowView: View {
             // Only switch to .analyzing when the recorder actually stopped recording.
             // Reassigning a fresh recorder (nil -> false or false -> false) must NOT trigger this.
             if oldIsRec == true, newIsRec == false, case .recording = phase {
-                print("[PERF] switching to .analyzing")
+                print("[PERF] stopping hardware before .analyzing")
                 // Stop the camera/watch BEFORE the preview overlay disappears. If the
                 // AVCaptureSession is still running when the preview layer is torn down,
                 // the main thread blocks until the session stops (~9 s hang).
                 let cam = self.cameraCapture
                 let watch = self.watchCapture
-                self.cameraCapture = nil
-                self.watchCapture = nil
                 Task.detached(priority: .userInitiated) {
-                    cam?.stop()
-                    watch?.stop()
+                    let group = DispatchGroup()
+                    if let cam { group.enter(); cam.stop { group.leave() } }
+                    if let watch { group.enter(); watch.stop { group.leave() } }
+                    group.notify(queue: .main) {
+                        self.cameraCapture = nil
+                        self.watchCapture = nil
+                        if case .recording = self.phase {
+                            self.phase = .analyzing
+                        }
+                        print("[PERF] hardware stopped; phase now \(String(describing: self.phase))")
+                    }
                 }
-                phase = .analyzing
             }
         }
         .onDisappear { cancelEverything() }

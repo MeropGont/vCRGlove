@@ -57,12 +57,15 @@ final class WatchMotionCapture: ObservableObject {
         completion(.success(()))
     }
 
-    func stop() {
+    func stop(completion: (() -> Void)? = nil) {
         PhoneWC.shared.stopMotionStream()
         PhoneWC.shared.onMotionBatch = nil
         staleTimer?.invalidate()
         staleTimer = nil
-        DispatchQueue.main.async { [weak self] in self?.isReceiving = false }
+        DispatchQueue.main.async { [weak self] in
+            self?.isReceiving = false
+            completion?()
+        }
     }
 
     // MARK: - Private

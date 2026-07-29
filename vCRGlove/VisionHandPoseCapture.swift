@@ -101,11 +101,17 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
         }
     }
 
-    func stop() {
+    func stop(completion: (() -> Void)? = nil) {
         videoQueue.async { [weak self] in
-            guard let self, self.session.isRunning else { return }
-            self.session.stopRunning()
-            DispatchQueue.main.async { self.isSessionRunning = false }
+            guard let self else {
+                DispatchQueue.main.async { completion?() }
+                return
+            }
+            if self.session.isRunning {
+                self.session.stopRunning()
+                DispatchQueue.main.async { self.isSessionRunning = false }
+            }
+            DispatchQueue.main.async { completion?() }
         }
     }
 
