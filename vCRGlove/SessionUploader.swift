@@ -93,10 +93,9 @@ final class SessionUploader {
                 request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
                 request.httpBody = body
 
-                let sema = DispatchSemaphore(value: 0)
-                var result: Result<Void, Error> = .failure(URLError(.unknown))
-
-                self.session.dataTask(with: request) { _, response, error in
+                let task = self.session.dataTask(with: request) { [weak self] _, response, error in
+                    guard let self else { return }
+                    let result: Result<Void, Error>
                     if let error {
                         result = .failure(error)
                     } else if let http = response as? HTTPURLResponse,
@@ -106,35 +105,34 @@ final class SessionUploader {
                         let code = (response as? HTTPURLResponse)?.statusCode ?? -1
                         result = .failure(URLError(.init(rawValue: code)))
                     }
-                    sema.signal()
-                }.resume()
-                sema.wait()
 
-                switch result {
-                case .success:
-                    EventStore.shared.append(
-                        type: "UPLOAD", tag: "success",
-                        message: "Session uploaded to backend",
-                        details: ["session_id": movementSession.id.uuidString,
-                                  "patient":    movementSession.patientId])
-                case .failure(let error):
-                    guard attempt < Self.maxAttempts else {
+                    switch result {
+                    case .success:
                         EventStore.shared.append(
-                            type: "UPLOAD", tag: "failed_permanent",
-                            message: "Upload permanently failed, queued for later",
+                            type: "UPLOAD", tag: "success",
+                            message: "Session uploaded to backend",
+                            details: ["session_id": movementSession.id.uuidString,
+                                      "patient":    movementSession.patientId])
+                    case .failure(let error):
+                        guard attempt < Self.maxAttempts else {
+                            EventStore.shared.append(
+                                type: "UPLOAD", tag: "failed_permanent",
+                                message: "Upload permanently failed, queued for later",
+                                details: ["error": error.localizedDescription])
+                            self.enqueue(movementSession)
+                            return
+                        }
+                        let delay = pow(2.0, Double(attempt))
+                        EventStore.shared.append(
+                            type: "UPLOAD", tag: "retry",
+                            message: "Upload failed, retry in \(Int(delay))s (attempt \(attempt+1))",
                             details: ["error": error.localizedDescription])
-                        self.enqueue(movementSession)
-                        return
-                    }
-                    let delay = pow(2.0, Double(attempt))
-                    EventStore.shared.append(
-                        type: "UPLOAD", tag: "retry",
-                        message: "Upload failed, retry in \(Int(delay))s (attempt \(attempt+1))",
-                        details: ["error": error.localizedDescription])
-                    self.uploadQueue.asyncAfter(deadline: .now() + delay) {
-                        self.uploadWithRetry(movementSession, config: config, attempt: attempt + 1)
+                        self.uploadQueue.asyncAfter(deadline: .now() + delay) {
+                            self.uploadWithRetry(movementSession, config: config, attempt: attempt + 1)
+                        }
                     }
                 }
+                task.resume()
             } catch {
                 EventStore.shared.append(
                     type: "UPLOAD", tag: "encode_error",

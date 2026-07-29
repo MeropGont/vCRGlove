@@ -201,38 +201,43 @@ final class TrialRecorder: ObservableObject {
             self?.isRecording = false
         }
 
-        // The analysis stays on this background queue; it never touches the main thread.
-        let analysisStart = CFAbsoluteTimeGetCurrent()
-        let metrics = analyzer.analyze(snapshotBuffer)
-        let analysisElapsed = CFAbsoluteTimeGetCurrent() - analysisStart
+        // Run analysis off the serial recordQueue so the recorder stays responsive
+        // (e.g. Stop button / next start) even if the buffer is large.
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
 
-        let trial = Trial(
-            taskType:      snapshotTaskType,
-            side:          snapshotSide,
-            source:        snapshotSource,
-            stopCondition: snapshotStop,
-            startedAt:     snapshotStart,
-            startUptime:   snapshotUptime,
-            samples:       snapshotBuffer,
-            metrics:       metrics
-        )
+            let analysisStart = CFAbsoluteTimeGetCurrent()
+            let metrics = self.analyzer.analyze(snapshotBuffer)
+            let analysisElapsed = CFAbsoluteTimeGetCurrent() - analysisStart
 
-        print("[PERF] analyzed \(snapshotBuffer.count) samples in \(String(format: "%.3f", analysisElapsed)) s")
-        EventStore.shared.append(
-            type: "PERF", tag: "analysis_timed",
-            message: String(format: "Analyzed %d samples in %.3f s", snapshotBuffer.count, analysisElapsed),
-            details: ["samples": "\(snapshotBuffer.count)",
-                      "seconds": String(format: "%.3f", analysisElapsed)])
+            let trial = Trial(
+                taskType:      snapshotTaskType,
+                side:          snapshotSide,
+                source:        snapshotSource,
+                stopCondition: snapshotStop,
+                startedAt:     snapshotStart,
+                startUptime:   snapshotUptime,
+                samples:       snapshotBuffer,
+                metrics:       metrics
+            )
 
-        let finishElapsed = CFAbsoluteTimeGetCurrent() - finishStart
-        print("[PERF] _finish() completed in \(String(format: "%.3f", finishElapsed)) s")
-        EventStore.shared.append(
-            type: "PERF", tag: "finish_complete",
-            message: String(format: "_finish() completed in %.3f s", finishElapsed),
-            details: ["seconds": String(format: "%.3f", finishElapsed)])
+            print("[PERF] analyzed \(snapshotBuffer.count) samples in \(String(format: "%.3f", analysisElapsed)) s")
+            EventStore.shared.append(
+                type: "PERF", tag: "analysis_timed",
+                message: String(format: "Analyzed %d samples in %.3f s", snapshotBuffer.count, analysisElapsed),
+                details: ["samples": "\(snapshotBuffer.count)",
+                          "seconds": String(format: "%.3f", analysisElapsed)])
 
-        Task { @MainActor [weak self] in
-            self?.onComplete?(trial)
+            let finishElapsed = CFAbsoluteTimeGetCurrent() - finishStart
+            print("[PERF] _finish() completed in \(String(format: "%.3f", finishElapsed)) s")
+            EventStore.shared.append(
+                type: "PERF", tag: "finish_complete",
+                message: String(format: "_finish() completed in %.3f s", finishElapsed),
+                details: ["seconds": String(format: "%.3f", finishElapsed)])
+
+            DispatchQueue.main.async { [weak self] in
+                self?.onComplete?(trial)
+            }
         }
     }
 }
