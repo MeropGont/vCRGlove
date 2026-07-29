@@ -859,6 +859,17 @@ struct MovementSessionFlowView: View {
             // Reassigning a fresh recorder (nil -> false or false -> false) must NOT trigger this.
             if oldIsRec == true, newIsRec == false, case .recording = phase {
                 print("[PERF] switching to .analyzing")
+                // Stop the camera/watch BEFORE the preview overlay disappears. If the
+                // AVCaptureSession is still running when the preview layer is torn down,
+                // the main thread blocks until the session stops (~9 s hang).
+                let cam = self.cameraCapture
+                let watch = self.watchCapture
+                self.cameraCapture = nil
+                self.watchCapture = nil
+                Task.detached(priority: .userInitiated) {
+                    cam?.stop()
+                    watch?.stop()
+                }
                 phase = .analyzing
             }
         }
@@ -1333,18 +1344,7 @@ struct MovementSessionFlowView: View {
                           "task": trial.taskType.rawValue,
                           "side": trial.side.rawValue])
 
-            // Stopping the camera session synchronously on the main actor was the
-            // source of the ~9 s "hang". Stop hardware on a background thread,
-            // update UI immediately on the main actor.
-            let cam = self.cameraCapture
-            let watch = self.watchCapture
-            self.cameraCapture = nil
-            self.watchCapture = nil
-            Task.detached(priority: .userInitiated) {
-                cam?.stop()
-                watch?.stop()
-            }
-
+            // Hardware was already stopped when .analyzing began.
             Task { @MainActor in
                 self.phase = .trialResult(trial)
             }
