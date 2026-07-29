@@ -72,9 +72,6 @@ struct MovementTrendView: View {
     @State private var taskType: MovementTaskType = .fingerTap
     @State private var side: BodySide = .right
     @State private var metric: TrendMetric = .frequency
-    #if DEBUG
-    @State private var isSeeding = false
-    #endif
 
     private var points: [(date: Date, context: StimulationContext, metrics: MovementMetrics)] {
         store.history(task: taskType, side: side)
@@ -123,27 +120,6 @@ struct MovementTrendView: View {
                 }
             }
 
-            #if DEBUG
-            Section("Developer") {
-                Button {
-                    // Generating + analyzing 28 synthetic trials takes seconds —
-                    // run off the main thread and show a labeled busy state.
-                    isSeeding = true
-                    let task = taskType, side = side
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        TrendSampleDataSeeder.seed(task: task, side: side)
-                        DispatchQueue.main.async { isSeeding = false }
-                    }
-                } label: {
-                    if isSeeding {
-                        Label { Text("Generating sample data…") } icon: { ProgressView() }
-                    } else {
-                        Text("Add sample data (14 days)")
-                    }
-                }
-                .disabled(isSeeding)
-            }
-            #endif
         }
         .navigationTitle("Trends")
     }
@@ -185,42 +161,6 @@ struct MovementTrendView: View {
         }
     }
 }
-
-// MARK: - DEBUG sample data
-
-#if DEBUG
-/// Seeds two weeks of plausible pre/post sessions so the trend chart can be
-/// developed and demoed in the Simulator. DEBUG builds only.
-enum TrendSampleDataSeeder {
-    static func seed(task: MovementTaskType, side: BodySide, days: Int = 14) {
-        let analyzer = MovementAnalyzer()
-        let calendar = Calendar.current
-        for day in 0..<days {
-            guard let date = calendar.date(byAdding: .day, value: -(days - 1 - day), to: Date()) else { continue }
-            // Gradual improvement over the study + acute post-stim benefit.
-            let progress = Double(day) / Double(max(days - 1, 1))   // 0…1
-            for (context, boost) in [(StimulationContext.preStim, 0.0),
-                                     (StimulationContext.postStim, 0.25)] {
-                var params = SyntheticSignalGenerator.Params.parkinsonian
-                let improvement = min(progress * 0.5 + boost, 1.0)
-                params.frequencyHz   = 2.2 + 2.0 * improvement
-                params.decrementPerSec = 0.12 * (1 - improvement)
-                params.jitterFraction  = 0.18 * (1 - improvement)
-                params.pauseAtSec      = improvement > 0.4 ? [] : [3.5]
-                var gen = SyntheticSignalGenerator(params: params,
-                                                   seed: UInt64(day * 2 + (context == .postStim ? 1 : 0)))
-                let samples = gen.generate()
-                let trial = Trial(taskType: task, side: side, source: .synthetic,
-                                  stopCondition: .tenReps, startedAt: date,
-                                  samples: samples, metrics: analyzer.analyze(samples))
-                let session = MovementSession(patientId: "sample", date: date,
-                                              stimulationContext: context, trials: [trial])
-                TaskSessionStore.shared.add(session)
-            }
-        }
-    }
-}
-#endif
 
 #Preview {
     NavigationStack { MovementTrendView() }
