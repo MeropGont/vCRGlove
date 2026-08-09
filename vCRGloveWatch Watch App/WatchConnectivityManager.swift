@@ -62,8 +62,12 @@ final class WatchConnectivityManager: NSObject, WCSessionDelegate {
         print("WC received command:", type)
         DispatchQueue.main.async {
             switch type {
-            case "startMotionStream": MotionService.shared.startStreaming()
-            case "stopMotionStream":  MotionService.shared.stopStreaming()
+            case "startMotionStream":
+                MotionService.shared.isPhoneControlled = true
+                MotionService.shared.startStreaming()
+            case "stopMotionStream":
+                MotionService.shared.stopStreaming()
+                MotionService.shared.isPhoneControlled = false
             default: break
             }
         }

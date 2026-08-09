@@ -20,15 +20,15 @@ struct NoteLogView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("Note")
+                Text(L10n("Note"))
                     .font(.largeTitle.bold())
 
-                DatePicker("Time", selection: $selectedTime, displayedComponents: .hourAndMinute)
+                DatePicker(L10n("Time"), selection: $selectedTime, displayedComponents: .hourAndMinute)
 
-                Text("What would you like to record?")
+                Text(L10n("What would you like to record?"))
                     .font(.headline)
 
-                TextField("Add a note", text: $note, axis: .vertical)
+                TextField(L10n("Add a note"), text: $note, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(5...10)
             }
@@ -36,7 +36,7 @@ struct NoteLogView: View {
             .padding(.bottom, 90)
         }
         .safeAreaInset(edge: .bottom) {
-            Button("Save Note") {
+            Button(L10n("Save Note")) {
                 let cleanNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
 
                 let entry = JournalEntry(
@@ -54,7 +54,7 @@ struct NoteLogView: View {
             .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)
         }
-        .navigationTitle("Note")
+        .navigationTitle(L10n("Note"))
         .navigationBarTitleDisplayMode(.inline)
     }
 

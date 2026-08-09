@@ -17,6 +17,9 @@ final class MotionService: NSObject, ObservableObject {
     @Published var isRecording = false
     @Published var samplesPerSec: Double = 50
     @Published var rmsLast1s: Double = 0
+    /// True while the iPhone is controlling streaming for a movement task.
+    /// Prevents the user from accidentally stopping the stream on the watch.
+    @Published var isPhoneControlled = false
 
     private let motion = CMMotionManager()
     private let queue = OperationQueue()
@@ -24,6 +27,7 @@ final class MotionService: NSObject, ObservableObject {
     private var oneSecBuffer = [Double]()
     private var lastWriteTime = CFAbsoluteTimeGetCurrent()
     private var extendedSession: WKExtendedRuntimeSession?
+    private var lastRecordingURL: URL?
 
     private override init() { super.init() }
 
@@ -42,6 +46,7 @@ final class MotionService: NSObject, ObservableObject {
 
         do {
             let url = try csvURL()
+            lastRecordingURL = url
             fileHandle = try FileHandle(forWritingTo: url)
             fileHandle?.seekToEndOfFile()
         } catch {
@@ -140,8 +145,7 @@ final class MotionService: NSObject, ObservableObject {
     }
 
     func exportRecordingToPhone() {
-        guard let sourceURL = FileManager.default.temporaryDirectory
-            .contents?.sorted(by: { $0.path > $1.path }).first else { return } // last file heuristic
+        guard let sourceURL = lastRecordingURL else { return }
 
         let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let destURL = documentsURL.appendingPathComponent(sourceURL.lastPathComponent)
@@ -169,8 +173,4 @@ extension MotionService: WKExtendedRuntimeSessionDelegate {
         print("Extended runtime session invalidated:", reason.rawValue, error?.localizedDescription ?? "no error")
         extendedSession = nil
     }
-}
-
-private extension URL {
-    var contents: [URL]? { try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil) }
 }

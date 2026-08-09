@@ -34,18 +34,18 @@ final class WatchMotionCapture: ObservableObject {
     /// cleared if none arrive for `staleAfterSec`).
     @Published private(set) var isReceiving = false
 
-    /// One sample per watch motion frame. Called on a background queue.
+    /// One sample per watch motion frame. Called on the main actor.
     /// `time` is rebased to the phone's monotonic clock (systemUptime).
-    var onSample: ((_ value: Double, _ time: Double) -> Void)?
+    var onSample: (@MainActor (_ value: Double, _ time: Double) -> Void)?
 
     private let staleAfterSec: Double = 1.0
     private var watchT0: Double?
     private var phoneT0: Double = 0
     private var staleTimer: Timer?
 
-    func start(completion: @escaping (Result<Void, CaptureError>) -> Void) {
-        guard WCSession.isSupported() else {
-            completion(.failure(.watchNotReachable))
+    func start(completion: @escaping @MainActor (Result<Void, CaptureError>) -> Void) {
+        guard PhoneWC.shared.isWatchReachable else {
+            DispatchQueue.main.async { completion(.failure(.watchNotReachable)) }
             return
         }
         watchT0 = nil
@@ -54,7 +54,7 @@ final class WatchMotionCapture: ObservableObject {
         }
         PhoneWC.shared.startMotionStream()
         startStaleTimer()
-        completion(.success(()))
+        DispatchQueue.main.async { completion(.success(())) }
     }
 
     func stop(completion: (() -> Void)? = nil) {
@@ -86,9 +86,15 @@ final class WatchMotionCapture: ObservableObject {
         if !isReceiving {
             DispatchQueue.main.async { [weak self] in self?.isReceiving = true }
         }
-        for pair in batch where pair.count >= 2 {
-            let t = pair[0] - watchT0 + phoneT0
-            onSample?(pair[1], t)
+
+        let samples = batch.compactMap { pair -> (Double, Double)? in
+            guard pair.count >= 2 else { return nil }
+            return (pair[0] - watchT0 + phoneT0, pair[1])
+        }
+        DispatchQueue.main.async { [weak self] in
+            for (t, value) in samples {
+                self?.onSample?(value, t)
+            }
         }
     }
 

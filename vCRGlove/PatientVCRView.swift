@@ -536,7 +536,7 @@ struct PatientVCRView: View {
         let entry = JournalEntry(
             type: .stimulation,
             note: String(format: L10n("vCR session started with %d glove(s)"), readyGloves.count)
-        }
+        )
 
         JournalStore.shared.add(entry)
         

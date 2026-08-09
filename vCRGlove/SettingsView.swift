@@ -21,47 +21,47 @@ struct SettingsView: View {
                 NavigationLink {
                     VCRSettingsView()
                 } label: {
-                    SettingsRow(icon: "waveform.path.ecg", color: .blue, title: "vCR Settings", subtitle: "Duration, gloves, and session preferences")
+                    SettingsRow(icon: "waveform.path.ecg", color: .blue, title: L10n("vCR Settings"), subtitle: L10n("Duration, gloves, and session preferences"))
                 }
 
                 NavigationLink {
                     ProfileSettingsView(patientID: $patientID)
                 } label: {
-                    SettingsRow(icon: "person.crop.circle", color: .purple, title: "Profile", subtitle: "ID, icon, and language")
+                    SettingsRow(icon: "person.crop.circle", color: .purple, title: L10n("Profile"), subtitle: L10n("ID, icon, and language"))
                 }
 
                 NavigationLink {
                     ReminderSettingsView()
                 } label: {
-                    SettingsRow(icon: "bell.badge", color: .orange, title: "Reminders", subtitle: "vCR, journal, and task notifications")
+                    SettingsRow(icon: "bell.badge", color: .orange, title: L10n("Reminders"), subtitle: L10n("vCR, journal, and task notifications"))
                 }
 
                 NavigationLink {
                     PrivacyDataSettingsView()
                 } label: {
-                    SettingsRow(icon: "lock.shield", color: .green, title: "Privacy & Data", subtitle: "Permissions, storage, and data handling")
+                    SettingsRow(icon: "lock.shield", color: .green, title: L10n("Privacy & Data"), subtitle: L10n("Permissions, storage, and data handling"))
                 }
 
                 NavigationLink {
                     InstructionsSettingsView()
                 } label: {
-                    SettingsRow(icon: "book.closed", color: .teal, title: "Instructions", subtitle: "Gloves, vCR, journal, and troubleshooting")
+                    SettingsRow(icon: "book.closed", color: .teal, title: L10n("Instructions"), subtitle: L10n("Gloves, vCR, journal, and troubleshooting"))
                 }
             }
 
-            Section("Research Mode") {
+            Section(L10n("Research Mode")) {
                 if researchUnlocked {
-                    Toggle("Show Research Tab", isOn: $showResearchTab)
+                    Toggle(L10n("Show Research Tab"), isOn: $showResearchTab)
 
                     NavigationLink {
                         ResearchAdminSettingsView(patientID: patientID)
                     } label: {
-                        SettingsRow(icon: "slider.horizontal.3", color: .indigo, title: "Research Admin", subtitle: "Logs, exports, backup, and study notes")
+                        SettingsRow(icon: "slider.horizontal.3", color: .indigo, title: L10n("Research Admin"), subtitle: L10n("Logs, exports, backup, and study notes"))
                     }
                 } else {
-                    SecureField("Password", text: $researchPassword)
+                    SecureField(L10n("Password"), text: $researchPassword)
 
-                    Button("Unlock Research Mode") {
+                    Button(L10n("Unlock Research Mode")) {
                         if researchPassword == "vcr2026" {
                             researchUnlocked = true
                             passwordError = false
@@ -72,7 +72,7 @@ struct SettingsView: View {
                     }
 
                     if passwordError {
-                        Text("Incorrect password")
+                        Text(L10n("Incorrect password"))
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
@@ -83,11 +83,11 @@ struct SettingsView: View {
                 NavigationLink {
                     SupportSettingsView(patientID: patientID)
                 } label: {
-                    SettingsRow(icon: "questionmark.circle", color: .pink, title: "Need Help?", subtitle: "Contact ICNS support")
+                    SettingsRow(icon: "questionmark.circle", color: .pink, title: L10n("Need Help?"), subtitle: L10n("Contact ICNS support"))
                 }
             }
         }
-        .navigationTitle("Settings")
+        .navigationTitle(L10n("Settings"))
     }
 }
 
@@ -107,10 +107,10 @@ private struct SettingsRow: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(title)
+                Text(L10n(title))
                     .font(.headline)
 
-                Text(subtitle)
+                Text(L10n(subtitle))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -122,13 +122,13 @@ private struct SettingsRow: View {
 private struct VCRSettingsView: View {
     var body: some View {
         List {
-            Section("Session") {
-                Text("Default duration")
-                Text("Glove status and last connection time will go here.")
+            Section(L10n("Session")) {
+                Text(L10n("Default duration"))
+                Text(L10n("Glove status and last connection time will go here."))
                     .foregroundStyle(.secondary)
             }
         }
-        .navigationTitle("vCR Settings")
+        .navigationTitle(L10n("vCR Settings"))
     }
 }
 
@@ -138,14 +138,14 @@ private struct ProfileSettingsView: View {
 
     var body: some View {
         Form {
-            Section("Profile") {
-                TextField("ID", text: $patientID)
-                Text("Avatar selection will go here.")
+            Section(L10n("Profile")) {
+                TextField(L10n("ID"), text: $patientID)
+                Text(L10n("Avatar selection will go here."))
                     .foregroundStyle(.secondary)
             }
 
-            Section("Language") {
-                Picker("Language", selection: $appSettings.language) {
+            Section(L10n("Language")) {
+                Picker(L10n("Language"), selection: $appSettings.language) {
                     ForEach(AppLanguage.allCases) { lang in
                         Text(lang.displayName).tag(lang)
                     }
@@ -153,8 +153,8 @@ private struct ProfileSettingsView: View {
                 .pickerStyle(.segmented)
             }
 
-            Section("Font Size") {
-                Picker("Font Size", selection: $appSettings.fontSize) {
+            Section(L10n("Font Size")) {
+                Picker(L10n("Font Size"), selection: $appSettings.fontSize) {
                     ForEach(AppFontSize.allCases) { size in
                         Text(size.displayName).tag(size)
                     }
@@ -162,50 +162,50 @@ private struct ProfileSettingsView: View {
                 .pickerStyle(.segmented)
             }
         }
-        .navigationTitle("Profile")
+        .navigationTitle(L10n("Profile"))
     }
 }
 
 private struct ReminderSettingsView: View {
     var body: some View {
         List {
-            Section("Reminders") {
-                Text("vCR reminders")
-                Text("Journal reminders")
-                Text("Task reminders")
-                Text("Quiet hours")
+            Section(L10n("Reminders")) {
+                Text(L10n("vCR reminders"))
+                Text(L10n("Journal reminders"))
+                Text(L10n("Task reminders"))
+                Text(L10n("Quiet hours"))
             }
         }
-        .navigationTitle("Reminders")
+        .navigationTitle(L10n("Reminders"))
     }
 }
 
 private struct PrivacyDataSettingsView: View {
     var body: some View {
         List {
-            Section("Privacy & Data") {
-                Text("Stored data")
-                Text("Permissions")
-                Text("Storage status")
-                Text("Backup status")
+            Section(L10n("Privacy & Data")) {
+                Text(L10n("Stored data"))
+                Text(L10n("Permissions"))
+                Text(L10n("Storage status"))
+                Text(L10n("Backup status"))
             }
         }
-        .navigationTitle("Privacy & Data")
+        .navigationTitle(L10n("Privacy & Data"))
     }
 }
 
 private struct InstructionsSettingsView: View {
     var body: some View {
         List {
-            Section("Instructions") {
-                Text("Gloves")
-                Text("vCR session")
-                Text("Journal")
-                Text("Troubleshooting")
-                Text("Future movement tasks")
+            Section(L10n("Instructions")) {
+                Text(L10n("Gloves"))
+                Text(L10n("vCR session"))
+                Text(L10n("Journal"))
+                Text(L10n("Troubleshooting"))
+                Text(L10n("Future movement tasks"))
             }
         }
-        .navigationTitle("Instructions")
+        .navigationTitle(L10n("Instructions"))
     }
 }
 
@@ -214,31 +214,31 @@ private struct ResearchAdminSettingsView: View {
 
     var body: some View {
         List {
-            Section("Study") {
-                Text("ID: \(patientID.isEmpty ? "Not set" : patientID)")
-                Text("Study start date")
-                Text("Patient notes")
+            Section(L10n("Study")) {
+                Text(String(format: L10n("ID: %@"), patientID.isEmpty ? L10n("Not set") : patientID))
+                Text(L10n("Study start date"))
+                Text(L10n("Patient notes"))
             }
 
-            Section("Data") {
+            Section(L10n("Data")) {
                 NavigationLink {
                     MovementExportView()
                 } label: {
-                    Text("Movement task export")
+                    Text(L10n("Movement task export"))
                 }
-                Text("Export logs")
-                Text("Sync data")
-                Text("Storage size")
-                Text("Latest backup")
+                Text(L10n("Export logs"))
+                Text(L10n("Sync data"))
+                Text(L10n("Storage size"))
+                Text(L10n("Latest backup"))
             }
 
-            Section("Diagnostics") {
-                Text("Bluetooth diagnostics")
-                Text("App version")
-                Text("Device version")
+            Section(L10n("Diagnostics")) {
+                Text(L10n("Bluetooth diagnostics"))
+                Text(L10n("App version"))
+                Text(L10n("Device version"))
             }
         }
-        .navigationTitle("Research Admin")
+        .navigationTitle(L10n("Research Admin"))
     }
 }
 
@@ -272,23 +272,23 @@ struct SupportSettingsView: View {
     var body: some View {
         List {
             Section {
-                Picker("What is not working?", selection: $topic) {
+                Picker(L10n("What is not working?"), selection: $topic) {
                     ForEach(topics, id: \.self) { topic in
-                        Text(topic)
+                        Text(L10n(topic))
                     }
                 }
             }
 
             if topic == "Other" {
-                Section("Tell Us What Happened") {
-                    Text("Please contact support and briefly describe what was not working.")
+                Section(L10n("Tell Us What Happened")) {
+                    Text(L10n("Please contact support and briefly describe what was not working."))
                         .foregroundStyle(.secondary)
                 }
             } else {
-                Section("Try This First") {
+                Section(L10n("Try This First")) {
                     ForEach(troubleshootingSteps, id: \.question) { item in
-                        DisclosureGroup(item.question) {
-                            Text(item.answer)
+                        DisclosureGroup(L10n(item.question)) {
+                            Text(L10n(item.answer))
                                 .foregroundStyle(.secondary)
                                 .padding(.top, 4)
                         }
@@ -296,19 +296,19 @@ struct SupportSettingsView: View {
                 }
             }
 
-            Section("Still Need Help?") {
-                Text("If the steps above did not solve the issue, contact ICNS support.")
+            Section(L10n("Still Need Help?")) {
+                Text(L10n("If the steps above did not solve the issue, contact ICNS support."))
                     .foregroundStyle(.secondary)
 
                 Text("ICNS")
                 Link("015221500869", destination: URL(string: "tel:015221500869")!)
 
                 if let supportEmailURL {
-                    Link("Send Email to vcr@uke.de", destination: supportEmailURL)
+                    Link(L10n("Send Email to vcr@uke.de"), destination: supportEmailURL)
                 }
             }
         }
-        .navigationTitle("Troubleshooting")
+        .navigationTitle(L10n("Troubleshooting"))
     }
 
     private var troubleshootingSteps: [(question: String, answer: String)] {

@@ -73,6 +73,12 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
     private var isConfigured = false
     private var videoOrientation: CGImagePropertyOrientation = .up
 
+    /// Records the camera feed to a temporary movie file during the measurement.
+    private let movieFileOutput = AVCaptureMovieFileOutput()
+    private let recordingDelegate = MovieFileOutputDelegate()
+    /// Set before `stopRecording`; called on the main queue with the recorded file URL.
+    private var recordingCompletion: ((URL?) -> Void)?
+
     // MARK: - Lifecycle
 
     /// Requests permission, configures the front camera, and starts streaming.
@@ -110,6 +116,10 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
                 DispatchQueue.main.async { completion?() }
                 return
             }
+            // Make sure any active recording is aborted cleanly before tearing down.
+            if self.movieFileOutput.isRecording {
+                self.movieFileOutput.stopRecording()
+            }
             if self.session.isRunning {
                 let start = CFAbsoluteTimeGetCurrent()
                 self.session.stopRunning()
@@ -118,6 +128,34 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
                 DispatchQueue.main.async { self.isSessionRunning = false }
             }
             DispatchQueue.main.async { completion?() }
+        }
+    }
+
+    /// Start writing the camera feed to a temporary `.mov` file.
+    /// - Returns: the temporary URL, or `nil` if the movie output is not available.
+    @discardableResult
+    func startRecordingToTemporaryFile() -> URL? {
+        guard movieFileOutput.isRecording == false,
+              session.outputs.contains(movieFileOutput) else { return nil }
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("mov")
+        movieFileOutput.startRecording(to: url, recordingDelegate: recordingDelegate)
+        return url
+    }
+
+    /// Stop the active recording. `completion` is called on the main queue with the
+    /// temporary file URL, or `nil` if no recording was running or it failed.
+    func stopRecording(completion: @escaping (URL?) -> Void) {
+        recordingCompletion = completion
+        recordingDelegate.onComplete = { [weak self] url in
+            self?.recordingCompletion = nil
+            DispatchQueue.main.async { completion(url) }
+        }
+        if movieFileOutput.isRecording {
+            movieFileOutput.stopRecording()
+        } else {
+            DispatchQueue.main.async { completion(nil) }
         }
     }
 
@@ -157,6 +195,18 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
             }
         }
 
+        // Movie output records the actual measurement video to the Photo Library.
+        if session.canAddOutput(movieFileOutput) {
+            session.addOutput(movieFileOutput)
+            if let connection = movieFileOutput.connection(with: .video) {
+                if #available(iOS 17.0, *) {
+                    connection.videoRotationAngle = 90
+                } else {
+                    connection.videoOrientation = .portrait
+                }
+            }
+        }
+
         session.commitConfiguration()
         isConfigured = true
 
@@ -173,6 +223,22 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
             } catch {
                 // Frame-rate capping is optional; ignore lock failure.
             }
+        }
+    }
+}
+
+// MARK: - Movie file recording delegate
+
+private final class MovieFileOutputDelegate: NSObject, AVCaptureFileOutputRecordingDelegate {
+    var onComplete: ((URL?) -> Void)?
+
+    func fileOutput(_ output: AVCaptureFileOutput,
+                    didFinishRecordingTo outputFileURL: URL,
+                    from connections: [AVCaptureConnection],
+                    error: Error?) {
+        DispatchQueue.main.async { [weak self] in
+            self?.onComplete?(error == nil ? outputFileURL : nil)
+            self?.onComplete = nil
         }
     }
 }

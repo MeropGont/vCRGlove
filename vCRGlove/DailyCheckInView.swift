@@ -30,11 +30,11 @@ struct DailyCheckInView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                Text("Daily Check-In")
+                Text(L10n("Daily Check-In"))
                     .font(.largeTitle.bold())
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("How are you today?")
+                    Text(L10n("How are you today?"))
                         .font(.headline)
 
                     HStack(spacing: 14) {

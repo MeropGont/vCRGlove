@@ -32,13 +32,13 @@ enum TrendMetric: String, CaseIterable, Identifiable {
 
     var unit: String {
         switch self {
-        case .frequency: return "Hz"
+        case .frequency: return L10n("Hz")
         case .amplitude: return ""
-        case .rhythm:    return "CV"
-        case .decrement: return "/cycle"
-        case .pauses:    return "count"
-        case .onset:     return "s"
-        case .quality:   return "0–1"
+        case .rhythm:    return L10n("CV")
+        case .decrement: return L10n("/cycle")
+        case .pauses:    return L10n("count")
+        case .onset:     return L10n("s")
+        case .quality:   return L10n("0–1")
         }
     }
 
@@ -80,17 +80,17 @@ struct MovementTrendView: View {
     var body: some View {
         Form {
             Section {
-                Picker("Movement", selection: $taskType) {
+                Picker(L10n("Movement"), selection: $taskType) {
                     ForEach(MovementTaskType.allCases) { t in
                         Text("\(t.rawValue)  \(t.displayName)").tag(t)
                     }
                 }
-                Picker("Hand", selection: $side) {
-                    Text("Left").tag(BodySide.left)
-                    Text("Right").tag(BodySide.right)
+                Picker(L10n("Hand"), selection: $side) {
+                    Text(BodySide.left.displayName).tag(BodySide.left)
+                    Text(BodySide.right.displayName).tag(BodySide.right)
                 }
                 .pickerStyle(.segmented)
-                Picker("Metric", selection: $metric) {
+                Picker(L10n("Metric"), selection: $metric) {
                     ForEach(TrendMetric.allCases) { m in
                         Text(m.displayName).tag(m)
                     }
@@ -100,9 +100,9 @@ struct MovementTrendView: View {
             Section {
                 if points.isEmpty {
                     ContentUnavailableView(
-                        "No recordings yet",
+                        L10n("No recordings yet"),
                         systemImage: "chart.xyaxis.line",
-                        description: Text("Record a \(taskType.displayName) test with your \(side.rawValue) hand to see trends here.")
+                        description: Text(String(format: L10n("Record a %@ test with your %@ hand to see trends here."), taskType.displayName, side.displayName))
                     )
                     .frame(minHeight: 220)
                 } else {
@@ -121,32 +121,32 @@ struct MovementTrendView: View {
             }
 
         }
-        .navigationTitle("Trends")
+        .navigationTitle(L10n("Trends"))
     }
 
     private var chart: some View {
         Chart {
             ForEach(Array(points.enumerated()), id: \.offset) { _, p in
                 LineMark(
-                    x: .value("Date", p.date),
+                    x: .value(L10n("Date"), p.date),
                     y: .value(metric.displayName, metric.value(from: p.metrics))
                 )
                 .foregroundStyle(.gray.opacity(0.4))
                 .interpolationMethod(.monotone)
 
                 PointMark(
-                    x: .value("Date", p.date),
+                    x: .value(L10n("Date"), p.date),
                     y: .value(metric.displayName, metric.value(from: p.metrics))
                 )
-                .foregroundStyle(by: .value("Context", contextLabel(p.context)))
+                .foregroundStyle(by: .value(L10n("Context"), contextLabel(p.context)))
                 .symbolSize(80)
             }
         }
         .chartForegroundStyleScale([
-            "Baseline": Color.gray,
-            "Before session": Color.orange,
-            "After session": Color.green,
-            "Unspecified": Color.blue
+            contextLabel(.baseline): Color.gray,
+            contextLabel(.preStim): Color.orange,
+            contextLabel(.postStim): Color.green,
+            contextLabel(.unspecified): Color.blue
         ])
         .chartYAxisLabel(metric.unit)
         .chartLegend(position: .bottom, spacing: 12)
@@ -154,10 +154,10 @@ struct MovementTrendView: View {
 
     private func contextLabel(_ c: StimulationContext) -> String {
         switch c {
-        case .baseline:    return "Baseline"
-        case .preStim:     return "Before session"
-        case .postStim:    return "After session"
-        case .unspecified: return "Unspecified"
+        case .baseline:    return L10n("Baseline")
+        case .preStim:     return L10n("Before session")
+        case .postStim:    return L10n("After session")
+        case .unspecified: return L10n("Unspecified")
         }
     }
 }

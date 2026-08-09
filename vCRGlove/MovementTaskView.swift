@@ -12,6 +12,7 @@
 
 import SwiftUI
 import AVFoundation
+import Photos
 
 struct MovementTaskView: View {
 
@@ -40,6 +41,8 @@ struct MovementTaskView: View {
     @State private var cameraError: String?
     @StateObject private var signalMonitor = LiveSignalMonitor()
     @State private var isCalibrating = false
+    @State private var measurementVideoURL: URL?
+    @State private var recordingStartDate: Date?
 
     private var usingCamera: Bool { activeSignalSource == .camera }
     private var usingWatch: Bool { activeSignalSource == .watchMotion }
@@ -142,15 +145,24 @@ struct MovementTaskView: View {
                 let watch = self.watchCapture
                 Task.detached(priority: .userInitiated) {
                     let group = DispatchGroup()
-                    if let cam { group.enter(); cam.stop { group.leave() } }
+                    if let cam {
+                        group.enter()
+                        cam.stopRecording { url in
+                            self.measurementVideoURL = url
+                            cam.stop { group.leave() }
+                        }
+                    }
                     if let watch { group.enter(); watch.stop { group.leave() } }
                     group.notify(queue: .main) {
-                        self.cameraCapture = nil
-                        self.watchCapture = nil
-                        if case .recording = self.phase {
-                            self.phase = .analyzing
+                        Task { @MainActor in
+                            self.cameraCapture = nil
+                            self.watchCapture = nil
+                            if case .recording = self.phase {
+                                self.phase = .analyzing
+                            }
+                            self.saveMeasurementVideoToPhotosIfNeeded()
+                            print("[PERF] single-task hardware stopped; phase now \(String(describing: self.phase))")
                         }
-                        print("[PERF] single-task hardware stopped; phase now \(String(describing: self.phase))")
                     }
                 }
             }
@@ -201,7 +213,7 @@ struct MovementTaskView: View {
 
             Section {
                 if usingCamera {
-                    Text(L10n("This task uses the front camera to track your hand. No video is stored — only movement measurements."))
+                    Text(L10n("This task uses the front camera to track your hand. The measurement video is saved to your Photo Library."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else if usingWatch {
@@ -338,6 +350,7 @@ struct MovementTaskView: View {
                 phase = .countdown(remaining)
             }
         }
+
         RunLoop.main.add(t, forMode: .common)
         countdownTimer = t
     }
@@ -398,6 +411,10 @@ struct MovementTaskView: View {
         }
         recorder = r
         phase = .recording
+        recordingStartDate = Date()
+        if usingCamera {
+            cameraCapture?.startRecordingToTemporaryFile()
+        }
         r.start()
         if let cameraCapture {
             cameraCapture.onSample = { [signalMonitor] value, time in
@@ -429,6 +446,153 @@ struct MovementTaskView: View {
         )
         TaskSessionStore.shared.add(session)
         phase = .setup
+    }
+
+    private func saveMeasurementVideoToPhotosIfNeeded() {
+        guard let originalURL = measurementVideoURL else { return }
+        measurementVideoURL = nil
+        let recordedAt = recordingStartDate ?? Date()
+        recordingStartDate = nil
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        let timestamp = formatter.string(from: recordedAt)
+        let videoName = "vCRGlove_\(taskType.rawValue)_\(side.rawValue)_\(context.rawValue)_\(timestamp).mov"
+        let exportedURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("mov")
+
+        exportVideoWithMetadata(
+            inputURL: originalURL,
+            outputURL: exportedURL,
+            videoName: videoName,
+            recordedAt: recordedAt
+        ) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let finalURL):
+                    self.addVideoToPhotoLibrary(url: finalURL, name: videoName, recordedAt: recordedAt)
+                case .failure(let error):
+                    EventStore.shared.append(
+                        type: "TASK", tag: "video_export_error",
+                        message: "Failed to embed metadata in measurement video: \(error.localizedDescription)")
+                }
+                try? FileManager.default.removeItem(at: originalURL)
+                try? FileManager.default.removeItem(at: exportedURL)
+            }
+        }
+    }
+
+    private func exportVideoWithMetadata(
+        inputURL: URL,
+        outputURL: URL,
+        videoName: String,
+        recordedAt: Date,
+        completion: @escaping (Result<URL, Error>) -> Void
+    ) {
+        let asset = AVAsset(url: inputURL)
+        guard let session = AVAssetExportSession(
+            asset: asset,
+            presetName: AVAssetExportPresetHighestQuality
+        ) else {
+            completion(.failure(NSError(domain: "VideoMetadata", code: 1,
+                                        userInfo: [NSLocalizedDescriptionKey: "Could not create export session"])))
+            return
+        }
+
+        session.outputURL = outputURL
+        session.outputFileType = .mov
+        session.shouldOptimizeForNetworkUse = false
+        session.metadata = makeVideoMetadataItems(recordedAt: recordedAt)
+
+        session.exportAsynchronously {
+            DispatchQueue.main.async {
+                switch session.status {
+                case .completed:
+                    completion(.success(outputURL))
+                case .failed:
+                    completion(.failure(session.error ?? NSError(domain: "VideoMetadata", code: 2)))
+                case .cancelled:
+                    completion(.failure(session.error ?? NSError(domain: "VideoMetadata", code: 3,
+                                                                  userInfo: [NSLocalizedDescriptionKey: "Export cancelled"])))
+                default:
+                    completion(.failure(session.error ?? NSError(domain: "VideoMetadata", code: 4,
+                                                                  userInfo: [NSLocalizedDescriptionKey: "Unexpected export status"])))
+                }
+            }
+        }
+    }
+
+    private func makeVideoMetadataItems(recordedAt: Date) -> [AVMetadataItem] {
+        let isoFormatter = ISO8601DateFormatter()
+        let recordedAtString = isoFormatter.string(from: recordedAt)
+        let patient = patientID.isEmpty ? "unset" : patientID
+
+        let title = "vCRGlove \(taskType.rawValue) – \(side.rawValue) – \(context.rawValue)"
+        let description = [
+            "Patient ID: \(patient)",
+            "Task: \(taskType.rawValue)",
+            "Side: \(side.rawValue)",
+            "Context: \(context.rawValue)",
+            "Recorded: \(recordedAtString)"
+        ].joined(separator: "\n")
+
+        var items: [AVMetadataItem] = [
+            metadataItem(key: .commonKeyTitle, keySpace: .common, value: title),
+            metadataItem(key: .commonKeyDescription, keySpace: .common, value: description),
+            metadataItem(key: .commonKeyCreationDate, keySpace: .common,
+                         value: isoFormatter.string(from: recordedAt)),
+            customMetadataItem(key: "patientID", value: patient),
+            customMetadataItem(key: "taskType", value: taskType.rawValue),
+            customMetadataItem(key: "side", value: side.rawValue),
+            customMetadataItem(key: "context", value: context.rawValue),
+            customMetadataItem(key: "recordedAt", value: recordedAtString)
+        ]
+
+        #if DEBUG
+        items.append(customMetadataItem(key: "appBuild", value: "debug"))
+        #else
+        items.append(customMetadataItem(key: "appBuild", value: "release"))
+        #endif
+
+        return items
+    }
+
+    private func metadataItem(key: AVMetadataKey, keySpace: AVMetadataKeySpace, value: String) -> AVMutableMetadataItem {
+        let item = AVMutableMetadataItem()
+        item.key = key as (NSCopying & NSObjectProtocol)
+        item.keySpace = keySpace
+        item.value = value as (NSCopying & NSObjectProtocol)
+        item.locale = Locale.current
+        return item
+    }
+
+    private func customMetadataItem(key: String, value: String) -> AVMutableMetadataItem {
+        metadataItem(
+            key: AVMetadataKey(rawValue: "com.vcrglove.\(key)"),
+            keySpace: .quickTimeMetadata,
+            value: value
+        )
+    }
+
+    private func addVideoToPhotoLibrary(url: URL, name: String, recordedAt: Date) {
+        PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+            guard status == .authorized || status == .limited else { return }
+            PHPhotoLibrary.shared().performChanges {
+                let request = PHAssetCreationRequest.forAsset()
+                request.creationDate = recordedAt
+
+                let options = PHAssetResourceCreationOptions()
+                options.originalFilename = name
+                request.addResource(with: .video, fileURL: url, options: options)
+            } completionHandler: { success, error in
+                if let error {
+                    EventStore.shared.append(
+                        type: "TASK", tag: "video_save_error",
+                        message: "Failed to save measurement video: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     private func cancelEverything() {
@@ -912,12 +1076,14 @@ struct MovementSessionFlowView: View {
                     if let cam { group.enter(); cam.stop { group.leave() } }
                     if let watch { group.enter(); watch.stop { group.leave() } }
                     group.notify(queue: .main) {
-                        self.cameraCapture = nil
-                        self.watchCapture = nil
-                        if case .recording = self.phase {
-                            self.phase = .analyzing
+                        Task { @MainActor in
+                            self.cameraCapture = nil
+                            self.watchCapture = nil
+                            if case .recording = self.phase {
+                                self.phase = .analyzing
+                            }
+                            print("[PERF] hardware stopped; phase now \(String(describing: self.phase))")
                         }
-                        print("[PERF] hardware stopped; phase now \(String(describing: self.phase))")
                     }
                 }
             }

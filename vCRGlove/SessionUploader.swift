@@ -11,10 +11,17 @@
 //  and retried the next time the app comes to the foreground.
 //
 //  Configuration:
-//    • Set VCRGSLOVE_BACKEND_URL in Settings.bundle / Info.plist, or
-//      hard-code it via SessionUploader.configure(baseURL:apiKey:) once
-//      at app startup.
-//    • The API key is stored in the iOS Keychain (never in UserDefaults).
+//    • Set VCRGLOVE_BACKEND_URL and VCRGLOVE_BACKEND_API_KEY in
+//      vCRGlove/Info.plist.  The app reads these at launch.
+//    • For local testing use http://localhost:8000 (or any test server).
+//    • The current implementation passes the API key as a Bearer token in the
+//      Authorization header.  UKE may change auth or endpoint shape here.
+//
+//  API contract (see BACKEND_INTEGRATION.md for full details):
+//    POST {baseURL}/sessions
+//    Headers: Content-Type: application/json
+//             Authorization: Bearer {VCRGLOVE_BACKEND_API_KEY}
+//    Body: JSON-encoded MovementSession
 //
 
 import Foundation

@@ -6,6 +6,9 @@
 //  Sensor-independent: a Trial holds a 1-D signal (`[TimestampedSample]`)
 //  regardless of whether it came from the camera (Vision) or the Watch (CoreMotion).
 //
+//  These models are also the JSON payload the app uploads to the UKE backend.
+//  See BACKEND_INTEGRATION.md for the full API contract.
+//
 
 import Foundation
 
