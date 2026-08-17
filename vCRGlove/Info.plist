@@ -6,7 +6,21 @@
 	<array>
 		<string>bluetooth-central</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>The camera records a short video of your hand movement during movement tests. The video is saved to your Photo Library so you can review it later.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Movement test videos can be saved to your Photo Library for review.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Movement test videos can be saved to your Photo Library for review.</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
+
+	<!-- UKE backend integration configuration -->
+	<!-- Set VCRGLOVE_BACKEND_URL to the server base URL, e.g. https://vcr.uke.de/api -->
+	<key>VCRGLOVE_BACKEND_URL</key>
+	<string>https://vcr.uke.de/api</string>
+	<!-- Set VCRGLOVE_BACKEND_API_KEY to the Bearer token issued by the UKE backend team -->
+	<key>VCRGLOVE_BACKEND_API_KEY</key>
+	<string>REPLACE_WITH_UKE_API_KEY</string>
 </dict>
 </plist>

@@ -23,16 +23,16 @@ struct MedicationLogView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("Medication")
+                Text(L10n("Medication"))
                     .font(.largeTitle.bold())
 
-                DatePicker("Time", selection: $selectedTime, displayedComponents: .hourAndMinute)
+                DatePicker(L10n("Time"), selection: $selectedTime, displayedComponents: .hourAndMinute)
 
                 sectionTitle("What happened?")
 
                 ForEach(MedicationEvent.allCases) { item in
                     choiceButton(
-                        title: item.rawValue,
+                        title: item.displayName,
                         isSelected: event == item
                     ) {
                         event = item
@@ -43,7 +43,7 @@ struct MedicationLogView: View {
 
                 ForEach(MotorState.allCases) { state in
                     choiceButton(
-                        title: state.rawValue,
+                        title: state.displayName,
                         isSelected: motorState == state
                     ) {
                         motorState = state
@@ -62,7 +62,7 @@ struct MedicationLogView: View {
                             }
                         } label: {
                             HStack {
-                                Text(factor.rawValue)
+                                Text(factor.displayName)
                                     .font(.subheadline)
                                 Spacer()
                                 if factors.contains(factor) {
@@ -80,7 +80,7 @@ struct MedicationLogView: View {
                     }
                 }
 
-                TextField("Optional note", text: $note, axis: .vertical)
+                TextField(L10n("Optional note"), text: $note, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(3...5)
             }
@@ -88,7 +88,7 @@ struct MedicationLogView: View {
             .padding(.bottom, 90)
         }
         .safeAreaInset(edge: .bottom) {
-            Button("Save Medication Log") {
+            Button(L10n("Save Medication Log")) {
                 let entry = JournalEntry(
                     date: combinedDate,
                     type: .medication,
@@ -107,7 +107,7 @@ struct MedicationLogView: View {
             .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)
         }
-        .navigationTitle("Medication")
+        .navigationTitle(L10n("Medication"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -126,7 +126,7 @@ struct MedicationLogView: View {
     }
 
     private func sectionTitle(_ title: String) -> some View {
-        Text(title)
+        Text(L10n(title))
             .font(.headline)
     }
 

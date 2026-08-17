@@ -19,7 +19,7 @@ struct MainTabView: View {
                 PatientVCRView(vm: gloveVM)
             }
             .tabItem {
-                Label("vCR", systemImage: "waveform.path.ecg")
+                Label(L10n("vCR"), systemImage: "waveform.path.ecg")
             }
 
             if showResearchTab {
@@ -27,22 +27,29 @@ struct MainTabView: View {
                     VCRView(vm: gloveVM)
                 }
                 .tabItem {
-                    Label("Research", systemImage: "slider.horizontal.3")
+                    Label(L10n("Research"), systemImage: "slider.horizontal.3")
                 }
+            }
+
+            NavigationStack {
+                MovementSessionFlowView()
+            }
+            .tabItem {
+                Label(L10n("Movement"), systemImage: "hand.tap.fill")
             }
 
             NavigationStack {
                 JournalHomeView()
             }
             .tabItem {
-                Label("Journal", systemImage: "book.fill")
+                Label(L10n("Journal"), systemImage: "book.fill")
             }
 
             NavigationStack {
                 SettingsView()
             }
             .tabItem {
-                Label("Settings", systemImage: "gearshape.fill")
+                Label(L10n("Settings"), systemImage: "gearshape.fill")
             }
         }
         .onChange(of: scenePhase) { _, newPhase in

@@ -9,19 +9,27 @@ import Foundation
 import CoreMotion
 import Combine
 import WatchConnectivity
+import WatchKit
 
-final class MotionService: ObservableObject {
+final class MotionService: NSObject, ObservableObject {
     static let shared = MotionService()
 
     @Published var isRecording = false
     @Published var samplesPerSec: Double = 50
     @Published var rmsLast1s: Double = 0
+    /// True while the iPhone is controlling streaming for a movement task.
+    /// Prevents the user from accidentally stopping the stream on the watch.
+    @Published var isPhoneControlled = false
 
     private let motion = CMMotionManager()
     private let queue = OperationQueue()
     private var fileHandle: FileHandle?
     private var oneSecBuffer = [Double]()
     private var lastWriteTime = CFAbsoluteTimeGetCurrent()
+    private var extendedSession: WKExtendedRuntimeSession?
+    private var lastRecordingURL: URL?
+
+    private override init() { super.init() }
 
     private func csvURL() throws -> URL {
         let fmt = ISO8601DateFormatter()
@@ -38,6 +46,7 @@ final class MotionService: ObservableObject {
 
         do {
             let url = try csvURL()
+            lastRecordingURL = url
             fileHandle = try FileHandle(forWritingTo: url)
             fileHandle?.seekToEndOfFile()
         } catch {
@@ -81,13 +90,87 @@ final class MotionService: ObservableObject {
         }
     }
 
+    // MARK: - Live streaming to the iPhone (movement tasks, e.g. 3.6)
+
+    @Published var isStreaming = false
+
+    /// Samples per batch message (~0.3 s at 50 Hz — keeps WCSession happy
+    /// while the phone-side chart still feels live).
+    private static let batchSize = 16
+    private var streamBatch: [[Double]] = []
+
+    /// Streams rotation rate around the forearm axis (watch x-axis) to the
+    /// phone. One pronation/supination cycle = one positive rotation lobe,
+    /// which the phone-side analyzer counts via hysteresis.
+    func startStreaming() {
+        guard !isStreaming, !isRecording else { return }
+        guard motion.isDeviceMotionAvailable else { return }
+        isStreaming = true
+        streamBatch.removeAll()
+
+        // Keep the watch app alive while streaming so the display can dim
+        // without the app being suspended and breaking WCSession.
+        let session = WKExtendedRuntimeSession()
+        session.delegate = self
+        extendedSession = session
+        if #available(watchOS 11.0, *) {
+            session.start(at: Date())
+        } else {
+            session.start()
+        }
+
+        motion.deviceMotionUpdateInterval = 1.0 / samplesPerSec
+        motion.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical, to: queue) { [weak self] dm, _ in
+            guard let self, let dm, self.isStreaming else { return }
+            // Rotation around the wrist/forearm axis — pronation/supination.
+            self.streamBatch.append([dm.timestamp, dm.rotationRate.x])
+            if self.streamBatch.count >= Self.batchSize {
+                let batch = self.streamBatch
+                self.streamBatch.removeAll(keepingCapacity: true)
+                WatchConnectivityManager.shared.sendMotionBatch(batch)
+            }
+        }
+    }
+
+    func stopStreaming() {
+        guard isStreaming else { return }
+        isStreaming = false
+        motion.stopDeviceMotionUpdates()
+        extendedSession?.invalidate()
+        extendedSession = nil
+        if !streamBatch.isEmpty {
+            WatchConnectivityManager.shared.sendMotionBatch(streamBatch)
+            streamBatch.removeAll()
+        }
+    }
+
     func exportRecordingToPhone() {
-        guard let url = FileManager.default.temporaryDirectory
-            .contents?.sorted(by: { $0.path > $1.path }).first else { return } // last file heuristic
-        WatchConnectivityManager.shared.transferFile(url, meta: ["type":"tremor", "sr":"\(Int(samplesPerSec))"])
+        guard let sourceURL = lastRecordingURL else { return }
+
+        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let destURL = documentsURL.appendingPathComponent(sourceURL.lastPathComponent)
+
+        try? FileManager.default.removeItem(at: destURL)
+        do {
+            try FileManager.default.copyItem(at: sourceURL, to: destURL)
+            WatchConnectivityManager.shared.transferFile(destURL, meta: ["type": "tremor", "sr": "\(Int(samplesPerSec))"])
+        } catch {
+            print("Copy failed:", error)
+        }
     }
 }
 
-private extension URL {
-    var contents: [URL]? { try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil) }
+extension MotionService: WKExtendedRuntimeSessionDelegate {
+    func extendedRuntimeSessionDidStart(_ session: WKExtendedRuntimeSession) {
+        print("Extended runtime session started")
+    }
+
+    func extendedRuntimeSessionWillExpire(_ session: WKExtendedRuntimeSession) {
+        print("Extended runtime session will expire")
+    }
+
+    func extendedRuntimeSession(_ session: WKExtendedRuntimeSession, didInvalidateWith reason: WKExtendedRuntimeSessionInvalidationReason, error: Error?) {
+        print("Extended runtime session invalidated:", reason.rawValue, error?.localizedDescription ?? "no error")
+        extendedSession = nil
+    }
 }

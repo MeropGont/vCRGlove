@@ -12,24 +12,40 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            Text(motion.isRecording ? "Recording…" : "Idle")
+            Text(motion.isStreaming ? "Streaming to iPhone…"
+                 : motion.isRecording ? "Recording…" : "Idle")
                 .font(.headline)
 
             Text(String(format: "RMS(1s): %.4f g", motion.rmsLast1s))
                 .monospacedDigit()
 
             HStack {
+                Button(motion.isStreaming ? "Stop Stream" : "Stream") {
+                    motion.isStreaming ? motion.stopStreaming() : motion.startStreaming()
+                }
+                .disabled(motion.isPhoneControlled)
+
+                Button(motion.isRecording ? "Stop Rec" : "Record") {
+                    motion.isRecording ? motion.stop() : motion.start()
+                }
+                .disabled(motion.isStreaming && !motion.isPhoneControlled)
+            }
+
+            if motion.isPhoneControlled {
+                Text("Controlled by iPhone")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            HStack {
                 Button("Ping iPhone") {
                     WatchConnectivityManager.shared.sendPing()
                 }
-                .onAppear { _ = WatchConnectivityManager.shared } // ensure activation
 
-                Button(motion.isRecording ? "Stop" : "Start") {
-                    motion.isRecording ? motion.stop() : motion.start()
-                }
                 Button("Send") {
                     motion.exportRecordingToPhone()
-                }.disabled(motion.isRecording)
+                }
+                .disabled(motion.isRecording)
             }
         }
         .onAppear { _ = WatchConnectivityManager.shared } // ensure WCSession activates

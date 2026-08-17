@@ -23,10 +23,10 @@ struct SymptomEpisodeLogView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("Symptom Episode")
+                Text(L10n("Symptom Episode"))
                     .font(.largeTitle.bold())
 
-                DatePicker("Time", selection: $selectedTime, displayedComponents: .hourAndMinute)
+                DatePicker(L10n("Time"), selection: $selectedTime, displayedComponents: .hourAndMinute)
 
                 sectionTitle("What happened?")
 
@@ -40,7 +40,7 @@ struct SymptomEpisodeLogView: View {
                             }
                         } label: {
                             HStack {
-                                Text(symptom.rawValue)
+                                Text(symptom.displayName)
                                     .font(.subheadline)
                                 Spacer()
                                 if selectedSymptoms.contains(symptom) {
@@ -73,7 +73,7 @@ struct SymptomEpisodeLogView: View {
 
                 ForEach(MotorState.allCases) { state in
                     choiceButton(
-                        title: state.rawValue,
+                        title: state.displayName,
                         isSelected: motorState == state
                     ) {
                         motorState = state
@@ -82,7 +82,7 @@ struct SymptomEpisodeLogView: View {
 
                 sectionTitle("Optional note")
 
-                TextField("Add details", text: $note, axis: .vertical)
+                TextField(L10n("Add details"), text: $note, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(3...6)
             }
@@ -90,7 +90,7 @@ struct SymptomEpisodeLogView: View {
             .padding(.bottom, 90)
         }
         .safeAreaInset(edge: .bottom) {
-            Button("Save Symptom Episode") {
+            Button(L10n("Save Symptom Episode")) {
                 let cleanNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
 
                 let entry = JournalEntry(
@@ -113,7 +113,7 @@ struct SymptomEpisodeLogView: View {
             .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)
         }
-        .navigationTitle("Symptom")
+        .navigationTitle(L10n("Symptom"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -132,7 +132,7 @@ struct SymptomEpisodeLogView: View {
     }
 
     private func sectionTitle(_ title: String) -> some View {
-        Text(title)
+        Text(L10n(title))
             .font(.headline)
     }
 
