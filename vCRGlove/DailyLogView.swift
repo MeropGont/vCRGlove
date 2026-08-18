@@ -38,23 +38,23 @@ struct DailyLogView: View {
             }
             .padding()
         }
-        .navigationTitle("Daily Log")
+        .navigationTitle(L10n("Daily Log"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private var dailyCheckInCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Daily Check-In")
+            Text(L10n("Daily Check-In"))
                 .font(.headline)
 
-            Text("Mood, overall symptoms, and symptom list for this day.")
+            Text(L10n("Mood, overall symptoms, and symptom list for this day."))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
             NavigationLink {
                 DailyCheckInView(entryDate: date)
             } label: {
-                Text("CHECK IN")
+                Text(L10n("CHECK IN"))
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -67,17 +67,17 @@ struct DailyLogView: View {
     
     private var symptomEpisodeCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Symptom Episode")
+            Text(L10n("Symptom Episode"))
                 .font(.headline)
 
-            Text("Log OFF periods, tremor, freezing, dyskinesia, or other symptom changes.")
+            Text(L10n("Log OFF periods, tremor, freezing, dyskinesia, or other symptom changes."))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
             NavigationLink {
                 SymptomEpisodeLogView(date: date)
             } label: {
-                Text("LOG SYMPTOM")
+                Text(L10n("LOG SYMPTOM"))
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -91,17 +91,17 @@ struct DailyLogView: View {
 
     private var medicationCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Medication")
+            Text(L10n("Medication"))
                 .font(.headline)
 
-            Text("Log usual, late, missed, or extra medication events.")
+            Text(L10n("Log usual, late, missed, or extra medication events."))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
             NavigationLink {
                 MedicationLogView(date: date)
             } label: {
-                Text("LOG MEDICATION")
+                Text(L10n("LOG MEDICATION"))
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -114,17 +114,17 @@ struct DailyLogView: View {
 
     private var noteCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Note")
+            Text(L10n("Note"))
                 .font(.headline)
 
-            Text("Record anything unusual or important for this day.")
+            Text(L10n("Record anything unusual or important for this day."))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
             NavigationLink {
                 NoteLogView(date: date)
             } label: {
-                Text("ADD NOTE")
+                Text(L10n("ADD NOTE"))
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -138,11 +138,11 @@ struct DailyLogView: View {
 
     private var timelineCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Day timeline")
+            Text(L10n("Day timeline"))
                 .font(.headline)
 
             if entriesForDay.isEmpty {
-                Text("No entries saved for this day yet.")
+                Text(L10n("No entries saved for this day yet."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else {
@@ -195,19 +195,19 @@ struct DailyLogView: View {
         var parts: [String] = []
 
         if entry.type == .dailyCheckIn {
-            parts.append("Daily check-in")
+            parts.append(L10n("Daily check-in"))
         }
 
         if entry.type == .symptom {
-            parts.append("Symptom episode")
+            parts.append(L10n("Symptom episode"))
         }
 
         if entry.type == .stimulation {
-            parts.append("vCR stimulation")
+            parts.append(L10n("vCR stimulation"))
         }
 
         if let mood = entry.mood {
-            parts.append("Mood \(mood)/5")
+            parts.append(String(format: L10n("Mood %d/5"), mood))
         }
 
         if let severity = entry.symptomSeverity {
@@ -215,11 +215,11 @@ struct DailyLogView: View {
         }
 
         if let medicationEvent = entry.medicationEvent {
-            parts.append(medicationEvent.rawValue)
+            parts.append(medicationEvent.displayName)
         }
 
         if let motorState = entry.motorState {
-            parts.append(motorState.rawValue)
+            parts.append(motorState.displayName)
         }
 
         if !entry.medicationFactors.isEmpty {
@@ -234,7 +234,7 @@ struct DailyLogView: View {
             parts.append(entry.symptoms.joined(separator: ", "))
         }
 
-        return parts.isEmpty ? "No details" : parts.joined(separator: " · ")
+        return parts.isEmpty ? L10n("No details") : parts.joined(separator: " · ")
     }
 
 }

@@ -31,34 +31,44 @@ final class EventStore {
         try logsDirectory().appendingPathComponent("events.jsonl")
     }
 
+    /// Serial queue so log lines never interleave and callers (often the main
+    /// thread) never block on disk IO.
+    private let ioQueue = DispatchQueue(label: "vcr.eventstore.io", qos: .utility)
+
     func append(type: String,
                 tag: String,
                 message: String,
                 details: [String: String] = [:]) {
-        do {
-            let url = try eventFileURL()
+        // Timestamp on the caller's thread so it reflects the event time,
+        // not the (possibly delayed) write time.
+        let ts = iso.string(from: Date())
+        ioQueue.async { [weak self] in
+            guard let self else { return }
+            do {
+                let url = try self.eventFileURL()
 
-            let obj: [String: Any] = [
-                "ts": iso.string(from: Date()),
-                "type": type,
-                "tag": tag,
-                "message": message,
-                "details": details
-            ]
+                let obj: [String: Any] = [
+                    "ts": ts,
+                    "type": type,
+                    "tag": tag,
+                    "message": message,
+                    "details": details
+                ]
 
-            let data = try JSONSerialization.data(withJSONObject: obj)
-            let line = data + Data([0x0A])
+                let data = try JSONSerialization.data(withJSONObject: obj)
+                let line = data + Data([0x0A])
 
-            if FileManager.default.fileExists(atPath: url.path) {
-                let h = try FileHandle(forWritingTo: url)
-                defer { try? h.close() }
-                try h.seekToEnd()
-                try h.write(contentsOf: line)
-            } else {
-                try line.write(to: url)
+                if FileManager.default.fileExists(atPath: url.path) {
+                    let h = try FileHandle(forWritingTo: url)
+                    defer { try? h.close() }
+                    try h.seekToEnd()
+                    try h.write(contentsOf: line)
+                } else {
+                    try line.write(to: url)
+                }
+            } catch {
+                print("EventStore write error:", error.localizedDescription)
             }
-        } catch {
-            print("EventStore write error:", error.localizedDescription)
         }
     }
 

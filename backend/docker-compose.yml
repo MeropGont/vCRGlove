@@ -1,0 +1,54 @@
+version: "3.9"
+
+# ── vCRGlove Research Backend ─────────────────────────────────────────────────
+# Deploy on any Linux server with Docker + Docker Compose.
+#
+# Quick start:
+#   cp .env.example .env        # edit VCR_API_KEY
+#   docker compose up -d
+#
+# The API runs on  http://<host>:8000
+# The dashboard runs on  http://<host>:8501
+
+services:
+
+  api:
+    image: python:3.12-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+      - db_data:/app/data
+    environment:
+      DATABASE_URL: "sqlite:////app/data/vcrglove.db"
+      VCR_API_KEY:  "${VCR_API_KEY}"
+    command: >
+      sh -c "pip install -q -r requirements.txt &&
+             uvicorn main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  dashboard:
+    image: python:3.12-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      VCR_BACKEND_URL: "http://api:8000"
+      VCR_API_KEY:     "${VCR_API_KEY}"
+    command: >
+      sh -c "pip install -q -r requirements.txt &&
+             streamlit run dashboard.py --server.port 8501 --server.address 0.0.0.0"
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  db_data:

@@ -17,10 +17,10 @@ struct JournalHomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Journal")
+                Text(L10n("Journal"))
                     .font(.largeTitle.bold())
 
-                Text("Track daily symptoms, mood, and notes around your vCR sessions.")
+                Text(L10n("Track daily symptoms, mood, and notes around your vCR sessions."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -38,11 +38,11 @@ struct JournalHomeView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Daily Check-In")
+                    Text(L10n("Daily Check-In"))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
 
-                    Text("How are you today?")
+                    Text(L10n("How are you today?"))
                         .font(.title3.bold())
                 }
 
@@ -54,11 +54,11 @@ struct JournalHomeView: View {
             }
 
             if let last = lastEntry {
-                Text("Last saved: \(last.date.formatted(date: .abbreviated, time: .shortened))")
+                Text(String(format: L10n("Last saved: %@"), last.date.formatted(date: .abbreviated, time: .shortened)))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else {
-                Text("No check-in saved yet")
+                Text(L10n("No check-in saved yet"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -66,7 +66,7 @@ struct JournalHomeView: View {
             NavigationLink {
                 DailyLogView(date: Date())
             } label: {
-                Text("OPEN TODAY'S LOG")
+                Text(L10n("OPEN TODAY'S LOG"))
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -80,7 +80,7 @@ struct JournalHomeView: View {
 
     private var lastCheckInCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Last check-in")
+            Text(L10n("Last check-in"))
                 .font(.headline)
 
             if let last = lastEntry {
@@ -99,7 +99,7 @@ struct JournalHomeView: View {
                     Spacer()
                 }
             } else {
-                Text("Your most recent check-in will appear here.")
+                Text(L10n("Your most recent check-in will appear here."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -134,7 +134,7 @@ struct JournalHomeView: View {
         var parts: [String] = []
 
         if let mood = entry.mood {
-            parts.append("Mood \(mood)/5")
+            parts.append(String(format: L10n("Mood %d/5"), mood))
         }
 
         if let severity = entry.symptomSeverity {
@@ -145,6 +145,6 @@ struct JournalHomeView: View {
             parts.append(entry.symptoms.joined(separator: ", "))
         }
 
-        return parts.isEmpty ? "No details" : parts.joined(separator: " · ")
+        return parts.isEmpty ? L10n("No details") : parts.joined(separator: " · ")
     }
 }

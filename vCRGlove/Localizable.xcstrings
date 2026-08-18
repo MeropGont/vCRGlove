@@ -2,6 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "%@ glove" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -22,6 +23,7 @@
       }
     },
     "%lld glove(s) ready" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -92,6 +94,7 @@
       }
     },
     "2 h" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -102,6 +105,7 @@
       }
     },
     "2 hours + 2 hours" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -112,6 +116,7 @@
       }
     },
     "4 h" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -122,6 +127,7 @@
       }
     },
     "4 h session done" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -132,6 +138,7 @@
       }
     },
     "4 hours once" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -162,6 +169,7 @@
       }
     },
     "Add a note" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -172,6 +180,7 @@
       }
     },
     "Add details" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -182,6 +191,7 @@
       }
     },
     "ADD NOTE" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -223,6 +233,7 @@
       }
     },
     "Amplitude" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -253,6 +264,7 @@
       }
     },
     "Avatar selection will go here." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -263,6 +275,7 @@
       }
     },
     "Backup status" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -273,6 +286,7 @@
       }
     },
     "Both 2 h sessions done" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -283,6 +297,7 @@
       }
     },
     "Calendar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -303,6 +318,7 @@
       }
     },
     "CHECK IN" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -333,6 +349,7 @@
       }
     },
     "Check-In" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -393,6 +410,7 @@
       }
     },
     "Complete today" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -403,6 +421,7 @@
       }
     },
     "Connect at least one glove to begin" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -413,6 +432,7 @@
       }
     },
     "Contact ICNS support" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -443,6 +463,7 @@
       }
     },
     "Daily Check-In" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -453,6 +474,7 @@
       }
     },
     "Daily check-ins" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -463,6 +485,7 @@
       }
     },
     "Daily Log" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -493,6 +516,7 @@
       }
     },
     "Day timeline" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -503,6 +527,7 @@
       }
     },
     "Default vCR plan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -543,6 +568,7 @@
       }
     },
     "Disconnect" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -563,6 +589,7 @@
       }
     },
     "Duration, gloves, and session preferences" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -613,6 +640,7 @@
       }
     },
     "Fingers per cycle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -633,6 +661,7 @@
       }
     },
     "Frequency" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -646,6 +675,7 @@
 
     },
     "Future movement tasks" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -656,6 +686,7 @@
       }
     },
     "Gloves" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -676,6 +707,7 @@
       }
     },
     "Gloves disconnected. Turn them on and scan again to continue." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -696,6 +728,7 @@
       }
     },
     "Gloves, vCR, journal, and troubleshooting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -706,6 +739,7 @@
       }
     },
     "Great job. First vCR session complete. One more 2 h session remains today." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -716,6 +750,7 @@
       }
     },
     "Great job. Your 4 h vCR session is complete for today." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -726,6 +761,7 @@
       }
     },
     "Great job. Your vCR session is complete for today." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -736,6 +772,7 @@
       }
     },
     "Hold to Stop" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -756,6 +793,7 @@
       }
     },
     "How are you today?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -826,6 +864,7 @@
       }
     },
     "ID" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -836,6 +875,7 @@
       }
     },
     "ID and icon" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -857,6 +897,7 @@
       }
     },
     "If the steps above did not solve the issue, contact ICNS support." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -867,6 +908,7 @@
       }
     },
     "Incorrect password" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -877,6 +919,7 @@
       }
     },
     "Instructions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -897,6 +940,7 @@
       }
     },
     "Journal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -974,6 +1018,7 @@
       }
     },
     "Keep this app open during stimulation." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -984,6 +1029,7 @@
       }
     },
     "Language" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1005,6 +1051,7 @@
       }
     },
     "Last check-in" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1025,6 +1072,7 @@
       }
     },
     "Last saved: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1065,6 +1113,7 @@
       }
     },
     "LOG MEDICATION" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1075,6 +1124,7 @@
       }
     },
     "Log OFF periods, tremor, freezing, dyskinesia, or other symptom changes." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1085,6 +1135,7 @@
       }
     },
     "LOG SYMPTOM" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1095,6 +1146,7 @@
       }
     },
     "Log usual, late, missed, or extra medication events." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1105,6 +1157,7 @@
       }
     },
     "Logs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1115,6 +1168,7 @@
       }
     },
     "Logs, exports, backup, and study notes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1135,6 +1189,7 @@
       }
     },
     "Medication" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1148,6 +1203,7 @@
 
     },
     "Mood, overall symptoms, and symptom list for this day." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1168,6 +1224,7 @@
       }
     },
     "Need Help?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1178,6 +1235,7 @@
       }
     },
     "No check-in for this day" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1188,6 +1246,7 @@
       }
     },
     "No check-in saved yet" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1198,6 +1257,7 @@
       }
     },
     "No entries saved for this day yet." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1218,6 +1278,7 @@
       }
     },
     "Note" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1258,6 +1319,7 @@
       }
     },
     "One glove disconnected. vCR continues with the connected glove." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1278,6 +1340,7 @@
       }
     },
     "OPEN DAILY LOG" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1288,6 +1351,7 @@
       }
     },
     "Open iPhone Language Settings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1318,6 +1382,7 @@
       }
     },
     "OPEN TODAY'S LOG" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1328,6 +1393,7 @@
       }
     },
     "Optional note" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1338,6 +1404,7 @@
       }
     },
     "Overall symptom intensity" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1348,6 +1415,7 @@
       }
     },
     "Password" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1358,6 +1426,7 @@
       }
     },
     "Patient" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1388,6 +1457,7 @@
       }
     },
     "Patients complete one 4-hour vCR session per day." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1398,6 +1468,7 @@
       }
     },
     "Patients complete two separate 2-hour vCR sessions per day." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1408,6 +1479,7 @@
       }
     },
     "Pause" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1418,6 +1490,7 @@
       }
     },
     "Paused" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1428,6 +1501,7 @@
       }
     },
     "Permissions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1438,6 +1512,7 @@
       }
     },
     "Permissions, storage, and data handling" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1448,6 +1523,7 @@
       }
     },
     "Please contact support and briefly describe what was not working." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1458,6 +1534,7 @@
       }
     },
     "Privacy & Data" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1468,6 +1545,7 @@
       }
     },
     "Profile" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1499,6 +1577,7 @@
       }
     },
     "Pulse length" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1551,6 +1630,7 @@
       }
     },
     "Reconnect" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1561,6 +1641,7 @@
       }
     },
     "Record anything unusual or important for this day." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1621,6 +1702,7 @@
       }
     },
     "Research" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1641,6 +1723,7 @@
       }
     },
     "Research Mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1651,6 +1734,7 @@
       }
     },
     "Resume" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1674,6 +1758,7 @@
 
     },
     "Save Check-In" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1684,6 +1769,7 @@
       }
     },
     "Save Medication Log" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1694,6 +1780,7 @@
       }
     },
     "Save Note" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1714,6 +1801,7 @@
       }
     },
     "Save Symptom Episode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1744,6 +1832,7 @@
       }
     },
     "Scan for Gloves" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1754,6 +1843,7 @@
       }
     },
     "SCAN FOR GLOVES" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1764,6 +1854,7 @@
       }
     },
     "Send Email to vcr@uke.de" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1774,6 +1865,7 @@
       }
     },
     "Session Plan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1784,6 +1876,7 @@
       }
     },
     "Settings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1804,6 +1897,7 @@
       }
     },
     "Show Research Tab" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1814,6 +1908,7 @@
       }
     },
     "Something not working?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1824,6 +1919,7 @@
       }
     },
     "Start" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1854,6 +1950,7 @@
       }
     },
     "Still Need Help?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1894,6 +1991,7 @@
       }
     },
     "Stimulation Parameters" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1914,6 +2012,7 @@
       }
     },
     "Stimulation running" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1924,6 +2023,7 @@
       }
     },
     "Stop Scan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1934,6 +2034,7 @@
       }
     },
     "STOP SCAN" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1964,6 +2065,7 @@
       }
     },
     "Storage status" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1974,6 +2076,7 @@
       }
     },
     "Stored data" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2007,6 +2110,7 @@
 
     },
     "Symptom" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2017,6 +2121,7 @@
       }
     },
     "Symptom Episode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2047,6 +2152,7 @@
       }
     },
     "Tap to test buzz" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2070,6 +2176,7 @@
 
     },
     "Tell Us What Happened" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2151,6 +2258,7 @@
       }
     },
     "This ID is set by the research team." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2164,6 +2272,7 @@
 
     },
     "Time" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2174,6 +2283,7 @@
       }
     },
     "Time remaining" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2184,6 +2294,7 @@
       }
     },
     "Total duration" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2194,6 +2305,7 @@
       }
     },
     "Track daily symptoms, mood, and notes around your vCR sessions." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2204,6 +2316,7 @@
       }
     },
     "Troubleshooting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2214,6 +2327,7 @@
       }
     },
     "Try This First" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2257,6 +2371,7 @@
       }
     },
     "Unlock Research Mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2297,6 +2412,7 @@
       }
     },
     "vCR %lld of 2" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2307,6 +2423,7 @@
       }
     },
     "vCR complete today" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2317,6 +2434,7 @@
       }
     },
     "vCR preset" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2358,6 +2476,7 @@
       }
     },
     "vCR Settings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2378,6 +2497,7 @@
       }
     },
     "vCR, journal, and task notifications" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2411,6 +2531,7 @@
 
     },
     "What is not working?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2421,6 +2542,7 @@
       }
     },
     "What would you like to record?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2431,6 +2553,7 @@
       }
     },
     "Which symptoms are present?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2461,6 +2584,7 @@
       }
     },
     "Your most recent check-in will appear here." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

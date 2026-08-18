@@ -13,6 +13,8 @@ enum MoodRating: String, CaseIterable, Codable {
     case neutral = "Neutral"
     case good = "Good"
     case veryGood = "Very Good"
+
+    var displayName: String { L10n(rawValue) }
 }
 
 enum SymptomSeverity: String, CaseIterable, Codable {
@@ -20,13 +22,13 @@ enum SymptomSeverity: String, CaseIterable, Codable {
     case mild
     case moderate
     case severe
-    
+
     var label: String {
         switch self {
-        case .notPresent: return "Not present"
-        case .mild: return "Mild"
-        case .moderate: return "Moderate"
-        case .severe: return "Severe"
+        case .notPresent: return L10n("Not present")
+        case .mild:       return L10n("Mild")
+        case .moderate:   return L10n("Moderate")
+        case .severe:     return L10n("Severe")
         }
     }
 }
@@ -48,6 +50,7 @@ enum SymptomTag: String, CaseIterable, Codable, Identifiable {
     case pain = "Pain"
 
     var id: String { rawValue }
+    var displayName: String { L10n(rawValue) }
 }
 
 enum MedicationEvent: String, CaseIterable, Codable, Identifiable {
@@ -57,6 +60,7 @@ enum MedicationEvent: String, CaseIterable, Codable, Identifiable {
     case extra = "Took extra/rescue medication"
 
     var id: String { rawValue }
+    var displayName: String { L10n(rawValue) }
 }
 
 enum MotorState: String, CaseIterable, Codable, Identifiable {
@@ -66,6 +70,7 @@ enum MotorState: String, CaseIterable, Codable, Identifiable {
     case unsure = "Not sure"
 
     var id: String { rawValue }
+    var displayName: String { L10n(rawValue) }
 }
 
 enum MedicationFactor: String, CaseIterable, Codable, Identifiable {
@@ -77,6 +82,7 @@ enum MedicationFactor: String, CaseIterable, Codable, Identifiable {
     case activity = "Exercise/activity"
 
     var id: String { rawValue }
+    var displayName: String { L10n(rawValue) }
 }
 
 enum SymptomEpisodeType: String, CaseIterable, Codable, Identifiable {
@@ -90,6 +96,7 @@ enum SymptomEpisodeType: String, CaseIterable, Codable, Identifiable {
     case deviceIssue = "Device issue"
 
     var id: String { rawValue }
+    var displayName: String { L10n(rawValue) }
 }
 
 enum JournalEntryType: String, Codable {

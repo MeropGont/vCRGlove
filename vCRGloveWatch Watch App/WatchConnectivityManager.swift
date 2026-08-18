@@ -32,12 +32,61 @@ final class WatchConnectivityManager: NSObject, WCSessionDelegate {
         WCSession.default.transferFile(url, metadata: meta)
     }
 
+    // MARK: - Live motion streaming (movement tasks, e.g. 3.6)
+
+    /// Sends one batch of [timestamp, value] pairs. Uses sendMessage (fast,
+    /// unqueued) — during a live trial, stale samples are useless anyway.
+    func sendMotionBatch(_ samples: [[Double]]) {
+        let s = WCSession.default
+        guard s.isReachable else { return }
+        s.sendMessage(["type": "motionBatch", "samples": samples],
+                      replyHandler: nil,
+                      errorHandler: { error in
+            print("WC sendMotionBatch failed:", error.localizedDescription)
+        })
+    }
+
     // MARK: - WCSessionDelegate
     func session(_ session: WCSession,
                  activationDidCompleteWith activationState: WCSessionActivationState,
-                 error: Error?) { }
+                 error: Error?) {
+        if let error {
+            print("WC activation failed:", error.localizedDescription)
+        } else {
+            print("WC activation state:", activationState.rawValue)
+        }
+    }
+
+    /// Phone-initiated commands: start/stop streaming for a movement trial.
+    private func handleCommand(_ type: String) {
+        print("WC received command:", type)
+        DispatchQueue.main.async {
+            switch type {
+            case "startMotionStream":
+                MotionService.shared.isPhoneControlled = true
+                MotionService.shared.startStreaming()
+            case "stopMotionStream":
+                MotionService.shared.stopStreaming()
+                MotionService.shared.isPhoneControlled = false
+            default: break
+            }
+        }
+    }
+
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        guard let type = message["type"] as? String else { return }
+        handleCommand(type)
+    }
+
+    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
+        guard let type = userInfo["type"] as? String else { return }
+        print("WC received queued command:", type)
+        handleCommand(type)
+    }
 
     #if os(watchOS)
-    func sessionReachabilityDidChange(_ session: WCSession) { }
+    func sessionReachabilityDidChange(_ session: WCSession) {
+        print("WC reachability changed:", session.isReachable)
+    }
     #endif
 }

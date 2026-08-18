@@ -87,14 +87,14 @@ extension HDevice {
 
     var connectionStatusText: String {
         if isReadyForStimulation {
-            return "Ready"
+            return L10n("Ready")
         }
 
         if isPaired == true {
-            return "Detected"
+            return L10n("Detected")
         }
 
-        return "Disconnected"
+        return L10n("Disconnected")
     }
 
 

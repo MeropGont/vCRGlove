@@ -20,7 +20,7 @@ struct JournalCalendarPanel: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Daily check-ins")
+                    Text(L10n("Daily check-ins"))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
 
@@ -101,7 +101,7 @@ struct JournalCalendarPanel: View {
             let selectedEntries = entries(on: selectedDate)
 
             if selectedEntries.isEmpty {
-                Text("No check-in for this day")
+                Text(L10n("No check-in for this day"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else {
@@ -127,7 +127,7 @@ struct JournalCalendarPanel: View {
             NavigationLink {
                 DailyLogView(date: selectedDate)
             } label: {
-                Text("OPEN DAILY LOG")
+                Text(L10n("OPEN DAILY LOG"))
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
@@ -209,11 +209,11 @@ struct JournalCalendarPanel: View {
         var parts: [String] = []
         
         if entry.type == .stimulation {
-            parts.append("vCR stimulation")
+            parts.append(L10n("vCR stimulation"))
         }
 
         if let mood = entry.mood {
-            parts.append("Mood \(mood)/5")
+            parts.append(String(format: L10n("Mood %d/5"), mood))
         }
 
         if let severity = entry.symptomSeverity {
@@ -229,7 +229,7 @@ struct JournalCalendarPanel: View {
         }
 
 
-        return parts.isEmpty ? "No details" : parts.joined(separator: " · ")
+        return parts.isEmpty ? L10n("No details") : parts.joined(separator: " · ")
     }
 }
 
@@ -239,7 +239,7 @@ struct JournalCalendarView: View {
             JournalCalendarPanel()
                 .padding()
         }
-        .navigationTitle("Calendar")
+        .navigationTitle(L10n("Calendar"))
         .navigationBarTitleDisplayMode(.inline)
     }
 }

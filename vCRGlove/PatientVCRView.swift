@@ -22,7 +22,7 @@ struct PatientVCRView: View {
     @State private var autoPairAttemptedIDs: Set<String> = []
     @State private var patientSessionActive = false
     @State private var missingActivePositions: Set<String> = []
-    @State private var sessionMessage: LocalizedStringKey?
+    @State private var sessionMessage: String?
     @State private var sessionMonitorTimer: Timer?
     @State private var sessionWasStarted = false
     @State private var sessionPausedForNoGloves = false
@@ -111,7 +111,6 @@ struct PatientVCRView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-
             vcrHeader
 
             gloveStatusGrid
@@ -120,7 +119,7 @@ struct PatientVCRView: View {
 
             troubleshootingLink
 
-            Text("Keep this app open during stimulation.")
+            Text(L10n("Keep this app open during stimulation."))
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -279,7 +278,7 @@ struct PatientVCRView: View {
                             .fill(isSessionPaused ? Color.orange : Color.indigo)
                             .frame(width: 10, height: 10)
 
-                        Text(isSessionPaused ? "Paused" : "Stimulation running")
+                        Text(isSessionPaused ? L10n("Paused") : L10n("Stimulation running"))
                             .font(.headline)
 
                         Spacer()
@@ -290,7 +289,7 @@ struct PatientVCRView: View {
                         .monospacedDigit()
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Text("Time remaining")
+                    Text(L10n("Time remaining"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -301,7 +300,7 @@ struct PatientVCRView: View {
 
                 HStack(spacing: 12) {
                     sessionActionButton(
-                        title: isSessionPaused ? "Resume" : "Pause",
+                        title: isSessionPaused ? L10n("Resume") : L10n("Pause"),
                         systemImage: isSessionPaused ? "play.fill" : "pause.fill",
                         fill: isSessionPaused ? .green : .orange
                     ) {
@@ -316,7 +315,7 @@ struct PatientVCRView: View {
                     Text(idleSessionTitle)
                         .font(.title2.bold())
 
-                    Text(readyGloves.isEmpty ? "Connect at least one glove to begin" : idleSessionSubtitle)
+                    Text(readyGloves.isEmpty ? L10n("Connect at least one glove to begin") : idleSessionSubtitle)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -344,7 +343,7 @@ struct PatientVCRView: View {
         NavigationLink {
             SupportSettingsView(patientID: patientID, initialTopic: "Finger check")
         } label: {
-            Label("Something not working?", systemImage: "questionmark.circle")
+            Label(L10n("Something not working?"), systemImage: "questionmark.circle")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -352,7 +351,7 @@ struct PatientVCRView: View {
     }
 
     private func sessionActionButton(
-        title: LocalizedStringKey,
+        title: String,
         systemImage: String,
         fill: Color,
         action: @escaping () -> Void
@@ -381,7 +380,7 @@ struct PatientVCRView: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: 14))
 
-            Label("Hold to Stop", systemImage: "stop.fill")
+            Label(L10n("Hold to Stop"), systemImage: "stop.fill")
                 .font(.headline)
                 .foregroundStyle(stopProgress > 0.45 ? .white : .primary)
         }
@@ -502,7 +501,6 @@ struct PatientVCRView: View {
                     vm.testBuzz(device: glove)
                 }
 
-
             Text(title == "Left" ? "Left glove" : "Right glove")
                 .font(.headline)
 
@@ -517,7 +515,7 @@ struct PatientVCRView: View {
             }
 
             if canBuzz {
-                Text("Tap to test buzz")
+                Text(L10n("Tap to test buzz"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -560,16 +558,16 @@ struct PatientVCRView: View {
         return .secondary
     }
 
-    private func statusText(for glove: HDevice?, isStimulating: Bool) -> LocalizedStringKey {
+    private func statusText(for glove: HDevice?, isStimulating: Bool) -> String {
         if isStimulating {
-            return "Stimulating"
+            return L10n("Stimulating")
         }
 
         if glove?.isReadyForStimulation == true {
-            return "Ready"
+            return L10n("Ready")
         }
 
-        return "Disconnected"
+        return L10n("Disconnected")
     }
 
     private func batteryForGlove(title: String, fallback: Int?) -> Int? {
@@ -597,10 +595,10 @@ struct PatientVCRView: View {
                 .font(.system(size: 42))
                 .foregroundStyle(ready ? .green : .red)
 
-            Text("\(title) glove")
+            Text(L10n("\(title) glove"))
                 .font(.headline)
 
-            Text(device?.connectionStatusText ?? "Not detected")
+            Text(device?.connectionStatusText ?? L10n("Not detected"))
                 .font(.caption)
                 .foregroundStyle(ready ? .green : .secondary)
         }
@@ -616,10 +614,10 @@ struct PatientVCRView: View {
         }
 
         if readyGloves.isEmpty {
-            return "Scan and connect gloves before starting."
+            return L10n("Scan and connect gloves before starting.")
         }
 
-        return "\(readyGloves.count) glove(s) ready."
+        return String(format: L10n("%d glove(s) ready."), readyGloves.count)
     }
 
     private func applyPatientPreset() {
@@ -746,9 +744,10 @@ struct PatientVCRView: View {
         return "\(c.year ?? 0)-\(c.month ?? 0)-\(c.day ?? 0)"
     }
 
-    private func completionMessageForCurrentPlan() -> LocalizedStringKey {
+    private func completionMessageForCurrentPlan() -> String {
         guard vcrSessionPlan == "twoByTwo" else {
-            return "Great job. Your vCR session is complete for today."
+            vcrFourHourCompletionDate = todayKey
+            return L10n("Great job. Your vCR session is complete for today.")
         }
 
         if vcrSplitCompletionDate != todayKey {
@@ -759,13 +758,10 @@ struct PatientVCRView: View {
         vcrSplitCompletionCount += 1
 
         if vcrSplitCompletionCount >= 2 {
-            guard vcrSessionPlan == "twoByTwo" else {
-                vcrFourHourCompletionDate = todayKey
-                return "Great job. Your 4 h vCR session is complete for today."
-            }
+            return L10n("Great job. Your vCR session is complete for today.")
         }
 
-        return "Great job. First vCR session complete. One more 2 h session remains today."
+        return L10n("Great job. First vCR session complete. One more 2 h session remains today.")
     }
 
     private var completedSplitSessionsToday: Int {
@@ -784,28 +780,28 @@ struct PatientVCRView: View {
         min(completedSplitSessionsToday + 1, 2)
     }
 
-    private var idleSessionTitle: LocalizedStringKey {
+    private var idleSessionTitle: String {
         if isVCRCompleteToday {
-            return "vCR complete today"
+            return L10n("vCR complete today")
         }
 
         if vcrSessionPlan == "twoByTwo" {
             return "vCR \(nextSplitSessionNumber) of 2"
         }
 
-        return "vCR session"
+        return L10n("vCR session")
     }
 
-    private var idleSessionSubtitle: LocalizedStringKey {
+    private var idleSessionSubtitle: String {
         if isVCRCompleteToday {
-            return vcrSessionPlan == "twoByTwo" ? "Both 2 h sessions done" : "4 h session done"
+            return vcrSessionPlan == "twoByTwo" ? L10n("Both 2 h sessions done") : L10n("4 h session done")
         }
 
-        return vcrSessionPlan == "twoByTwo" ? "2 h" : "4 h"
+        return vcrSessionPlan == "twoByTwo" ? L10n("2 h") : L10n("4 h")
     }
 
-    private var startButtonTitle: LocalizedStringKey {
-        isVCRCompleteToday ? "Complete today" : "Start"
+    private var startButtonTitle: String {
+        isVCRCompleteToday ? L10n("Complete today") : L10n("Start")
     }
 
     private func setupStep(_ number: String, _ text: LocalizedStringKey) -> some View {

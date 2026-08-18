@@ -114,7 +114,7 @@ struct LogsPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Label("Logs", systemImage: "doc.plaintext")
+                Label(L10n("Logs"), systemImage: "doc.plaintext")
                     .font(.subheadline.weight(.semibold))
                 Spacer()
                 Button {
@@ -150,7 +150,7 @@ struct LogsPanel: View {
 
 // MARK: - LabeledSlider
 struct LabeledSlider: View {
-    let title: LocalizedStringKey
+    let title: String
     @Binding var value: Double
     let range: ClosedRange<Double>
     let step: Double
@@ -161,11 +161,11 @@ struct LabeledSlider: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
-                Text(title)
+                Text(L10n(title))
                     .font(.subheadline)
                     .foregroundColor(disabled ? .gray : .primary)
                 Spacer()
-                Text(String(format: format, value) + " \(unit)")
+                Text(String(format: format, value) + (unit.isEmpty ? "" : " \(L10n(unit))"))
                     .font(.caption2)
                     .foregroundStyle(disabled ? .gray : .secondary)
                     .monospacedDigit()
@@ -231,7 +231,7 @@ struct VCRView: View {
             .padding()
             .padding(.bottom, 24)
         }
-        .navigationTitle("Research")
+        .navigationTitle(L10n("Research"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             startResearchSessionMonitor()
@@ -257,7 +257,7 @@ struct VCRView: View {
                 }
             } label: {
                 Label(
-                    vm.scanning ? "STOP SCAN" : "SCAN FOR GLOVES",
+                    L10n(vm.scanning ? "STOP SCAN" : "SCAN FOR GLOVES"),
                     systemImage: vm.scanning ? "stop.circle.fill" : "dot.radiowaves.left.and.right"
                 )
                 .font(.headline)
@@ -332,7 +332,7 @@ struct VCRView: View {
                     Button(role: .destructive) {
                         vm.disconnect(device: glove)
                     } label: {
-                        Label("Disconnect", systemImage: "xmark.circle")
+                        Label(L10n("Disconnect"), systemImage: "xmark.circle")
                             .font(.caption)
                     }
                     .buttonStyle(.bordered)
@@ -341,7 +341,7 @@ struct VCRView: View {
                     Button {
                         vm.pair(device: glove)
                     } label: {
-                        Label("Reconnect", systemImage: "arrow.clockwise.circle")
+                        Label(L10n("Reconnect"), systemImage: "arrow.clockwise.circle")
                             .font(.caption)
                     }
                     .buttonStyle(.bordered)
@@ -356,7 +356,7 @@ struct VCRView: View {
 
     private var stimulationParameters: some View {
         VStack(spacing: 8) {
-            Text("Stimulation Parameters")
+            Text(L10n("Stimulation Parameters"))
                 .font(.headline)
 
             LabeledSlider(title: "Amplitude", value: $vm.amplitude,
@@ -387,7 +387,7 @@ struct VCRView: View {
                           range: 1...240, step: 1,
                           unit: "min", format: "%.0f")
 
-            Toggle("vCR preset", isOn: $vm.vcrMode)
+            Toggle(L10n("vCR preset"), isOn: $vm.vcrMode)
                 .tint(.orange)
                 .onChange(of: vm.vcrMode) { _, newValue in
                     if newValue {
@@ -421,7 +421,7 @@ struct VCRView: View {
             }
 
             if isStimulating {
-                Text(isPaused ? "Paused" : "Stimulation running")
+                Text(isPaused ? L10n("Paused") : L10n("Stimulation running"))
                     .font(.headline)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -435,7 +435,7 @@ struct VCRView: View {
 
                 HStack(spacing: 12) {
                     sessionActionButton(
-                        title: isPaused ? "Resume" : "Pause",
+                        title: isPaused ? L10n("Resume") : L10n("Pause"),
                         systemImage: isPaused ? "play.fill" : "pause.fill",
                         fill: isPaused ? .green : .orange
                     ) {
@@ -445,14 +445,14 @@ struct VCRView: View {
                     holdStopButton
                 }
             } else {
-                Text("Ready")
+                Text(L10n("Ready"))
                     .font(.title2.bold())
 
-                Text(readyDevices.isEmpty ? "Connect at least one glove to begin" : "\(readyDevices.count) glove(s) ready")
+                Text(readyDevices.isEmpty ? L10n("Connect at least one glove to begin") : String(format: L10n("%d glove(s) ready"), readyDevices.count))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                sessionActionButton(title: "Start Stimulation", systemImage: "play.fill", fill: .green) {
+                sessionActionButton(title: L10n("Start Stimulation"), systemImage: "play.fill", fill: .green) {
                     startAll()
                 }
                 .disabled(readyDevices.isEmpty)
@@ -489,7 +489,7 @@ struct VCRView: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: 14))
 
-            Label("Hold to Stop", systemImage: "stop.fill")
+            Label(L10n("Hold to Stop"), systemImage: "stop.fill")
                 .font(.headline)
                 .foregroundStyle(stopProgress > 0.45 ? .white : .primary)
         }
@@ -709,10 +709,10 @@ struct VCRView: View {
         let seconds = seconds % 60
 
         if hours > 0 {
-            return "\(hours)h \(minutes)m"
+            return String(format: L10n("%dh %dm"), hours, minutes)
         }
 
-        return "\(minutes)m \(seconds)s"
+        return String(format: L10n("%dm %ds"), minutes, seconds)
     }
 
     private func gloveFrameColor(isReady: Bool, isActive: Bool) -> Color {
