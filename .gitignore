@@ -1,0 +1,29 @@
+# Xcode and macOS
+DerivedData/
+build/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+.DS_Store
+xcuserdata/
+
+# Swift Package Manager
+.build/
+Packages/
+
+# Python/backend generated files
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite
+*.sqlite3
+.env
+
+# Local/generated work
+node_modules
+node_modules/
+outputs/
+QA/
+scripts/
+local_backups/
+Localization/*backup*.csv
