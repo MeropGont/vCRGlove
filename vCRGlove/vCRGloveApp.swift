@@ -680,14 +680,17 @@ struct vCRGloveApp: App {
         }
 
         // ── UKE Backend Upload ────────────────────────────────────────────────
-        // Replace the URL and API key with the values provided by the UKE backend
-        // team before distributing the app to patients.
-        // Set to nil / remove these two lines to disable automatic upload.
-        // For local testing use "http://localhost:8000".
-        // For production replace with the UKE server URL and real API key.
-        if let backendURL = URL(string: "http://localhost:8000") {
-            SessionUploader.shared.configure(baseURL: backendURL,
-                                             apiKey: "REPLACE_WITH_UKE_API_KEY")
+        // Configuration is read from Info.plist (VCRGLOVE_BACKEND_URL and
+        // VCRGLOVE_BACKEND_API_KEY). UKE can set these without editing Swift code.
+        // Upload is disabled while the placeholder API key is still present.
+        if let backendURL = Bundle.main
+            .object(forInfoDictionaryKey: "VCRGLOVE_BACKEND_URL") as? String,
+           let apiKey = Bundle.main
+            .object(forInfoDictionaryKey: "VCRGLOVE_BACKEND_API_KEY") as? String,
+           let url = URL(string: backendURL),
+           !apiKey.isEmpty,
+           apiKey != "REPLACE_WITH_UKE_API_KEY" {
+            SessionUploader.shared.configure(baseURL: url, apiKey: apiKey)
         }
         // ─────────────────────────────────────────────────────────────────────
     }
