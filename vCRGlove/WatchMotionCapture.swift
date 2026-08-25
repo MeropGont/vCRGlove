@@ -42,19 +42,24 @@ final class WatchMotionCapture: ObservableObject {
     private var watchT0: Double?
     private var phoneT0: Double = 0
     private var staleTimer: Timer?
+    private var startCompletion: (@MainActor (Result<Void, CaptureError>) -> Void)?
 
     func start(completion: @escaping @MainActor (Result<Void, CaptureError>) -> Void) {
         guard PhoneWC.shared.isWatchReachable else {
             DispatchQueue.main.async { completion(.failure(.watchNotReachable)) }
             return
         }
+
         watchT0 = nil
+        lastBatchAt = 0
+        startCompletion = completion
+
         PhoneWC.shared.onMotionBatch = { [weak self] batch in
             self?.ingest(batch)
         }
+
         PhoneWC.shared.startMotionStream()
         startStaleTimer()
-        DispatchQueue.main.async { completion(.success(())) }
     }
 
     func stop(completion: (() -> Void)? = nil) {
@@ -83,6 +88,12 @@ final class WatchMotionCapture: ObservableObject {
         guard let watchT0 else { return }
 
         lastBatchAt = ProcessInfo.processInfo.systemUptime
+        if let startCompletion {
+            self.startCompletion = nil
+            DispatchQueue.main.async {
+                startCompletion(.success(()))
+            }
+        }
         if !isReceiving {
             DispatchQueue.main.async { [weak self] in self?.isReceiving = true }
         }

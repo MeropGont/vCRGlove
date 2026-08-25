@@ -44,9 +44,7 @@ final class PhoneWC: NSObject, WCSessionDelegate {
                     self?.attemptStartMotionStream(retriesLeft: retriesLeft - 1)
                 }
             } else {
-                // Fall back to queued delivery; the watch will act on it when it becomes reachable.
-                WCSession.default.transferUserInfo(["type": "startMotionStream"])
-                Logger.shared.log("WC", "Queued startMotionStream via transferUserInfo")
+                Logger.shared.log("WC", "Watch not reachable; startMotionStream not queued")
             }
             return
         }
@@ -66,7 +64,7 @@ final class PhoneWC: NSObject, WCSessionDelegate {
                 Logger.shared.log("WC", "stopMotionStream failed: \(error.localizedDescription)")
             })
         } else {
-            WCSession.default.transferUserInfo(["type": "stopMotionStream"])
+            Logger.shared.log("WC", "Watch not reachable; stopMotionStream not queued")
         }
     }
 

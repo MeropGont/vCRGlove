@@ -50,6 +50,16 @@ struct SettingsView: View {
                 } label: {
                     SettingsRow(icon: "book.closed", color: .teal, title: L10n("Instructions"), subtitle: L10n("Gloves, vCR, journal, and troubleshooting"))
                 }
+                NavigationLink {
+                    MovementExportView()
+                } label: {
+                    SettingsRow(
+                        icon: "figure.hand.cycling",
+                        color: .purple,
+                        title: "Movement Export",
+                        subtitle: "Export movement task sessions"
+                    )
+                }
             }
 
             Section(L10n("Research Mode")) {

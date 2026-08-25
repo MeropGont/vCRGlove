@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@  %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  %2$@"
+          }
+        }
+      }
+    },
     "%@ glove" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -307,6 +317,9 @@
         }
       }
     },
+    "Calibration" : {
+
+    },
     "Cancel" : {
       "localizations" : {
         "de" : {
@@ -451,6 +464,9 @@
           }
         }
       }
+    },
+    "Context" : {
+
     },
     "Continue only if all fingers can be felt clearly. Please report this to support so we can check the glove mapping." : {
       "localizations" : {
@@ -770,6 +786,9 @@
           }
         }
       }
+    },
+    "Hand detected" : {
+
     },
     "Hold to Stop" : {
       "extractionState" : "stale",
@@ -1566,6 +1585,9 @@
         }
       }
     },
+    "Protocol" : {
+
+    },
     "Protocol notes" : {
       "localizations" : {
         "de" : {
@@ -1650,6 +1672,9 @@
           }
         }
       }
+    },
+    "Recordings" : {
+
     },
     "Refresh Diagnostics" : {
       "localizations" : {
@@ -1896,6 +1921,9 @@
         }
       }
     },
+    "Show hand" : {
+
+    },
     "Show Research Tab" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1938,6 +1966,9 @@
           }
         }
       }
+    },
+    "Starting camera…" : {
+
     },
     "Status" : {
       "localizations" : {
@@ -2161,6 +2192,9 @@
           }
         }
       }
+    },
+    "Task" : {
+
     },
     "Task reminders" : {
       "localizations" : {
@@ -2526,6 +2560,12 @@
           }
         }
       }
+    },
+    "Waiting for watch…" : {
+
+    },
+    "Watch connected" : {
+
     },
     "Wed" : {
 

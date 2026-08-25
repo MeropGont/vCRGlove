@@ -38,7 +38,24 @@
 		A92985A02FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929859D2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift */; };
 		A92985A12FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929859E2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift */; };
 		A94255342FD805BE008B8F73 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A94255332FD805BE008B8F73 /* Localizable.xcstrings */; };
+		A9A51D2F303C656B00E69380 /* SyntheticSignalGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D29303C656B00E69380 /* SyntheticSignalGenerator.swift */; };
+		A9A51D30303C656B00E69380 /* MovementAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D22303C656B00E69380 /* MovementAnalyzer.swift */; };
+		A9A51D31303C656B00E69380 /* VisionHandPoseCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D2D303C656B00E69380 /* VisionHandPoseCapture.swift */; };
+		A9A51D32303C656B00E69380 /* TaskSessionExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D2A303C656B00E69380 /* TaskSessionExporter.swift */; };
+		A9A51D33303C656B00E69380 /* MovementTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D25303C656B00E69380 /* MovementTaskView.swift */; };
+		A9A51D34303C656B00E69380 /* TaskSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D2B303C656B00E69380 /* TaskSessionStore.swift */; };
+		A9A51D35303C656B00E69380 /* MovementExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D23303C656B00E69380 /* MovementExportView.swift */; };
+		A9A51D36303C656B00E69380 /* SessionUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D27303C656B00E69380 /* SessionUploader.swift */; };
+		A9A51D37303C656B00E69380 /* LiveSignalMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D21303C656B00E69380 /* LiveSignalMonitor.swift */; };
+		A9A51D38303C656B00E69380 /* TrialRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D2C303C656B00E69380 /* TrialRecorder.swift */; };
+		A9A51D39303C656B00E69380 /* MovementTrendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D26303C656B00E69380 /* MovementTrendView.swift */; };
+		A9A51D3A303C656B00E69380 /* WatchMotionCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D2E303C656B00E69380 /* WatchMotionCapture.swift */; };
+		A9A51D3B303C656B00E69380 /* MovementModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D24303C656B00E69380 /* MovementModels.swift */; };
+		A9A51D3C303C656B00E69380 /* SyntheticCaptureSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A51D28303C656B00E69380 /* SyntheticCaptureSource.swift */; };
 		A9AE5FDA2E794A6F009F0426 /* Bhaptics in Frameworks */ = {isa = PBXBuildFile; productRef = A9AE5FD92E794A6F009F0426 /* Bhaptics */; };
+		A9B73BFC303D899D00BAEEC4 /* TrialRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9B73BFB303D899D00BAEEC4 /* TrialRecorderTests.swift */; };
+		A9B73BFD303D899D00BAEEC4 /* TaskSessionExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9B73BFA303D899D00BAEEC4 /* TaskSessionExporterTests.swift */; };
+		A9B73BFE303D899D00BAEEC4 /* MovementAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9B73BF9303D899D00BAEEC4 /* MovementAnalyzerTests.swift */; };
 		A9DAB74F2E682D3D0053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */; platformFilters = (ios, xros, ); };
 		A9DAB7512E682D590053D51F /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9DAB7502E682D590053D51F /* WatchConnectivity.framework */; };
 		A9EFEB472E6309090081A6C7 /* vCRGloveWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -130,6 +147,23 @@
 		A929859D2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveWatch_Watch_AppUITests.swift; sourceTree = "<group>"; };
 		A929859E2FBB474100B0F0FB /* vCRGloveWatch_Watch_AppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveWatch_Watch_AppUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		A94255332FD805BE008B8F73 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		A9A51D21303C656B00E69380 /* LiveSignalMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveSignalMonitor.swift; sourceTree = "<group>"; };
+		A9A51D22303C656B00E69380 /* MovementAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementAnalyzer.swift; sourceTree = "<group>"; };
+		A9A51D23303C656B00E69380 /* MovementExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementExportView.swift; sourceTree = "<group>"; };
+		A9A51D24303C656B00E69380 /* MovementModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementModels.swift; sourceTree = "<group>"; };
+		A9A51D25303C656B00E69380 /* MovementTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementTaskView.swift; sourceTree = "<group>"; };
+		A9A51D26303C656B00E69380 /* MovementTrendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementTrendView.swift; sourceTree = "<group>"; };
+		A9A51D27303C656B00E69380 /* SessionUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionUploader.swift; sourceTree = "<group>"; };
+		A9A51D28303C656B00E69380 /* SyntheticCaptureSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticCaptureSource.swift; sourceTree = "<group>"; };
+		A9A51D29303C656B00E69380 /* SyntheticSignalGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticSignalGenerator.swift; sourceTree = "<group>"; };
+		A9A51D2A303C656B00E69380 /* TaskSessionExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskSessionExporter.swift; sourceTree = "<group>"; };
+		A9A51D2B303C656B00E69380 /* TaskSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskSessionStore.swift; sourceTree = "<group>"; };
+		A9A51D2C303C656B00E69380 /* TrialRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialRecorder.swift; sourceTree = "<group>"; };
+		A9A51D2D303C656B00E69380 /* VisionHandPoseCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionHandPoseCapture.swift; sourceTree = "<group>"; };
+		A9A51D2E303C656B00E69380 /* WatchMotionCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchMotionCapture.swift; sourceTree = "<group>"; };
+		A9B73BF9303D899D00BAEEC4 /* MovementAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementAnalyzerTests.swift; sourceTree = "<group>"; };
+		A9B73BFA303D899D00BAEEC4 /* TaskSessionExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskSessionExporterTests.swift; sourceTree = "<group>"; };
+		A9B73BFB303D899D00BAEEC4 /* TrialRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialRecorderTests.swift; sourceTree = "<group>"; };
 		A9DAB74E2E682D3D0053D51F /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
 		A9DAB7502E682D590053D51F /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
 		A9EFEB272E6309070081A6C7 /* vCRGloveWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "vCRGloveWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -204,17 +238,31 @@
 				A92985652FBB473200B0F0FB /* JournalHomeView.swift */,
 				A92985662FBB473200B0F0FB /* JournalModels.swift */,
 				A92985672FBB473200B0F0FB /* JournalStore.swift */,
+				A9A51D21303C656B00E69380 /* LiveSignalMonitor.swift */,
+				A94255332FD805BE008B8F73 /* Localizable.xcstrings */,
 				A92985682FBB473200B0F0FB /* MainTabView.swift */,
 				A92985692FBB473200B0F0FB /* MedicationLogView.swift */,
+				A9A51D22303C656B00E69380 /* MovementAnalyzer.swift */,
+				A9A51D23303C656B00E69380 /* MovementExportView.swift */,
+				A9A51D24303C656B00E69380 /* MovementModels.swift */,
+				A9A51D25303C656B00E69380 /* MovementTaskView.swift */,
+				A9A51D26303C656B00E69380 /* MovementTrendView.swift */,
 				A929856A2FBB473200B0F0FB /* NoteLogView.swift */,
 				A929856B2FBB473200B0F0FB /* PatientVCRView.swift */,
 				A929856C2FBB473200B0F0FB /* PhoneWC.swift */,
+				A9A51D27303C656B00E69380 /* SessionUploader.swift */,
 				A929856D2FBB473200B0F0FB /* SettingsView.swift */,
 				A929856E2FBB473200B0F0FB /* SymptomEpisodeLogView.swift */,
+				A9A51D28303C656B00E69380 /* SyntheticCaptureSource.swift */,
+				A9A51D29303C656B00E69380 /* SyntheticSignalGenerator.swift */,
+				A9A51D2A303C656B00E69380 /* TaskSessionExporter.swift */,
+				A9A51D2B303C656B00E69380 /* TaskSessionStore.swift */,
+				A9A51D2C303C656B00E69380 /* TrialRecorder.swift */,
 				A929856F2FBB473200B0F0FB /* vCRGlove.entitlements */,
 				A92985702FBB473200B0F0FB /* vCRGloveApp.swift */,
 				A92985712FBB473200B0F0FB /* VCRView.swift */,
-				A94255332FD805BE008B8F73 /* Localizable.xcstrings */,
+				A9A51D2D303C656B00E69380 /* VisionHandPoseCapture.swift */,
+				A9A51D2E303C656B00E69380 /* WatchMotionCapture.swift */,
 			);
 			path = vCRGlove;
 			sourceTree = "<group>";
@@ -222,6 +270,9 @@
 		A92985882FBB473800B0F0FB /* vCRGloveTests */ = {
 			isa = PBXGroup;
 			children = (
+				A9B73BF9303D899D00BAEEC4 /* MovementAnalyzerTests.swift */,
+				A9B73BFA303D899D00BAEEC4 /* TaskSessionExporterTests.swift */,
+				A9B73BFB303D899D00BAEEC4 /* TrialRecorderTests.swift */,
 				A92985872FBB473800B0F0FB /* vCRGloveTests.swift */,
 			);
 			path = vCRGloveTests;
@@ -575,6 +626,20 @@
 				A92985752FBB473200B0F0FB /* EventStore.swift in Sources */,
 				A92985762FBB473200B0F0FB /* GloveVM.swift in Sources */,
 				A92985772FBB473200B0F0FB /* JournalCalendarView.swift in Sources */,
+				A9A51D2F303C656B00E69380 /* SyntheticSignalGenerator.swift in Sources */,
+				A9A51D30303C656B00E69380 /* MovementAnalyzer.swift in Sources */,
+				A9A51D31303C656B00E69380 /* VisionHandPoseCapture.swift in Sources */,
+				A9A51D32303C656B00E69380 /* TaskSessionExporter.swift in Sources */,
+				A9A51D33303C656B00E69380 /* MovementTaskView.swift in Sources */,
+				A9A51D34303C656B00E69380 /* TaskSessionStore.swift in Sources */,
+				A9A51D35303C656B00E69380 /* MovementExportView.swift in Sources */,
+				A9A51D36303C656B00E69380 /* SessionUploader.swift in Sources */,
+				A9A51D37303C656B00E69380 /* LiveSignalMonitor.swift in Sources */,
+				A9A51D38303C656B00E69380 /* TrialRecorder.swift in Sources */,
+				A9A51D39303C656B00E69380 /* MovementTrendView.swift in Sources */,
+				A9A51D3A303C656B00E69380 /* WatchMotionCapture.swift in Sources */,
+				A9A51D3B303C656B00E69380 /* MovementModels.swift in Sources */,
+				A9A51D3C303C656B00E69380 /* SyntheticCaptureSource.swift in Sources */,
 				A92985782FBB473200B0F0FB /* JournalHomeView.swift in Sources */,
 				A92985792FBB473200B0F0FB /* JournalModels.swift in Sources */,
 				A929857A2FBB473200B0F0FB /* JournalStore.swift in Sources */,
@@ -594,6 +659,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A9B73BFC303D899D00BAEEC4 /* TrialRecorderTests.swift in Sources */,
+				A9B73BFD303D899D00BAEEC4 /* TaskSessionExporterTests.swift in Sources */,
+				A9B73BFE303D899D00BAEEC4 /* MovementAnalyzerTests.swift in Sources */,
 				A92985892FBB473800B0F0FB /* vCRGloveTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

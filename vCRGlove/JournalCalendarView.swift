@@ -9,6 +9,7 @@ import SwiftUI
 
 struct JournalCalendarPanel: View {
     @ObservedObject private var store = JournalStore.shared
+    @ObservedObject private var taskStore = TaskSessionStore.shared
 
     @State private var displayedMonth = Calendar.current.startOfMonth(for: Date())
     @State private var selectedDate = Date()
@@ -73,6 +74,10 @@ struct JournalCalendarPanel: View {
                             .background(
                                 Circle()
                                     .fill(dayBackgroundColor(for: date))
+                                    .overlay(
+                                        Circle()
+                                            .stroke(hasMovementMeasurement(on: date) ? Color.purple : .clear, lineWidth: 3)
+                                    )
                             )
 
                         }
@@ -99,8 +104,9 @@ struct JournalCalendarPanel: View {
                 .font(.headline)
 
             let selectedEntries = entries(on: selectedDate)
+            let selectedMovementSessions = movementSessions(on: selectedDate)
 
-            if selectedEntries.isEmpty {
+            if selectedEntries.isEmpty && selectedMovementSessions.isEmpty {
                 Text(L10n("No check-in for this day"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -115,6 +121,24 @@ struct JournalCalendarPanel: View {
                                 .font(.subheadline.weight(.semibold))
 
                             Text(summary(for: entry))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+                    }
+                }
+
+                ForEach(selectedMovementSessions) { session in
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "hand.tap.fill")
+                            .foregroundStyle(.purple)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(session.date.formatted(date: .omitted, time: .shortened))
+                                .font(.subheadline.weight(.semibold))
+
+                            Text(String(format: L10n("Movement session: %d trial(s)"), session.trials.count))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -172,8 +196,18 @@ struct JournalCalendarPanel: View {
         !entries(on: date).isEmpty
     }
     
+    private func movementSessions(on date: Date) -> [MovementSession] {
+        taskStore.sessions
+            .filter { calendar.isDate($0.date, inSameDayAs: date) }
+            .sorted { $0.date > $1.date }
+    }
+    
     private func hasStimulation(on date: Date) -> Bool {
         entries(on: date).contains { $0.type == .stimulation }
+    }
+    
+    private func hasMovementMeasurement(on date: Date) -> Bool {
+        taskStore.sessions.contains { calendar.isDate($0.date, inSameDayAs: date) }
     }
 
     private func dayBackgroundColor(for date: Date) -> Color {

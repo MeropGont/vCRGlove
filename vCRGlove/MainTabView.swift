@@ -32,7 +32,7 @@ struct MainTabView: View {
             }
 
             NavigationStack {
-                MovementPlaceholderView()
+                MovementSessionFlowView()
             }
             .tabItem {
                 Label(L10n("Movement"), systemImage: "hand.tap.fill")
@@ -55,23 +55,5 @@ struct MainTabView: View {
         .onChange(of: scenePhase) { _, newPhase in
             gloveVM.handleScenePhaseChange(newPhase)
         }
-    }
-}
-
-private struct MovementPlaceholderView: View {
-    var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "hand.tap.fill")
-                .font(.system(size: 42))
-                .foregroundStyle(.secondary)
-
-            Text(L10n("Movement tasks are being reviewed."))
-                .font(.headline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemGroupedBackground))
     }
 }

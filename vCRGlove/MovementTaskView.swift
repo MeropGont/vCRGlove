@@ -304,30 +304,29 @@ struct MovementTaskView: View {
 
     private func startCountdown() {
         cameraError = nil
+        signalMonitor.reset()
+
         if usingWatch {
-            // Start the watch stream during the countdown so the user can
-            // verify the connection + signal before the recording begins.
             let capture = WatchMotionCapture()
             watchCapture = capture
-            signalMonitor.reset()
             capture.onSample = { [signalMonitor] value, time in
                 signalMonitor.ingest(value: value, at: time)
             }
             capture.start { result in
-                if case .failure(let error) = result {
+                switch result {
+                case .success:
+                    beginCountdown()
+                case .failure(let error):
                     cameraError = error.localizedDescription
                     cancelEverything()
                 }
             }
+            return
         }
+
         if usingCamera {
-            // Warm the camera up during the countdown so recording starts with
-            // live frames (otherwise startup time inflates onset latency).
             let capture = VisionHandPoseCapture()
             cameraCapture = capture
-            signalMonitor.reset()
-            // During the countdown: feed the monitor only, so the user can
-            // check signal quality before the recording starts.
             capture.onSample = { [signalMonitor] value, time in
                 signalMonitor.ingest(value: value, at: time)
             }
@@ -338,21 +337,25 @@ struct MovementTaskView: View {
                 }
             }
         }
+
+        beginCountdown()
+    }
+
+    private func beginCountdown() {
         phase = .countdown(3)
         countdownTimer?.invalidate()
-        var remaining = 3
-        let t = Timer(timeInterval: 1.0, repeats: true) { timer in
-            remaining -= 1
-            if remaining <= 0 {
+
+        let timer = Timer(timeInterval: 1.0, repeats: true) { timer in
+            if case .countdown(let n) = phase, n > 1 {
+                phase = .countdown(n - 1)
+            } else {
                 timer.invalidate()
                 startRecording()
-            } else {
-                phase = .countdown(remaining)
             }
         }
 
-        RunLoop.main.add(t, forMode: .common)
-        countdownTimer = t
+        RunLoop.main.add(timer, forMode: .common)
+        countdownTimer = timer
     }
 
     // MARK: - Analyzing (shown between recording end and result)
@@ -1533,11 +1536,16 @@ struct MovementSessionFlowView: View {
                 signalMonitor.ingest(value: value, at: time)
             }
             capture.start { result in
-                if case .failure(let error) = result {
+                switch result {
+                case .success:
+                    beginCountdown(step: step)
+                case .failure(let error):
                     cameraError = error.localizedDescription
-                    cancelEverything()
+                    cleanupAfterTrial()
+                    phase = .instruction(step: step)
                 }
             }
+            return
         }
 
         if usingCamera {
@@ -1549,7 +1557,8 @@ struct MovementSessionFlowView: View {
             capture.start(taskType: currentStep.task) { result in
                 if case .failure(let error) = result {
                     cameraError = error.localizedDescription
-                    cancelEverything()
+                    cleanupAfterTrial()
+                    phase = .instruction(step: step)
                 }
             }
         }
@@ -1557,21 +1566,26 @@ struct MovementSessionFlowView: View {
         if usingSynthetic {
             let source = SyntheticCaptureSource()
             syntheticSource = source
-            // The source will be started once the recorder is ready.
         }
 
+        beginCountdown(step: step)
+    }
+
+    private func beginCountdown(step: Int) {
         phase = .countdown(step: step)
         countdownRemaining = 3
         countdownTimer?.invalidate()
-        let t = Timer(timeInterval: 1.0, repeats: true) { timer in
+
+        let timer = Timer(timeInterval: 1.0, repeats: true) { timer in
             countdownRemaining -= 1
             if countdownRemaining <= 0 {
                 timer.invalidate()
                 startRecording(step: step)
             }
         }
-        RunLoop.main.add(t, forMode: .common)
-        countdownTimer = t
+
+        RunLoop.main.add(timer, forMode: .common)
+        countdownTimer = timer
     }
 
     private func startRecording(step: Int) {

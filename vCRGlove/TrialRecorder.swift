@@ -128,6 +128,8 @@ final class TrialRecorder: ObservableObject {
         recordQueue.async { [weak self] in
             guard let self, self.isActive else { return }
             let t = monotonicTime - self.startMonotonic
+            guard t >= 0 else { return }
+            
             self.buffer.append(TimestampedSample(t: t, value: value))
             self.samplesSinceLastAnalysis += 1
 
