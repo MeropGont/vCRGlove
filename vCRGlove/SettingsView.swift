@@ -46,7 +46,7 @@ struct SettingsView: View {
                 }
 
                 NavigationLink {
-                    InstructionsSettingsView()
+                    InstructionsSettingsView(patientID: patientID)
                 } label: {
                     SettingsRow(icon: "book.closed", color: .teal, title: L10n("Instructions"), subtitle: L10n("Gloves, vCR, journal, and troubleshooting"))
                 }
@@ -1010,17 +1010,193 @@ private struct PrivacyDataSettingsView: View {
 }
 
 private struct InstructionsSettingsView: View {
+    let patientID: String
+
     var body: some View {
         List {
-            Section(L10n("Instructions")) {
-                Text(L10n("Gloves"))
-                Text(L10n("vCR session"))
-                Text(L10n("Journal"))
-                Text(L10n("Troubleshooting"))
-                Text(L10n("Future movement tasks"))
+            Section {
+                Text(L10n("instructions.intro"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 4)
+            }
+
+            Section(L10n("instructions.topics")) {
+                ForEach(InstructionTopic.allCases) { topic in
+                    NavigationLink {
+                        InstructionTopicView(topic: topic)
+                    } label: {
+                        HStack(spacing: 14) {
+                            Image(systemName: topic.icon)
+                                .font(.title3)
+                                .foregroundStyle(.white)
+                                .frame(width: 36, height: 36)
+                                .background(topic.color)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(L10n(topic.titleKey))
+                                    .font(.headline)
+
+                                Text(L10n(topic.subtitleKey))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .padding(.vertical, 5)
+                    }
+                }
+            }
+
+            Section(L10n("instructions.help.section")) {
+                NavigationLink {
+                    SupportSettingsView(patientID: patientID)
+                } label: {
+                    Label {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(L10n("instructions.help.title"))
+                                .font(.headline)
+
+                            Text(L10n("instructions.help.subtitle"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    } icon: {
+                        Image(systemName: "questionmark.circle.fill")
+                            .foregroundStyle(.pink)
+                    }
+                    .padding(.vertical, 5)
+                }
             }
         }
         .navigationTitle(L10n("Instructions"))
+    }
+}
+
+private enum InstructionTopic: String, CaseIterable, Identifiable {
+    case gloves
+    case vcr
+    case journal
+    case movement
+
+    var id: String { rawValue }
+
+    var titleKey: String {
+        "instructions.\(rawValue).title"
+    }
+
+    var subtitleKey: String {
+        "instructions.\(rawValue).subtitle"
+    }
+
+    var icon: String {
+        switch self {
+        case .gloves: return "hand.raised.fill"
+        case .vcr: return "waveform.path.ecg"
+        case .journal: return "calendar"
+        case .movement: return "figure.walk.motion"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .gloves: return .blue
+        case .vcr: return .indigo
+        case .journal: return .green
+        case .movement: return .orange
+        }
+    }
+
+    var stepKeys: [String] {
+        switch self {
+        case .gloves:
+            return (1...5).map { "instructions.gloves.step\($0)" }
+        case .vcr:
+            return (1...6).map { "instructions.vcr.step\($0)" }
+        case .journal:
+            return (1...5).map { "instructions.journal.step\($0)" }
+        case .movement:
+            return (1...6).map { "instructions.movement.step\($0)" }
+        }
+    }
+
+    var noteKey: String? {
+        switch self {
+        case .vcr: return "instructions.vcr.note"
+        case .movement: return "instructions.movement.note"
+        default: return nil
+        }
+    }
+}
+
+private struct InstructionTopicView: View {
+    let topic: InstructionTopic
+
+    var body: some View {
+        List {
+            Section {
+                HStack(alignment: .top, spacing: 14) {
+                    Image(systemName: topic.icon)
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                        .frame(width: 44, height: 44)
+                        .background(topic.color)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(L10n(topic.titleKey))
+                            .font(.title3.bold())
+
+                        Text(L10n(topic.subtitleKey))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.vertical, 5)
+            }
+
+            Section(L10n("instructions.steps")) {
+                ForEach(Array(topic.stepKeys.enumerated()), id: \.offset) { index, key in
+                    HStack(alignment: .top, spacing: 12) {
+                        Text("\(index + 1)")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(width: 30, height: 30)
+                            .background(topic.color)
+                            .clipShape(Circle())
+                            .accessibilityHidden(true)
+
+                        Text(L10n(key))
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.top, 4)
+                    }
+                    .padding(.vertical, 6)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(
+                        String(
+                            format: L10n("instructions.step.accessibility"),
+                            index + 1,
+                            L10n(key)
+                        )
+                    )
+                }
+            }
+
+            if let noteKey = topic.noteKey {
+                Section {
+                    Label(L10n(noteKey), systemImage: "info.circle.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .navigationTitle(L10n(topic.titleKey))
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

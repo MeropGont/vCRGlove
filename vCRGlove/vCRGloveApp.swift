@@ -92,6 +92,174 @@ let Translations: [String: [String: String]] = [
 
     "Instructions": ["de": "Anleitungen"],
 
+    "instructions.intro": [
+        "en": "Choose a topic for simple, step-by-step guidance.",
+        "de": "Wählen Sie ein Thema für eine einfache Schritt-für-Schritt-Anleitung."
+    ],
+
+    "instructions.topics": ["en": "Topics", "de": "Themen"],
+
+    "instructions.help.section": ["en": "Help", "de": "Hilfe"],
+
+    "instructions.help.title": ["en": "Something not working?", "de": "Funktioniert etwas nicht?"],
+
+    "instructions.help.subtitle": [
+        "en": "Help with connections, stimulation, the journal, and Apple Watch",
+        "de": "Hilfe bei Verbindung, Stimulation, Journal und Apple Watch"
+    ],
+
+    "instructions.steps": ["en": "Steps", "de": "Schritte"],
+
+    "instructions.step.accessibility": ["en": "Step %d: %@", "de": "Schritt %d: %@"],
+
+    "instructions.gloves.title": ["en": "Connect the gloves", "de": "Handschuhe verbinden"],
+
+    "instructions.gloves.subtitle": [
+        "en": "Turn on, scan, and check the connection",
+        "de": "Einschalten, suchen und Verbindung prüfen"
+    ],
+
+    "instructions.gloves.step1": [
+        "en": "Charge both gloves before starting.",
+        "de": "Laden Sie beide Handschuhe vor dem Start auf."
+    ],
+
+    "instructions.gloves.step2": [
+        "en": "Put each glove on the matching hand and fasten it comfortably.",
+        "de": "Ziehen Sie jeden Handschuh an der passenden Hand an und schließen Sie ihn bequem."
+    ],
+
+    "instructions.gloves.step3": [
+        "en": "Turn on the gloves, then open the vCR tab.",
+        "de": "Schalten Sie die Handschuhe ein und öffnen Sie anschließend den vCR-Tab."
+    ],
+
+    "instructions.gloves.step4": [
+        "en": "Tap Scan for gloves and wait until each available glove shows Ready and a battery level.",
+        "de": "Tippen Sie auf Handschuhe suchen und warten Sie, bis jeder verfügbare Handschuh Bereit und einen Batteriestand anzeigt."
+    ],
+
+    "instructions.gloves.step5": [
+        "en": "If a glove is missing, turn it off and on, keep it near the iPhone, and scan again.",
+        "de": "Wenn ein Handschuh fehlt, schalten Sie ihn aus und wieder ein, halten Sie ihn nahe am iPhone und suchen Sie erneut."
+    ],
+
+    "instructions.vcr.title": ["en": "Complete a vCR session", "de": "vCR-Sitzung durchführen"],
+
+    "instructions.vcr.subtitle": [
+        "en": "Start, pause, resume, and finish safely",
+        "de": "Sicher starten, pausieren, fortsetzen und beenden"
+    ],
+
+    "instructions.vcr.step1": [
+        "en": "Connect the gloves you will use. At least one glove must show Ready.",
+        "de": "Verbinden Sie die Handschuhe, die Sie verwenden möchten. Mindestens ein Handschuh muss Bereit anzeigen."
+    ],
+
+    "instructions.vcr.step2": [
+        "en": "Tap Start and follow the finger check before stimulation begins.",
+        "de": "Tippen Sie auf Start und folgen Sie dem Fingertest, bevor die Stimulation beginnt."
+    ],
+
+    "instructions.vcr.step3": [
+        "en": "Keep vCRGlove open and in the foreground during stimulation.",
+        "de": "Lassen Sie vCRGlove während der Stimulation geöffnet und im Vordergrund."
+    ],
+
+    "instructions.vcr.step4": [
+        "en": "Use Pause and Resume whenever you need a break.",
+        "de": "Verwenden Sie Pause und Fortsetzen, wenn Sie eine Unterbrechung benötigen."
+    ],
+
+    "instructions.vcr.step5": [
+        "en": "If one glove disconnects, the other continues. If both disconnect, the session pauses until a glove reconnects.",
+        "de": "Wenn ein Handschuh getrennt wird, läuft der andere weiter. Wenn beide getrennt werden, pausiert die Sitzung, bis ein Handschuh wieder verbunden ist."
+    ],
+
+    "instructions.vcr.step6": [
+        "en": "To end early, press and hold Hold to Stop.",
+        "de": "Um die Sitzung vorzeitig zu beenden, halten Sie Zum Stoppen halten gedrückt."
+    ],
+
+    "instructions.vcr.note": [
+        "en": "If the fingertip check feels wrong or stimulation is uncomfortable, stop the session and contact ICNS support.",
+        "de": "Wenn sich der Fingertest falsch anfühlt oder die Stimulation unangenehm ist, beenden Sie die Sitzung und kontaktieren Sie den ICNS-Support."
+    ],
+
+    "instructions.journal.title": ["en": "Use the journal", "de": "Journal verwenden"],
+
+    "instructions.journal.subtitle": [
+        "en": "Record daily symptoms, medication, and notes",
+        "de": "Tägliche Symptome, Medikamente und Notizen erfassen"
+    ],
+
+    "instructions.journal.step1": [
+        "en": "Open Journal and select today's date in the calendar.",
+        "de": "Öffnen Sie das Journal und wählen Sie im Kalender das heutige Datum aus."
+    ],
+
+    "instructions.journal.step2": [
+        "en": "Complete the daily check-in to record how you feel today.",
+        "de": "Füllen Sie die tägliche Abfrage aus, um festzuhalten, wie Sie sich heute fühlen."
+    ],
+
+    "instructions.journal.step3": [
+        "en": "Add medication, a symptom episode, or a note whenever needed.",
+        "de": "Erfassen Sie bei Bedarf Medikamente, eine Symptomepisode oder eine Notiz."
+    ],
+
+    "instructions.journal.step4": [
+        "en": "For a symptom episode, choose both the symptom and its intensity before saving.",
+        "de": "Wählen Sie für eine Symptomepisode vor dem Speichern sowohl das Symptom als auch seine Stärke aus."
+    ],
+
+    "instructions.journal.step5": [
+        "en": "Confirm that the saved entry appears under the selected date.",
+        "de": "Prüfen Sie, ob der gespeicherte Eintrag unter dem ausgewählten Datum erscheint."
+    ],
+
+    "instructions.movement.title": ["en": "Complete movement tasks", "de": "Bewegungsaufgaben durchführen"],
+
+    "instructions.movement.subtitle": [
+        "en": "Prepare the camera or Apple Watch and record a task",
+        "de": "Kamera oder Apple Watch vorbereiten und eine Aufgabe aufnehmen"
+    ],
+
+    "instructions.movement.step1": [
+        "en": "Open Movement and choose when the measurement is being taken.",
+        "de": "Öffnen Sie Bewegung und wählen Sie aus, wann die Messung durchgeführt wird."
+    ],
+
+    "instructions.movement.step2": [
+        "en": "Choose the movement task and the hand you want to measure.",
+        "de": "Wählen Sie die Bewegungsaufgabe und die Hand aus, die Sie messen möchten."
+    ],
+
+    "instructions.movement.step3": [
+        "en": "For camera tasks, place your whole hand in the frame and follow the instruction on screen.",
+        "de": "Halten Sie bei Kameraaufgaben Ihre ganze Hand in den Bildausschnitt und folgen Sie der Anweisung auf dem Bildschirm."
+    ],
+
+    "instructions.movement.step4": [
+        "en": "For pronation and supination, wear the Apple Watch on the measured side and keep the Watch app open.",
+        "de": "Tragen Sie für Pronation und Supination die Apple Watch auf der gemessenen Seite und lassen Sie die Watch-App geöffnet."
+    ],
+
+    "instructions.movement.step5": [
+        "en": "Wait for the countdown, then perform the movement until the recording finishes.",
+        "de": "Warten Sie den Countdown ab und führen Sie die Bewegung aus, bis die Aufnahme beendet ist."
+    ],
+
+    "instructions.movement.step6": [
+        "en": "Review the result. Repeat the task if the recording failed or contains no usable signal.",
+        "de": "Prüfen Sie das Ergebnis. Wiederholen Sie die Aufgabe, wenn die Aufnahme fehlgeschlagen ist oder kein verwertbares Signal enthält."
+    ],
+
+    "instructions.movement.note": [
+        "en": "Keep the iPhone stable and make sure the hand or Apple Watch remains detected throughout the recording.",
+        "de": "Halten Sie das iPhone ruhig und achten Sie darauf, dass die Hand oder Apple Watch während der gesamten Aufnahme erkannt bleibt."
+    ],
+
     "Research Mode": ["de": "Forschungsmodus"],
 
     "Need Help?": ["de": "Hilfe nötig?"],
