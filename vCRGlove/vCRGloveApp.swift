@@ -276,6 +276,8 @@ let Translations: [String: [String: String]] = [
 
     "%.1f / %.0f s": ["de": "%.1f / %.0f s"],
 
+    "1 recording is ready to be saved as one session.": ["de": "1 Aufnahme kann als eine Sitzung gespeichert werden."],
+
     "%d recordings are ready to be saved as one session.": ["de": "%d Aufnahmen können als eine Sitzung gespeichert werden."],
 
     "Recordings": ["de": "Aufnahmen"],
@@ -394,15 +396,25 @@ let Translations: [String: [String: String]] = [
 
     "Done": ["de": "Fertig"],
 
+    "Continue": ["de": "Weiter"],
+
     "Starting camera…": ["de": "Kamera wird gestartet…"],
 
     "Watch connected — receiving motion": ["de": "Uhr verbunden — Bewegung empfangen"],
+
+    "Open the watch app to continue": ["de": "Öffnen Sie zum Fortfahren die Watch-App"],
+
+    "Open Settings > Instructions > Troubleshooting if the watch does not connect.": ["de": "Öffnen Sie Einstellungen > Anleitungen > Fehlerbehebung, wenn sich die Uhr nicht verbindet."],
 
     "Waiting for watch… open the watch app": ["de": "Warte auf Uhr… öffnen Sie die Watch-App"],
 
     "Keep your whole hand in the frame!": ["de": "Halten Sie die ganze Hand im Bild!"],
 
     "Waiting for signal…": ["de": "Warte auf Signal…"],
+
+    "Signal": ["de": "Signal"],
+
+    "No signal samples saved": ["de": "Keine Signaldaten gespeichert"],
 
     "Ready": ["de": "Bereit"],
 

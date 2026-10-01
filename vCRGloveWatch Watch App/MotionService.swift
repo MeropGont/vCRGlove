@@ -103,7 +103,10 @@ final class MotionService: NSObject, ObservableObject {
     /// phone. One pronation/supination cycle = one positive rotation lobe,
     /// which the phone-side analyzer counts via hysteresis.
     func startStreaming() {
-        guard !isStreaming, !isRecording else { return }
+        guard !isStreaming else { return }
+        if isRecording {
+            stop()
+        }
         guard motion.isDeviceMotionAvailable else { return }
         isStreaming = true
         streamBatch.removeAll()

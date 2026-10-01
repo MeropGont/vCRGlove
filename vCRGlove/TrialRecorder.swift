@@ -37,6 +37,7 @@ final class TrialRecorder: ObservableObject {
     private let source: SignalSource
     private let stopCondition: StopCondition
     private let analyzer = MovementAnalyzer()
+    private var latestSampleElapsed: Double = 0
 
     private var startWallClock: Date?
     private var startMonotonic: Double = 0
@@ -84,6 +85,7 @@ final class TrialRecorder: ObservableObject {
             self.startWallClock = Date()
             self.startMonotonic = ProcessInfo.processInfo.systemUptime
             self.startDurationTimer()
+            self.latestSampleElapsed = 0
             DispatchQueue.main.async {
                 self.liveCycleCount = 0
                 self.elapsed = 0
@@ -104,7 +106,7 @@ final class TrialRecorder: ObservableObject {
             }
             switch self.stopCondition.mode {
             case .duration:
-                if elapsed >= self.stopCondition.targetDuration {
+                if elapsed >= self.stopCondition.targetDuration + 3.0 {
                     self._finish()
                 }
             case .repetitions:
@@ -129,7 +131,8 @@ final class TrialRecorder: ObservableObject {
             guard let self, self.isActive else { return }
             let t = monotonicTime - self.startMonotonic
             guard t >= 0 else { return }
-            
+
+            self.latestSampleElapsed = t
             self.buffer.append(TimestampedSample(t: t, value: value))
             self.samplesSinceLastAnalysis += 1
 

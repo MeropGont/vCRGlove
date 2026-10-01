@@ -46,6 +46,9 @@ struct MovementTaskView: View {
 
     private var usingCamera: Bool { activeSignalSource == .camera }
     private var usingWatch: Bool { activeSignalSource == .watchMotion }
+    private var canStartRecording: Bool {
+        !usingWatch || PhoneWC.shared.isWatchReachable
+    }
 
     private var showsPreview: Bool {
         switch phase {
@@ -249,12 +252,21 @@ struct MovementTaskView: View {
             }
 
             Section {
-                Button {
-                    startCountdown()
-                } label: {
-                    Label(L10n("Start"), systemImage: "record.circle")
-                        .frame(maxWidth: .infinity)
-                        .font(.headline)
+                if usingWatch {
+                    WatchPrerequisiteView()
+                }
+
+                TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+                    Button {
+                        startCountdown()
+                    } label: {
+                        Label(L10n("Start"), systemImage: "record.circle")
+                            .frame(maxWidth: .infinity)
+                            .font(.title3.bold())
+                            .padding(.vertical, 16)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!canStartRecording)
                 }
             } footer: {
                 if let cameraError {
@@ -739,6 +751,25 @@ private struct WatchStreamHint: View {
     }
 }
 
+private struct WatchPrerequisiteView: View {
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+            let ready = PhoneWC.shared.isWatchReachable
+            if !ready {
+                VStack(alignment: .leading, spacing: 6) {
+                    Label(L10n("Open the watch app to continue"), systemImage: "applewatch.slash")
+                        .font(.callout.bold())
+
+                    Text(L10n("Open Settings > Instructions > Troubleshooting if the watch does not connect."))
+                        .font(.caption)
+                }
+                .foregroundStyle(.orange)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+}
+
 /// Immediate warning when fingers leave the camera frame: red border around
 /// the preview and banner — cycles are NOT counted while the hand is clipped,
 /// so the user must notice right away.
@@ -880,6 +911,14 @@ struct MovementTrialResultView: View {
             }
 
             Section {
+                RawSignalPlotView(samples: trial.samples)
+                    .frame(height: 180)
+                    .padding(.vertical, 8)
+            } header: {
+                Text(L10n("Signal"))
+            }
+
+            Section {
                 Button {
                     onSave()
                 } label: {
@@ -901,6 +940,69 @@ struct MovementTrialResultView: View {
 
     private func metricRow(_ label: String, _ value: String) -> some View {
         LabeledContent(L10n(label), value: value)
+    }
+}
+
+struct RawSignalPlotView: View {
+    let samples: [TimestampedSample]
+
+    private var cleanSamples: [TimestampedSample] {
+        samples.filter { $0.t >= 0 }
+    }
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Canvas { context, size in
+                let points = cleanSamples
+                guard points.count >= 2,
+                      let tMin = points.first?.t,
+                      let tMax = points.last?.t,
+                      let vMin = points.map(\.value).min(),
+                      let vMax = points.map(\.value).max(),
+                      tMax > tMin else { return }
+
+                let tRange = tMax - tMin
+                let vRange = max(vMax - vMin, 0.001)
+                let plotHeight = max(size.height - 8, 1)
+                let topPadding: CGFloat = 4
+
+                if vMin < 0 && vMax > 0 {
+                    let zeroY = topPadding + plotHeight - CGFloat((0 - vMin) / vRange) * plotHeight
+                    var zeroLine = Path()
+                    zeroLine.move(to: CGPoint(x: 0, y: zeroY))
+                    zeroLine.addLine(to: CGPoint(x: size.width, y: zeroY))
+                    context.stroke(zeroLine, with: .color(.secondary.opacity(0.25)), lineWidth: 1)
+                }
+
+                var path = Path()
+                for (index, sample) in points.enumerated() {
+                    let x = CGFloat((sample.t - tMin) / tRange) * size.width
+                    let y = topPadding + plotHeight - CGFloat((sample.value - vMin) / vRange) * plotHeight
+                    if index == 0 {
+                        path.move(to: CGPoint(x: x, y: y))
+                    } else {
+                        path.addLine(to: CGPoint(x: x, y: y))
+                    }
+                }
+                context.stroke(path, with: .color(.accentColor), lineWidth: 1.8)
+            }
+            .overlay {
+                if cleanSamples.count < 2 {
+                    Text(L10n("No signal samples saved"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            HStack {
+                Text("0 s")
+                Spacer()
+                Text(String(format: L10n("%.1f s"), cleanSamples.last?.t ?? 0))
+            }
+            .font(.caption2.monospacedDigit())
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 4)
+        }
     }
 }
 
@@ -951,6 +1053,7 @@ struct MovementSessionFlowView: View {
 
     @State private var phase: FlowPhase = .intro
     @State private var context: StimulationContext = .unspecified
+    @State private var hasSelectedContext = false
     @State private var currentStepIndex: Int = 0
     @State private var trials: [Trial] = []
 
@@ -983,6 +1086,9 @@ struct MovementSessionFlowView: View {
     private var usingCamera: Bool { activeSignalSource == .camera }
     private var usingWatch: Bool   { activeSignalSource == .watchMotion }
     private var usingSynthetic: Bool { activeSignalSource == .synthetic }
+    private var canStartRecording: Bool {
+        !usingWatch || PhoneWC.shared.isWatchReachable
+    }
 
     private var flowUsesCamera: Bool {
         #if targetEnvironment(simulator)
@@ -1151,11 +1257,13 @@ struct MovementSessionFlowView: View {
             Spacer()
 
             Button {
+                hasSelectedContext = false
                 phase = .contextSelection
             } label: {
                 Label(L10n("Start"), systemImage: "arrow.right.circle.fill")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
             }
             .buttonStyle(.borderedProminent)
             .padding(.horizontal, 32)
@@ -1190,7 +1298,7 @@ struct MovementSessionFlowView: View {
                 ForEach(StimulationContext.allCases) { c in
                     Button {
                         context = c
-                        startInstruction(step: 0)
+                        hasSelectedContext = true
                     } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
@@ -1201,7 +1309,7 @@ struct MovementSessionFlowView: View {
                                     .foregroundStyle(.secondary)
                             }
                             Spacer()
-                            if context == c {
+                            if hasSelectedContext && context == c {
                                 Image(systemName: "checkmark.circle.fill")
                                     .foregroundStyle(.tint)
                             }
@@ -1209,7 +1317,7 @@ struct MovementSessionFlowView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(context == c ? Color.accentColor.opacity(0.12) : Color(.systemGray6))
+                                .fill(hasSelectedContext && context == c ? Color.accentColor.opacity(0.12) : Color(.systemGray6))
                         )
                     }
                     .buttonStyle(.plain)
@@ -1218,6 +1326,19 @@ struct MovementSessionFlowView: View {
             .padding(.horizontal, 24)
 
             Spacer()
+
+            Button {
+                startInstruction(step: 0)
+            } label: {
+                Label(L10n("Continue"), systemImage: "arrow.right.circle.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(!hasSelectedContext)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
     }
 
@@ -1256,10 +1377,17 @@ struct MovementSessionFlowView: View {
 
             Text(step.task.displayName)
                 .font(.title.bold())
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 32)
 
             Text(taskInstruction(step.task))
                 .font(.title3)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity)
                 .padding(.horizontal, 32)
 
             Text(L10n("Please perform the movement as fast and as far as possible."))
@@ -1280,30 +1408,47 @@ struct MovementSessionFlowView: View {
             if usingCamera {
                 Text(L10n("Hold your hand in front of the camera so it fills the frame."))
                     .font(.callout)
+                    .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 32)
             } else if usingWatch {
                 Text(L10n("Wear the watch on your \(step.side.rawValue) arm and keep the watch app open."))
                     .font(.callout)
+                    .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 32)
             }
 
             Spacer()
 
             VStack(spacing: 12) {
-                Button {
-                    startCountdown(step: currentStepIndex)
-                } label: {
-                    Label(L10n("Start Recording"), systemImage: "record.circle")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
+                if usingWatch {
+                    WatchPrerequisiteView()
                 }
-                .buttonStyle(.borderedProminent)
+
+                TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+                    Button {
+                        startCountdown(step: currentStepIndex)
+                    } label: {
+                        Label(L10n("Start Recording"), systemImage: "record.circle")
+                            .font(.title3.bold())
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!canStartRecording)
+                }
 
                 Button {
                     skipStep()
                 } label: {
                     Text(L10n("Skip this measurement"))
                         .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
                 }
                 .buttonStyle(.bordered)
                 .tint(.secondary)
@@ -1327,7 +1472,7 @@ struct MovementSessionFlowView: View {
         switch task {
         case .fingerTap:         return "hand.tap.fill"
         case .handOpenClose:     return "hand.raised.fill"
-        case .pronationSupination: return "arrow.clockwise.circle.fill"
+        case .pronationSupination: return "rotate.3d"
         }
     }
 
@@ -1468,7 +1613,7 @@ struct MovementSessionFlowView: View {
             Text(L10n("All done!"))
                 .font(.largeTitle.bold())
 
-            Text(String(format: L10n("%d recordings are ready to be saved as one session."), trials.count))
+            Text(summaryRecordingCountText)
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -1662,7 +1807,16 @@ struct MovementSessionFlowView: View {
 
     private func cancelEverything() {
         cleanupAfterTrial()
+        hasSelectedContext = false
         phase = .intro
+    }
+
+    private var summaryRecordingCountText: String {
+        if trials.count == 1 {
+            return L10n("1 recording is ready to be saved as one session.")
+        }
+
+        return String(format: L10n("%d recordings are ready to be saved as one session."), trials.count)
     }
 
     private func saveSession() {
@@ -1679,6 +1833,7 @@ struct MovementSessionFlowView: View {
         trials.removeAll()
         currentStepIndex = 0
         context = .unspecified
+        hasSelectedContext = false
         phase = .intro
     }
 }
