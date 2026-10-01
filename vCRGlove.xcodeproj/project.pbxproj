@@ -718,6 +718,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_CFBundleDisplayName = vCRGloveWatch;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads Health data for monitoring";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Writes activity data to Health";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Uses motion data to monitor tremor";
@@ -751,6 +752,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
 				INFOPLIST_KEY_CFBundleDisplayName = vCRGloveWatch;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads Health data for monitoring";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Writes activity data to Health";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Uses motion data to monitor tremor";
@@ -984,6 +986,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = vCRGlove/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = vCRGlove;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "vCRGlove uses Bluetooth to connect to and control the vibration gloves during vCR sessions.";
@@ -1036,6 +1039,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = vCRGlove/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = vCRGlove;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "vCRGlove uses Bluetooth to connect to and control the vibration gloves during vCR sessions.";
