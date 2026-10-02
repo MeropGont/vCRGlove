@@ -308,8 +308,12 @@ struct VCRView: View {
                     vm.testBuzz(device: glove)
                 }
 
-            Text(title == "Left" ? "Left glove" : "Right glove")
+            Text(L10n(title == "Left" ? "Left glove" : "Right glove"))
                 .font(.headline)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(minHeight: 44)
 
             Text(statusText(for: glove, isActive: isActive))
                 .font(.caption)
@@ -448,9 +452,19 @@ struct VCRView: View {
                 Text(L10n("Ready"))
                     .font(.title2.bold())
 
-                Text(readyDevices.isEmpty ? L10n("Connect at least one glove to begin") : String(format: L10n("%d glove(s) ready"), readyDevices.count))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Text(
+                    readyDevices.isEmpty
+                        ? L10n("Connect at least one glove to begin")
+                        : String(
+                            format: L10n("%d glove(s) ready"),
+                            readyDevices.count
+                        )
+                )
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity)
 
                 sessionActionButton(title: L10n("Start Stimulation"), systemImage: "play.fill", fill: .green) {
                     startAll()

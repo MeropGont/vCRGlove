@@ -136,6 +136,7 @@ private struct SettingsRow: View {
                 Text(L10n(subtitle))
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.vertical, 4)
@@ -188,7 +189,7 @@ private struct VCRSettingsView: View {
 
     private func gloveRow(title: String, glove: HDevice?) -> some View {
         HStack {
-            Text(title)
+            Text(L10n(title))
 
             Spacer()
 
@@ -1232,7 +1233,7 @@ struct SupportSettingsView: View {
             Section {
                 Picker(L10n("What is not working?"), selection: $topic) {
                     ForEach(topics, id: \.self) { topic in
-                        Text(LocalizedStringKey(topic))
+                        Text(L10n(topic))
                     }
                 }
             }
@@ -1247,8 +1248,8 @@ struct SupportSettingsView: View {
                     ForEach(troubleshootingSteps.indices, id: \.self) { index in
                         let item = troubleshootingSteps[index]
 
-                        DisclosureGroup(item.question) {
-                            Text(item.answer)
+                        DisclosureGroup(L10n(item.question)) {
+                            Text(L10n(item.answer))
                                 .foregroundStyle(.secondary)
                                 .padding(.top, 4)
                         }
@@ -1271,7 +1272,9 @@ struct SupportSettingsView: View {
         .navigationTitle(L10n("Troubleshooting"))
     }
 
-    private var troubleshootingSteps: [(question: LocalizedStringKey, answer: LocalizedStringKey)] {
+    private var troubleshootingSteps: [
+        (question: String, answer: String)
+    ] {
         switch topic {
         case "Finger check":
             return [

@@ -110,23 +110,26 @@ struct PatientVCRView: View {
 
 
     var body: some View {
-        VStack(spacing: 18) {
-            vcrHeader
+        ScrollView {
+            VStack(spacing: 18) {
+                vcrHeader
 
-            gloveStatusGrid
+                gloveStatusGrid
 
-            sessionCard
+                sessionCard
 
-            troubleshootingLink
+                troubleshootingLink
 
-            Text(L10n("Keep this app open during stimulation."))
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.top, 4)
+                Text(L10n("Keep this app open during stimulation."))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 4)
+            }
+            .padding()
+            .padding(.top, 12)
+            .padding(.bottom, 24)
         }
-        .padding()
-        .padding(.top, 12)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .navigationBar)
         .onAppear {
@@ -315,9 +318,16 @@ struct PatientVCRView: View {
                     Text(idleSessionTitle)
                         .font(.title2.bold())
 
-                    Text(readyGloves.isEmpty ? L10n("Connect at least one glove to begin") : idleSessionSubtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        readyGloves.isEmpty
+                            ? L10n("Connect at least one glove to begin")
+                            : idleSessionSubtitle
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity)
                 }
 
                 Button {
@@ -501,8 +511,12 @@ struct PatientVCRView: View {
                     vm.testBuzz(device: glove)
                 }
 
-            Text(title == "Left" ? "Left glove" : "Right glove")
+            Text(L10n(title == "Left" ? "Left glove" : "Right glove"))
                 .font(.headline)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(minHeight: 44)
 
             Text(statusText(for: glove, isStimulating: isStimulating))
                 .font(.caption)

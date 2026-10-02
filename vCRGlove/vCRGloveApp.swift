@@ -64,7 +64,22 @@ final class AppSettings: ObservableObject {
 /// Translate a string at runtime through the Bundle swizzle.
 /// Use this when a string is stored in a variable rather than a literal.
 func L10n(_ key: String) -> String {
-    Bundle.main.localizedString(forKey: key, value: key, table: nil)
+    let language = AppSettings.shared.language.rawValue
+
+    if language == "en" {
+        return Translations[key]?["en"] ?? key
+    }
+
+    if let path = Bundle.main.path(forResource: language, ofType: "lproj"),
+       let languageBundle = Bundle(path: path) {
+        return languageBundle.localizedString(
+            forKey: key,
+            value: key,
+            table: nil
+        )
+    }
+
+    return Translations[key]?[language] ?? key
 }
 
 /// In-app dictionary for the English ↔ German language switch. The Bundle
@@ -868,7 +883,8 @@ struct vCRGloveApp: App {
     var body: some Scene {
         WindowGroup {
             MainTabView()
-            .environment(\.dynamicTypeSize, appSettings.fontSize.dynamicTypeSize)
+                .environment(\.locale, Locale(identifier: appSettings.language.rawValue))
+                .environment(\.dynamicTypeSize, appSettings.fontSize.dynamicTypeSize)
             .id(appSettings.language)
         }
     }

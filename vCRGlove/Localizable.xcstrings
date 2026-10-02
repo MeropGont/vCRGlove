@@ -3,6 +3,12 @@
   "strings" : {
     "%@  %@" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@  %@"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
@@ -104,7 +110,14 @@
       }
     },
     "0 s" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 s"
+          }
+        }
+      }
     },
     "2 h" : {
       "extractionState" : "stale",
@@ -172,6 +185,7 @@
       }
     },
     "A glove is not detected" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -266,6 +280,17 @@
         }
       }
     },
+    "App problem" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App-Problem"
+          }
+        }
+      }
+    },
     "App version" : {
       "localizations" : {
         "de" : {
@@ -321,7 +346,14 @@
       }
     },
     "Calibration" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalibrierung"
+          }
+        }
+      }
     },
     "Cancel" : {
       "localizations" : {
@@ -345,6 +377,7 @@
       }
     },
     "Check that at least one glove shows Ready. Then press Start vCR." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -355,6 +388,7 @@
       }
     },
     "Check that notifications are allowed for this app in iPhone Settings." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -416,6 +450,7 @@
       }
     },
     "Close and reopen the app. If stimulation is running, stop it first if possible." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -459,6 +494,7 @@
       }
     },
     "Contact support and include what you were trying to do when the problem happened." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -469,9 +505,17 @@
       }
     },
     "Context" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontext"
+          }
+        }
+      }
     },
     "Continue only if all fingers can be felt clearly. Please report this to support so we can check the glove mapping." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -658,6 +702,28 @@
         }
       }
     },
+    "Export movement task sessions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sitzungen mit Bewegungsaufgaben exportieren"
+          }
+        }
+      }
+    },
+    "Finger check" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fingertest"
+          }
+        }
+      }
+    },
     "Fingers per cycle" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -670,6 +736,7 @@
       }
     },
     "For now, add a note explaining the correction. Editing entries can be added later." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -691,7 +758,14 @@
       }
     },
     "Fri" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fr"
+          }
+        }
+      }
     },
     "Future movement tasks" : {
       "extractionState" : "stale",
@@ -700,6 +774,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zukünftige Bewegungsaufgaben"
+          }
+        }
+      }
+    },
+    "Glove connection" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handschuhverbindung"
           }
         }
       }
@@ -791,7 +876,14 @@
       }
     },
     "Hand detected" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hand erkannt"
+          }
+        }
+      }
     },
     "Hold to Stop" : {
       "extractionState" : "stale",
@@ -826,6 +918,7 @@
       }
     },
     "I cannot find today’s log" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -836,6 +929,7 @@
       }
     },
     "I do not receive reminders" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -846,6 +940,7 @@
       }
     },
     "I entered something wrong" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -856,6 +951,7 @@
       }
     },
     "I get too many reminders" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -866,6 +962,7 @@
       }
     },
     "I need to pause" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -984,7 +1081,14 @@
       }
     },
     "Journal and task reminders inside quiet hours are moved to the quiet-hours end time." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journal- und Aufgabenerinnerungen innerhalb der Ruhezeiten werden auf das Ende der Ruhezeiten verschoben."
+          }
+        }
+      }
     },
     "Journal check-in" : {
       "localizations" : {
@@ -1007,9 +1111,17 @@
       }
     },
     "Journal Reminders" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journal-Erinnerungen"
+          }
+        }
+      }
     },
     "Keep the app open and avoid switching apps during the finger check. If this happens repeatedly, contact support." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1020,6 +1132,7 @@
       }
     },
     "Keep the app open during stimulation. Avoid locking the phone or switching to another app." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1030,6 +1143,7 @@
       }
     },
     "Keep the phone close to the gloves and keep the app open. If both gloves disconnect, the session will stop automatically." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1115,6 +1229,7 @@
       }
     },
     "Left glove" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1201,6 +1316,7 @@
       }
     },
     "Make sure both gloves are charged and worn correctly. Stop the session, press Scan for Gloves again, then start vCR once more." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1222,7 +1338,14 @@
       }
     },
     "Mon" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mo"
+          }
+        }
+      }
     },
     "Mood, overall symptoms, and symptom list for this day." : {
       "extractionState" : "stale",
@@ -1231,6 +1354,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stimmung, Gesamtsymptome und Symptomliste für diesen Tag."
+          }
+        }
+      }
+    },
+    "Movement Export" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegungsdaten-Export"
           }
         }
       }
@@ -1320,7 +1454,19 @@
         }
       }
     },
+    "Notifications" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benachrichtigungen"
+          }
+        }
+      }
+    },
     "One finger did not buzz" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1352,6 +1498,7 @@
       }
     },
     "Only one glove connects" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1394,6 +1541,7 @@
       }
     },
     "Open the Journal tab and tap today’s date in the calendar." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1421,6 +1569,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Optionale Notiz"
+          }
+        }
+      }
+    },
+    "Other" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonstiges"
           }
         }
       }
@@ -1589,7 +1748,14 @@
       }
     },
     "Protocol" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protokoll"
+          }
+        }
+      }
     },
     "Protocol notes" : {
       "localizations" : {
@@ -1677,7 +1843,14 @@
       }
     },
     "Recordings" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahmen"
+          }
+        }
+      }
     },
     "Refresh Diagnostics" : {
       "localizations" : {
@@ -1690,6 +1863,7 @@
       }
     },
     "Reminder frequency can be adjusted in Settings > Reminders." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1773,6 +1947,7 @@
       }
     },
     "Right glove" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1783,7 +1958,14 @@
       }
     },
     "Sat" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sa"
+          }
+        }
+      }
     },
     "Save Check-In" : {
       "extractionState" : "stale",
@@ -1925,7 +2107,14 @@
       }
     },
     "Show hand" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hand zeigen"
+          }
+        }
+      }
     },
     "Show Research Tab" : {
       "extractionState" : "stale",
@@ -1971,7 +2160,14 @@
       }
     },
     "Starting camera…" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamera wird gestartet…"
+          }
+        }
+      }
     },
     "Status" : {
       "localizations" : {
@@ -2005,6 +2201,7 @@
       }
     },
     "Stimulation does not start" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2015,6 +2212,7 @@
       }
     },
     "Stimulation feels interrupted" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2141,7 +2339,14 @@
       }
     },
     "Sun" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "So"
+          }
+        }
+      }
     },
     "Symptom" : {
       "extractionState" : "stale",
@@ -2197,7 +2402,14 @@
       }
     },
     "Task" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgabe"
+          }
+        }
+      }
     },
     "Task reminders" : {
       "localizations" : {
@@ -2210,7 +2422,14 @@
       }
     },
     "Task Reminders" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgabenerinnerungen"
+          }
+        }
+      }
     },
     "Tell Us What Happened" : {
       "extractionState" : "stale",
@@ -2235,6 +2454,7 @@
       }
     },
     "The app is behaving strangely" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2245,6 +2465,7 @@
       }
     },
     "The buzzes felt uneven" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2255,6 +2476,7 @@
       }
     },
     "The glove disconnects" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2265,6 +2487,7 @@
       }
     },
     "The issue keeps happening" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2275,6 +2498,7 @@
       }
     },
     "The wrong finger buzzed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2306,7 +2530,14 @@
       }
     },
     "Thu" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do"
+          }
+        }
+      }
     },
     "Time" : {
       "extractionState" : "stale",
@@ -2375,7 +2606,14 @@
       }
     },
     "Tue" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di"
+          }
+        }
+      }
     },
     "Turn gloves on" : {
       "localizations" : {
@@ -2398,6 +2636,7 @@
       }
     },
     "Turn the glove off and on again. Then press Scan for Gloves and wait up to one minute." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2419,6 +2658,7 @@
       }
     },
     "Use Pause during the session. Press Resume when you are ready to continue." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2565,13 +2805,34 @@
       }
     },
     "Waiting for watch…" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf Apple Watch warten…"
+          }
+        }
+      }
     },
     "Watch connected" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Watch verbunden"
+          }
+        }
+      }
     },
     "Wed" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mi"
+          }
+        }
+      }
     },
     "What is not working?" : {
       "extractionState" : "stale",
@@ -2607,6 +2868,7 @@
       }
     },
     "You can still start vCR with one glove. If the second glove does not appear after scanning, charge it and try again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
