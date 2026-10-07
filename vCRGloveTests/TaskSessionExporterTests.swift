@@ -10,6 +10,7 @@ import Testing
 import Foundation
 @testable import vCRGlove
 
+@Suite(.serialized)
 struct TaskSessionExporterTests {
 
     private func makeSessions() -> [MovementSession] {
@@ -54,6 +55,8 @@ struct TaskSessionExporterTests {
         let headerCols = lines[0].split(separator: ",", omittingEmptySubsequences: false).count
         let rowCols = lines[1].split(separator: ",", omittingEmptySubsequences: false).count
         #expect(rowCols == headerCols)
+        let values = lines[1].split(separator: ",", omittingEmptySubsequences: false)
+        #expect(values[21].isEmpty && values[22].isEmpty && values[23].isEmpty)
     }
 
     @Test func samplesCSVHasOneRowPerSample() throws {
@@ -70,6 +73,69 @@ struct TaskSessionExporterTests {
         #expect(throws: TaskSessionExporter.ExportError.self) {
             try TaskSessionExporter.exportJSON([])
         }
+    }
+
+    @Test func medicationCSVAppendsFieldsWithoutChangingOriginalColumns() throws {
+        var sessions = makeSessions()
+        let original = sessions[0].trials[0]
+        let timing = MedicationTiming(status: .takenAt,
+                                      takenAt: original.startedAt.addingTimeInterval(-3600),
+                                      journalEntryID: UUID(), medicationName: "Medicine", medicationDose: "100 mg")
+        sessions[0].trials = [original.withMedicationTiming(timing)]
+        let url = try TaskSessionExporter.exportMetricsCSV(sessions)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let rows = try String(contentsOf: url, encoding: .utf8).split(separator: "\n")
+        let header = rows[0].split(separator: ",", omittingEmptySubsequences: false)
+        let values = rows[1].split(separator: ",", omittingEmptySubsequences: false)
+        #expect(header.count == 28 && values.count == 28)
+        #expect(header[20] == "quality_index")
+        #expect(header[21] == "medication_status")
+        #expect(values[21] == "takenAt")
+        #expect(values[23] == "3600.0")
+        #expect(values[25] == Substring(timing.journalEntryID!.uuidString))
+        #expect(values[26] == "\"Medicine\"" && values[27] == "\"100 mg\"")
+    }
+
+    @Test func medicationJSONExportRetainsConfirmedJournalFields() throws {
+        var sessions = makeSessions()
+        let intake = Date(timeIntervalSince1970: 1700000000)
+        let timing = MedicationTiming(status: .takenAt, takenAt: intake, confirmedAt: intake,
+                                      journalEntryID: UUID(), medicationName: "Medicine", medicationDose: "100 mg")
+        let original = sessions[0].trials[0]
+        sessions[0].trials = [original.withMedicationTiming(timing)]
+        let url = try TaskSessionExporter.exportJSON(sessions)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let restored = try decoder.decode([MovementSession].self, from: Data(contentsOf: url))
+        #expect(restored[0].trials[0].medicationTiming == timing)
+        #expect(restored[0].trials[0].id == original.id)
+        #expect(restored[0].trials[0].samples == original.samples)
+        #expect(restored[0].trials[0].metrics == original.metrics)
+    }
+
+    @Test(arguments: [MedicationTiming.Status.noneToday, .unsure])
+    func unknownAndNoMedicationExportWithoutInventingTime(status: MedicationTiming.Status) throws {
+        var sessions = makeSessions()
+        let original = sessions[0].trials[0]
+        sessions[0].trials = [original.withMedicationTiming(.init(status: status, confirmedAt: original.startedAt))]
+        let url = try TaskSessionExporter.exportMetricsCSV(sessions)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let rows = try String(contentsOf: url, encoding: .utf8).split(separator: "\n")
+        let values = rows[1].split(separator: ",", omittingEmptySubsequences: false)
+        #expect(values[21] == Substring(status.rawValue))
+        #expect(values[22].isEmpty && values[23].isEmpty)
+    }
+
+    @Test func journalNameAndDoseAreQuotedInCSV() throws {
+        var sessions = makeSessions()
+        let trial = sessions[0].trials[0]
+        sessions[0].trials = [trial.withMedicationTiming(.init(status: .takenAt, takenAt: trial.startedAt,
+                                                              medicationName: "A, \"B\"", medicationDose: "1,5 tablets"))]
+        let url = try TaskSessionExporter.exportMetricsCSV(sessions)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let csv = try String(contentsOf: url, encoding: .utf8)
+        #expect(csv.contains("\"A, \"\"B\"\"\",\"1,5 tablets\""))
     }
 
     /// Recordings saved before the `startUptime` field existed must still decode.

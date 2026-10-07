@@ -30,7 +30,7 @@ UKE can change the authentication scheme in `vCRGlove/SessionUploader.swift` if 
 
 ### `POST {VCRGLOVE_BACKEND_URL}/sessions`
 
-Triggered automatically every time a movement task session is saved. Upload happens in the background; the patient does not need to interact.
+Guided sets save locally after each accepted recording and upload when the patient finishes the set. Single-task sessions upload when saved. Upload happens in the background; the patient does not need to interact.
 
 Headers:
 
@@ -98,7 +98,7 @@ The `MovementSession` model in `vCRGlove/MovementModels.swift` is `Codable` and 
 | `id`                 | UUID string   | Unique session identifier                                                   |
 | `patientId`          | string        | Pseudonymized patient ID entered in Settings                                |
 | `date`               | ISO-8601      | Session recording time                                                      |
-| `stimulationContext` | string        | One of `baseline`, `preStim`, `postStim`, `unspecified`                     |
+| `stimulationContext` | string        | New recordings: `preStim`, `postStim`, `noStimPlanned`. Historical values: `baseline`, `unspecified` |
 | `trials`             | array         | One or more `Trial` objects recorded in this session                        |
 
 **`Trial`**
@@ -114,6 +114,30 @@ The `MovementSession` model in `vCRGlove/MovementModels.swift` is `Codable` and 
 | `startUptime`   | double  | Device uptime at start; used to align sensors that timestamp in uptime       |
 | `samples`       | array   | `{ t: seconds, value: signal }` — the raw 1-D signal                         |
 | `metrics`       | object  | Computed movement metrics                                                   |
+| `medicationTiming` | optional object | Patient-confirmed last intake context for this individual recording     |
+
+### Stimulation and medication context
+
+- `noStimPlanned` means **no stimulation planned today**. It must not replace or reinterpret historical `baseline` records.
+- `preStim` and `postStim` refer to stimulation only, not medication. `unspecified` remains readable for older recordings but is not offered as a new patient choice.
+- `Trial.startedAt` remains the automatic recording timestamp. Medication timing does not change sample timing or movement metrics.
+- An absent `medicationTiming` means unanswered/legacy, **not** no medication taken.
+
+The optional `medicationTiming` object contains:
+
+| Field | Meaning |
+| ----- | ------- |
+| `status` | `takenAt`, `noneToday`, or `unsure` |
+| `takenAt` | ISO-8601 last intake timestamp; only present for `takenAt` |
+| `confirmedAt` | ISO-8601 time when the patient entered or confirmed this context |
+| `journalEntryID` | Optional UUID when the patient explicitly confirms a journal intake |
+| `medicationName`, `medicationDose` | Optional original journal values; never inferred |
+
+Missed doses and ambiguous journal entries are not offered as intake suggestions. A `noneToday` answer does not carry into a recording on the next calendar day. There is no automatic medication ON/OFF classification or clinical time-window rule.
+
+JSON/JSONL exports retain this object. Metrics CSV appends seven columns after the existing 21: `medication_status`, `medication_taken_at`, `seconds_since_medication`, `medication_confirmed_at`, `medication_journal_entry_id`, `medication_name`, `medication_dose`. Elapsed seconds are calculated from each trial's `startedAt`; raw-sample CSV is unchanged.
+
+**Backend integration pending:** the bundled backend currently accepts stimulation context as a string but does not model or persist `medicationTiming`. Server-side storage of these fields must be implemented before relying on uploads as a complete copy of local recordings.
 
 **`MovementMetrics`**
 

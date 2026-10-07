@@ -32,6 +32,172 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
+    private func revealMovementControl(_ element: XCUIElement, in app: XCUIApplication) {
+        let next = app.buttons["movementContextContinue"]
+        let bottom = next.exists ? next.frame.minY - 12 : app.tabBars.firstMatch.frame.minY
+        let top = app.navigationBars.firstMatch.frame.maxY + 8
+        let scroll = app.scrollViews.firstMatch
+        for _ in 0..<12 {
+            if element.isHittable && element.frame.maxY <= bottom && element.frame.minY >= top { break }
+            let downward = element.exists && element.frame.minY < top
+            let start = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
+            let end = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: downward ? 0.7 : 0.4))
+            start.press(forDuration: 0.01, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.1)
+        }
+        XCTAssertTrue(element.isHittable)
+        XCTAssertLessThanOrEqual(element.frame.maxY, bottom)
+    }
+
+    @MainActor
+    func testStimulationChoicesAndOptionalMedicationEnglishGermanLargeText() throws {
+        for (language, size) in [("en", "standard"), ("de", "extraLarge")] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                                   "-appLanguage", language, "-appFontSize", size]
+            app.launch()
+            app.tabBars.buttons[german ? "Bewegung" : "Movement"].tap()
+            app.buttons[german ? "Starten" : "Start"].tap()
+            let next = app.buttons["movementContextContinue"]
+            XCTAssertTrue(next.waitForExistence(timeout: 5))
+            XCTAssertFalse(next.isEnabled)
+            XCTAssertFalse(app.buttons["movementContext-baseline"].exists)
+            XCTAssertFalse(app.buttons["movementContext-unspecified"].exists)
+            for context in ["preStim", "postStim", "noStimPlanned"] {
+                let choice = app.buttons["movementContext-\(context)"]
+                revealMovementControl(choice, in: app)
+                XCTAssertGreaterThanOrEqual(choice.frame.height, 54)
+                choice.tap()
+            }
+            XCTAssertEqual(app.buttons["movementContext-noStimPlanned"].label,
+                           german ? "Heute keine Stimulation geplant" : "No stimulation planned today")
+            revealMovementControl(app.buttons["movementMedicationChoice"], in: app)
+            let medicationHeading = german ? "Letzte Parkinson-Medikation" : "Last Parkinson's medication"
+            XCTAssertEqual(app.staticTexts.matching(identifier: medicationHeading).count, 1)
+            XCTAssertFalse(app.staticTexts[german ? "Medikation (optional)" : "Medication (optional)"].exists)
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Stimulation and optional medication \(language) \(size)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            XCTAssertTrue(next.isEnabled && next.isHittable)
+            XCTAssertLessThanOrEqual(next.frame.maxY, app.tabBars.firstMatch.frame.minY)
+            // Medication is deliberately unanswered and must not block the task.
+            next.tap()
+            let record = app.buttons[german ? "Aufnahme starten" : "Start Recording"]
+            XCTAssertTrue(record.waitForExistence(timeout: 5))
+            revealMovementControl(record, in: app)
+            let medicationDetails = app.buttons[medicationHeading]
+            revealMovementControl(medicationDetails, in: app)
+            medicationDetails.tap()
+            XCTAssertTrue(app.buttons["movementMedicationChoice"].exists)
+            XCTAssertEqual(app.staticTexts.matching(identifier: medicationHeading).count, 1)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testJournalMedicationIsNotAutomaticallyConfirmed() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-test-session-save", UUID().uuidString, "--ui-test-medication-journal",
+                               "-appLanguage", "en", "-appFontSize", "standard"]
+        app.launch()
+        app.tabBars.buttons["Movement"].tap()
+        app.buttons["Start"].tap()
+        app.buttons["movementContext-preStim"].tap()
+        revealMovementControl(app.buttons["movementConfirmMedication"], in: app)
+        app.buttons["movementContextContinue"].tap()
+        let record = app.buttons["Start Recording"]
+        revealMovementControl(record, in: app)
+        record.tap()
+        let stop = app.buttons["Stop"]
+        XCTAssertTrue(stop.waitForExistence(timeout: 8))
+        stop.tap()
+        XCTAssertTrue(app.navigationBars["Result"].waitForExistence(timeout: 15))
+        XCTAssertFalse(app.descendants(matching: .any)["movementMedicationSummary"].exists)
+    }
+
+    @MainActor
+    func testMedicationChoicesAndManualTimeGermanLargeText() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                               "-appLanguage", "de", "-appFontSize", "extraLarge"]
+        app.launch()
+        app.tabBars.buttons["Bewegung"].tap()
+        app.buttons["Starten"].tap()
+        app.buttons["movementContext-preStim"].tap()
+        let choice = app.buttons["movementMedicationChoice"]
+        revealMovementControl(choice, in: app)
+        for label in ["Zu einer bestimmten Zeit", "Heute keine eingenommen", "Unsicher", "Nicht angegeben"] {
+            revealMovementControl(choice, in: app)
+            choice.tap()
+            app.buttons[label].firstMatch.tap()
+            XCTAssertTrue(app.buttons["movementContextContinue"].isEnabled)
+            if label == "Zu einer bestimmten Zeit" {
+                let time = app.descendants(matching: .any)["movementMedicationTime"].firstMatch
+                revealMovementControl(time, in: app)
+                XCTAssertLessThanOrEqual(time.frame.maxX, app.frame.maxX - 16)
+                let screenshot = XCTAttachment(screenshot: app.screenshot())
+                screenshot.name = "Manual medication date and time German accessibility text"
+                screenshot.lifetime = .keepAlways
+                add(screenshot)
+            } else {
+                XCTAssertFalse(app.descendants(matching: .any)["movementMedicationTime"].firstMatch.exists)
+            }
+        }
+        app.buttons["movementContextContinue"].tap()
+    }
+
+    @MainActor
+    func testConfirmedMedicationSurvivesSaveAndRelaunch() throws {
+        let app = XCUIApplication()
+        let arguments = ["--ui-test-session-save", UUID().uuidString, "--ui-test-medication-journal",
+                         "-appLanguage", "en", "-appFontSize", "standard"]
+        app.launchArguments = arguments
+        app.launch()
+        app.tabBars.buttons["Movement"].tap()
+        app.buttons["Start"].tap()
+        app.buttons["movementContext-noStimPlanned"].tap()
+        let confirm = app.buttons["movementConfirmMedication"]
+        revealMovementControl(confirm, in: app)
+        confirm.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["movementMedicationTime"].firstMatch.waitForExistence(timeout: 5))
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Confirmed journal medication time"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.buttons["movementContextContinue"].tap()
+        let record = app.buttons["Start Recording"]
+        revealMovementControl(record, in: app)
+        record.tap()
+        let stop = app.buttons["Stop"]
+        XCTAssertTrue(stop.waitForExistence(timeout: 8))
+        stop.tap()
+        XCTAssertTrue(app.navigationBars["Result"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["Last dose"].exists)
+        showSaveAction("movementSaveFinish", in: app).tap()
+        XCTAssertTrue(app.staticTexts["movementSavedSummary"].waitForExistence(timeout: 5))
+        app.buttons["movementSummaryDone"].tap()
+        app.buttons["Start"].tap()
+        revealMovementControl(app.buttons["movementConfirmMedication"], in: app)
+        XCTAssertEqual(app.buttons["movementMedicationChoice"].value as? String, "Not entered")
+        XCTAssertFalse(app.descendants(matching: .any)["movementMedicationTime"].firstMatch.exists)
+        app.terminate()
+        app.launch()
+        app.tabBars.buttons["Movement"].tap()
+        expectSavedCounts("sessions=1;trials=1", in: app)
+        app.buttons["Trends"].tap()
+        let dose = app.staticTexts["Last dose"].firstMatch
+        for _ in 0..<8 where !dose.isHittable { app.collectionViews.firstMatch.swipeUp() }
+        XCTAssertTrue(dose.isHittable)
+        XCTAssertTrue(app.staticTexts["No stimulation planned today"].firstMatch.exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Time since last dose:'")).firstMatch.exists)
+        let saved = XCTAttachment(screenshot: app.screenshot())
+        saved.name = "Saved medication context in Trends"
+        saved.lifetime = .keepAlways
+        add(saved)
+    }
+
+    @MainActor
     func testLaunchPerformance() throws {
         // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {

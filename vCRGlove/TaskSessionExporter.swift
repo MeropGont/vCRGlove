@@ -38,7 +38,7 @@ enum TaskSessionExporter {
         var rows = [csvHeaderMetrics]
         for s in sessions {
             for t in s.trials {
-                rows.append([
+                var fields: [String] = [
                     s.id.uuidString,
                     quote(s.patientId),
                     iso8601(s.date),
@@ -60,7 +60,18 @@ enum TaskSessionExporter {
                     String(t.metrics.pauseCount),
                     String(t.metrics.onsetLatencySec),
                     String(t.metrics.qualityIndex)
-                ].joined(separator: ","))
+                ]
+                let medicationFields: [String] = [
+                    t.medicationTiming?.status.rawValue ?? "",
+                    t.medicationTiming?.takenAt.map(iso8601) ?? "",
+                    t.medicationTiming?.elapsedSeconds(at: t.startedAt).map { String($0) } ?? "",
+                    t.medicationTiming.map { iso8601($0.confirmedAt) } ?? "",
+                    t.medicationTiming?.journalEntryID?.uuidString ?? "",
+                    quote(t.medicationTiming?.medicationName ?? ""),
+                    quote(t.medicationTiming?.medicationDose ?? "")
+                ]
+                fields.append(contentsOf: medicationFields)
+                rows.append(fields.joined(separator: ","))
             }
         }
         return try write(Data(rows.joined(separator: "\n").utf8), name: "metrics", ext: "csv")
@@ -88,7 +99,9 @@ enum TaskSessionExporter {
         "started_at", "start_uptime_sec", "sample_count", "duration_sec",
         "cycle_count", "frequency_hz", "mean_amplitude",
         "amplitude_decrement_slope", "rhythm_cv", "pause_count",
-        "onset_latency_sec", "quality_index"
+        "onset_latency_sec", "quality_index",
+        "medication_status", "medication_taken_at", "seconds_since_medication",
+        "medication_confirmed_at", "medication_journal_entry_id", "medication_name", "medication_dose"
     ].joined(separator: ",")
 
     private static func write(_ data: Data, name: String, ext: String) throws -> URL {

@@ -12,6 +12,110 @@ import UIKit
 import XCTest
 @testable import vCRGlove
 
+struct MovementContextMedicationTests {
+    private let intake = Date(timeIntervalSince1970: 1700000000)
+
+    private func trial(at date: Date) -> Trial {
+        Trial(taskType: .fingerTap, side: .right, source: .camera, stopCondition: .thirtySec,
+              startedAt: date, startUptime: 123, samples: [.init(t: 0, value: 0.2)], metrics: .empty)
+    }
+
+    @Test func patientChoicesExcludeHistoricalAndUnknownCategories() {
+        #expect(StimulationContext.patientChoices == [.preStim, .postStim, .noStimPlanned])
+        #expect(StimulationContext.baseline.rawValue == "baseline")
+        #expect(StimulationContext.unspecified.rawValue == "unspecified")
+        #expect(StimulationContext.noStimPlanned.rawValue != StimulationContext.baseline.rawValue)
+    }
+
+    @Test(arguments: [StimulationContext.baseline, .unspecified, .preStim, .postStim])
+    func olderSessionsRemainUnchanged(context: StimulationContext) throws {
+        let original = MovementSession(patientId: "TEST", stimulationContext: context,
+                                       trials: [trial(at: intake)])
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(original)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let saved = try decoder.decode(MovementSession.self, from: data)
+        #expect(saved.stimulationContext == context)
+        #expect(saved.trials == original.trials)
+        #expect(saved.trials[0].medicationTiming == nil)
+        let object = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let trials = object["trials"] as! [[String: Any]]
+        #expect(trials[0]["medicationTiming"] == nil)
+    }
+
+    @Test func metadataPreservesEveryRecordingFieldAndUsesItsStartTime() throws {
+        let entryID = UUID()
+        let timing = MedicationTiming(status: .takenAt, takenAt: intake,
+                                      journalEntryID: entryID, medicationName: "A", medicationDose: "100 mg")
+        let first = trial(at: intake.addingTimeInterval(3600))
+        let tagged = first.withMedicationTiming(timing)
+        #expect(tagged.id == first.id)
+        #expect(tagged.samples == first.samples)
+        #expect(tagged.metrics == first.metrics)
+        #expect(tagged.startedAt == first.startedAt)
+        #expect(tagged.startUptime == first.startUptime)
+        #expect(tagged.stopCondition == first.stopCondition)
+        #expect(tagged.source == first.source && tagged.side == first.side && tagged.taskType == first.taskType)
+        #expect(tagged.medicationTiming?.elapsedSeconds(at: tagged.startedAt) == 3600)
+        let later = trial(at: intake.addingTimeInterval(3900)).withMedicationTiming(timing)
+        #expect(later.medicationTiming?.elapsedSeconds(at: later.startedAt) == 3900)
+        #expect(try JSONDecoder().decode(Trial.self, from: JSONEncoder().encode(tagged)) == tagged)
+    }
+
+    @Test func missingFutureAndUnknownIntakeDoNotProduceElapsedTime() {
+        #expect(MedicationTiming(status: .takenAt).elapsedSeconds(at: intake) == nil)
+        let future = MedicationTiming(status: .takenAt, takenAt: intake.addingTimeInterval(1))
+        #expect(trial(at: intake).withMedicationTiming(future).medicationTiming == nil)
+        for status in [MedicationTiming.Status.noneToday, .unsure] {
+            let timing = MedicationTiming(status: status, takenAt: intake, confirmedAt: intake)
+            #expect(timing.elapsedSeconds(at: intake) == nil)
+            #expect(timing.takenAt == nil)
+            #expect(trial(at: intake).withMedicationTiming(timing).medicationTiming?.status == status)
+        }
+        #expect(trial(at: intake).withMedicationTiming(nil).medicationTiming == nil)
+    }
+
+    @Test func elapsedTimeCrossesMidnightButNoneTodayDoesNot() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(secondsFromGMT: 0))
+        let yesterday = try #require(calendar.date(from: DateComponents(year: 2026, month: 10, day: 6, hour: 23, minute: 50)))
+        let nextDay = yesterday.addingTimeInterval(1200)
+        #expect(MedicationTiming(status: .takenAt, takenAt: yesterday).elapsedSeconds(at: nextDay) == 1200)
+        let none = MedicationTiming(status: .noneToday, confirmedAt: yesterday)
+        #expect(none.forRecording(at: yesterday, calendar: calendar) != nil)
+        #expect(none.forRecording(at: nextDay, calendar: calendar) == nil)
+    }
+
+    @Test func journalSuggestionExcludesMissedFutureAndAmbiguousEntries() {
+        let taken = JournalEntry(date: intake, type: .medication, medicationName: "A", medicationDose: "100 mg",
+                                 medicationEvent: .usual)
+        let entries = [taken,
+                       JournalEntry(date: intake.addingTimeInterval(10), type: .medication, medicationEvent: .missed),
+                       JournalEntry(date: intake.addingTimeInterval(20), type: .medication),
+                       JournalEntry(date: intake.addingTimeInterval(30), type: .note, medicationEvent: .extra),
+                       JournalEntry(date: intake.addingTimeInterval(100), type: .medication, medicationEvent: .extra)]
+        #expect(MedicationTiming.latestIntake(in: entries, before: intake.addingTimeInterval(50))?.id == taken.id)
+        #expect(MedicationTiming.latestIntake(in: Array(entries.dropFirst()), before: intake.addingTimeInterval(50)) == nil)
+        let late = JournalEntry(date: intake.addingTimeInterval(40), type: .medication, medicationEvent: .late)
+        #expect(MedicationTiming.latestIntake(in: entries + [late], before: intake.addingTimeInterval(50))?.id == late.id)
+    }
+
+    @Test(arguments: [MedicationTiming.Status.takenAt, .noneToday, .unsure])
+    func acceptedSessionsRoundTripNewContextAndMedication(status: MedicationTiming.Status) throws {
+        let timing = MedicationTiming(status: status, takenAt: intake, confirmedAt: intake)
+        var session = MovementSession(patientId: "TEST", date: intake, stimulationContext: .noStimPlanned)
+        session.accept(trial(at: intake).withMedicationTiming(timing))
+        let saved = try TaskSessionStore.replacingSession(session, in: Data())
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let restored = try decoder.decode(MovementSession.self, from: saved)
+        #expect(restored.stimulationContext == .noStimPlanned)
+        #expect(restored.trials == session.trials)
+    }
+}
+
 struct AcceptedMovementSessionTests {
     @Test func saveActionSymbolsExist() {
         for symbol in ["checkmark.circle.fill", "flag.checkered", "checkmark"] {

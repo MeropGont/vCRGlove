@@ -60,11 +60,68 @@ enum BodySide: String, CaseIterable, Codable, Identifiable {
 
 /// Relation of a recording to the vCR stimulation, for pre/post comparisons.
 enum StimulationContext: String, CaseIterable, Codable, Identifiable {
-    case baseline      // before any stimulation
-    case preStim       // immediately before a session
-    case postStim      // immediately after a session
+    case baseline      // historical category; never reinterpret as no stimulation planned
+    case preStim
+    case postStim
+    case noStimPlanned
     case unspecified
     var id: String { rawValue }
+
+    static let patientChoices: [Self] = [.preStim, .postStim, .noStimPlanned]
+
+    var titleKey: String {
+        switch self {
+        case .baseline: return "Baseline (older recording)"
+        case .preStim: return "Before stimulation"
+        case .postStim: return "After stimulation"
+        case .noStimPlanned: return "No stimulation planned today"
+        case .unspecified: return "Stimulation timing not specified"
+        }
+    }
+}
+
+// MARK: - Optional, patient-confirmed medication context
+
+struct MedicationTiming: Codable, Equatable {
+    enum Status: String, Codable { case takenAt, noneToday, unsure }
+
+    let status: Status
+    let takenAt: Date?
+    let confirmedAt: Date
+    let journalEntryID: UUID?
+    let medicationName: String?
+    let medicationDose: String?
+
+    init(status: Status, takenAt: Date? = nil, confirmedAt: Date = Date(),
+         journalEntryID: UUID? = nil, medicationName: String? = nil, medicationDose: String? = nil) {
+        self.status = status
+        self.takenAt = status == .takenAt ? takenAt : nil
+        self.confirmedAt = confirmedAt
+        self.journalEntryID = status == .takenAt ? journalEntryID : nil
+        self.medicationName = status == .takenAt ? medicationName : nil
+        self.medicationDose = status == .takenAt ? medicationDose : nil
+    }
+
+    func elapsedSeconds(at recordingStart: Date) -> TimeInterval? {
+        guard status == .takenAt, let takenAt else { return nil }
+        let seconds = recordingStart.timeIntervalSince(takenAt)
+        return seconds.isFinite && seconds >= 0 ? seconds : nil
+    }
+
+    func forRecording(at recordingStart: Date, calendar: Calendar = .current) -> Self? {
+        if status == .takenAt && elapsedSeconds(at: recordingStart) == nil { return nil }
+        // "Today" must not silently carry over when a set crosses midnight.
+        if status == .noneToday && !calendar.isDate(confirmedAt, inSameDayAs: recordingStart) { return nil }
+        return self
+    }
+
+    static func latestIntake(in entries: [JournalEntry], before date: Date) -> JournalEntry? {
+        entries.filter { entry in
+            guard entry.type == .medication, entry.date <= date,
+                  let event = entry.medicationEvent else { return false }
+            return [.usual, .late, .extra].contains(event)
+        }.max { $0.date < $1.date }
+    }
 }
 
 // MARK: - Stop condition (supports BOTH fixed reps and fixed duration)
@@ -134,6 +191,8 @@ struct Trial: Identifiable, Codable, Equatable {
     let startUptime: Double?
     let samples: [TimestampedSample]
     let metrics: MovementMetrics
+    /// Nil means unanswered (including older recordings), not "none taken".
+    let medicationTiming: MedicationTiming?
 
     init(id: UUID = UUID(),
          taskType: MovementTaskType,
@@ -143,7 +202,8 @@ struct Trial: Identifiable, Codable, Equatable {
          startedAt: Date = Date(),
          startUptime: Double? = nil,
          samples: [TimestampedSample],
-         metrics: MovementMetrics) {
+         metrics: MovementMetrics,
+         medicationTiming: MedicationTiming? = nil) {
         self.id = id
         self.taskType = taskType
         self.side = side
@@ -153,6 +213,14 @@ struct Trial: Identifiable, Codable, Equatable {
         self.startUptime = startUptime
         self.samples = samples
         self.metrics = metrics
+        self.medicationTiming = medicationTiming
+    }
+
+    func withMedicationTiming(_ timing: MedicationTiming?) -> Self {
+        Self(id: id, taskType: taskType, side: side, source: source,
+             stopCondition: stopCondition, startedAt: startedAt, startUptime: startUptime,
+             samples: samples, metrics: metrics,
+             medicationTiming: timing?.forRecording(at: startedAt))
     }
 }
 

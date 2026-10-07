@@ -32,6 +32,7 @@ struct MovementTaskView: View {
     @State private var taskType: MovementTaskType = .fingerTap
     @State private var side: BodySide = .right
     @State private var context: StimulationContext = .unspecified
+    @State private var medicationTiming: MedicationTiming?
 
     // Recording machinery
     @State private var recorder: TrialRecorder?
@@ -47,7 +48,8 @@ struct MovementTaskView: View {
     private var usingCamera: Bool { activeSignalSource == .camera }
     private var usingWatch: Bool { activeSignalSource == .watchMotion }
     private var canStartRecording: Bool {
-        !usingWatch || PhoneWC.shared.isWatchReachable
+        StimulationContext.patientChoices.contains(context) &&
+            (!usingWatch || PhoneWC.shared.isWatchReachable)
     }
 
     private var showsPreview: Bool {
@@ -196,10 +198,15 @@ struct MovementTaskView: View {
 
             Section("Context") {
                 Picker(L10n("Relative to stimulation"), selection: $context) {
-                    ForEach(StimulationContext.allCases) { c in
+                    Text(L10n("Choose stimulation timing")).tag(StimulationContext.unspecified)
+                    ForEach(StimulationContext.patientChoices) { c in
                         Text(contextLabel(c)).tag(c)
                     }
                 }
+            }
+
+            Section {
+                MovementMedicationSelection(timing: $medicationTiming)
             }
 
             Section {
@@ -269,12 +276,7 @@ struct MovementTaskView: View {
     }
 
     private func contextLabel(_ c: StimulationContext) -> String {
-        switch c {
-        case .baseline:    return L10n("Baseline (before any stimulation)")
-        case .preStim:     return L10n("Before session")
-        case .postStim:    return L10n("After session")
-        case .unspecified: return L10n("Not specified")
-        }
+        L10n(c.titleKey)
     }
 
     // MARK: - Countdown
@@ -307,6 +309,7 @@ struct MovementTaskView: View {
     }
 
     private func startCountdown() {
+        guard canStartRecording else { return }
         cameraError = nil
         signalMonitor.reset()
 
@@ -401,13 +404,14 @@ struct MovementTaskView: View {
     private var stopCondition: StopCondition { .thirtySec }
 
     private func startRecording() {
+        let medicationSnapshot = medicationTiming
         let r = TrialRecorder(taskType: taskType,
                               side: side,
                               source: activeSignalSource,
                               stopCondition: stopCondition)
         r.onComplete = { trial in
             // Hardware is already being stopped by the .isRecording onChange.
-            phase = .result(trial)
+            phase = .result(trial.withMedicationTiming(medicationSnapshot))
             EventStore.shared.append(
                 type: "TASK", tag: "trial_completed",
                 message: "Movement trial completed",
@@ -452,6 +456,7 @@ struct MovementTaskView: View {
             trials: [trial]
         )
         TaskSessionStore.shared.add(session)
+        medicationTiming = nil
         phase = .setup
     }
 
@@ -1010,6 +1015,150 @@ struct RecordingProgressView: View {
 
 // MARK: - Result screen
 
+private struct MovementMedicationSelection: View {
+    private enum Choice: String { case unanswered, takenAt, noneToday, unsure }
+
+    @Binding var timing: MedicationTiming?
+    var showsHeading = true
+    @ObservedObject private var journal = JournalStore.shared
+
+    private var suggestion: JournalEntry? {
+        #if DEBUG && targetEnvironment(simulator)
+        if ProcessInfo.processInfo.arguments.contains("--ui-test-medication-journal") {
+            return JournalEntry(date: Date().addingTimeInterval(-3600), type: .medication,
+                                medicationName: "Test medication", medicationDose: "Test dose",
+                                medicationEvent: .usual)
+        }
+        #endif
+        return MedicationTiming.latestIntake(in: journal.entries, before: Date())
+    }
+
+    private var choice: Binding<Choice> {
+        Binding(get: {
+            guard let timing else { return .unanswered }
+            switch timing.status {
+            case .takenAt: return .takenAt
+            case .noneToday: return .noneToday
+            case .unsure: return .unsure
+            }
+        }, set: { selection in
+            switch selection {
+            case .unanswered: timing = nil
+            case .takenAt: timing = MedicationTiming(status: .takenAt, takenAt: Date())
+            case .noneToday: timing = MedicationTiming(status: .noneToday)
+            case .unsure: timing = MedicationTiming(status: .unsure)
+            }
+        })
+    }
+
+    private var choiceTitleKey: String {
+        switch choice.wrappedValue {
+        case .unanswered: return "Not entered"
+        case .takenAt: return "At a specific time"
+        case .noneToday: return "None taken today"
+        case .unsure: return "Not sure"
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if showsHeading {
+                Text(L10n("Last Parkinson's medication"))
+                    .font(.headline)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Menu {
+                Picker(L10n("Last Parkinson's medication"), selection: choice) {
+                    Text(L10n("Not entered")).tag(Choice.unanswered)
+                    Text(L10n("At a specific time")).tag(Choice.takenAt)
+                    Text(L10n("None taken today")).tag(Choice.noneToday)
+                    Text(L10n("Not sure")).tag(Choice.unsure)
+                }
+                .pickerStyle(.inline)
+            } label: {
+                HStack(spacing: 12) {
+                    Text(L10n(choiceTitleKey))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .accessibilityHidden(true)
+                }
+                .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+            }
+            .accessibilityLabel(L10n("Last Parkinson's medication"))
+            .accessibilityValue(L10n(choiceTitleKey))
+            .accessibilityIdentifier("movementMedicationChoice")
+
+            if timing?.status == .takenAt {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(L10n("Last dose"))
+                    DatePicker(L10n("Last dose"), selection: Binding(get: {
+                        timing?.takenAt ?? Date()
+                    }, set: { date in
+                        // A corrected time is manual, not the original journal entry.
+                        timing = MedicationTiming(status: .takenAt, takenAt: date)
+                    }), in: ...Date(), displayedComponents: [.date, .hourAndMinute])
+                    .datePickerStyle(.compact)
+                    .labelsHidden()
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("movementMedicationTime")
+            }
+
+            if let suggestion, timing == nil {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L10n("Last intake in your journal"))
+                        .font(.subheadline).foregroundStyle(.secondary)
+                    Text(suggestion.date, format: .dateTime.day().month().year().hour().minute())
+                    if let name = suggestion.medicationName, !name.isEmpty {
+                        Text([name, suggestion.medicationDose].compactMap { $0 }.joined(separator: " · "))
+                            .font(.subheadline).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Button {
+                        timing = MedicationTiming(status: .takenAt, takenAt: suggestion.date,
+                                                  journalEntryID: suggestion.id,
+                                                  medicationName: suggestion.medicationName,
+                                                  medicationDose: suggestion.medicationDose)
+                    } label: {
+                        Label(L10n("Confirm journal time"), systemImage: "checkmark")
+                            .frame(maxWidth: .infinity, minHeight: 54)
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityIdentifier("movementConfirmMedication")
+                }
+            }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+struct MovementMedicationSummary: View {
+    let timing: MedicationTiming
+    let recordedAt: Date
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            switch timing.status {
+            case .takenAt:
+                if let date = timing.takenAt {
+                    Text(L10n("Last dose"))
+                    Text(date, format: .dateTime.day().month().year().hour().minute())
+                    if let seconds = timing.elapsedSeconds(at: recordedAt) {
+                        Text(String(format: L10n("Time since last dose: %d min"), Int(seconds / 60)))
+                    }
+                }
+            case .noneToday: Text(L10n("No medication taken today"))
+            case .unsure: Text(L10n("Medication time: not sure"))
+            }
+        }
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityIdentifier("movementMedicationSummary")
+    }
+}
+
 struct MovementTrialResultView: View {
     let trial: Trial
     var onSave: () -> Void
@@ -1027,6 +1176,12 @@ struct MovementTrialResultView: View {
                 LabeledContent(L10n("Duration"), value: String(format: L10n("%.1f s"), trial.samples.last?.t ?? 0))
             } header: {
                 Text(L10n("Trial"))
+            }
+
+            if let timing = trial.medicationTiming {
+                Section(L10n("Medication")) {
+                    MovementMedicationSummary(timing: timing, recordedAt: trial.startedAt)
+                }
             }
 
             Section {
@@ -1209,6 +1364,7 @@ struct MovementSessionFlowView: View {
     @State private var phase: FlowPhase = .intro
     @State private var context: StimulationContext = .unspecified
     @State private var hasSelectedContext = false
+    @State private var medicationTiming: MedicationTiming?
     @State private var currentStepIndex: Int = 0
     @State private var trials: [Trial] = []
     @State private var captureAttemptID = UUID()
@@ -1551,52 +1707,47 @@ struct MovementSessionFlowView: View {
     // MARK: - Context selection
 
     private var contextSelectionView: some View {
-        VStack(spacing: 24) {
-            Text(L10n("When is this measurement?"))
-                .font(.title2.bold())
-                .padding(.top, 40)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                Text(L10n("When is this measurement?"))
+                    .font(.title2.bold())
+                    .fixedSize(horizontal: false, vertical: true)
 
-            Text(L10n("Pick the context once. All 6 recordings of this session will be tagged the same way."))
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-
-            VStack(spacing: 12) {
-                ForEach(StimulationContext.allCases) { c in
-                    Button {
-                        context = c
-                        hasSelectedContext = true
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(contextTitle(c))
-                                    .font(.headline)
-                                Text(contextSubtitle(c))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            if hasSelectedContext && context == c {
-                                Image(systemName: "checkmark.circle.fill")
+                VStack(spacing: 12) {
+                    ForEach(StimulationContext.patientChoices) { c in
+                        Button {
+                            context = c
+                            hasSelectedContext = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text(contextTitle(c)).font(.headline)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Spacer(minLength: 0)
+                                Image(systemName: hasSelectedContext && context == c
+                                      ? "largecircle.fill.circle" : "circle")
                                     .foregroundStyle(.tint)
+                                    .accessibilityHidden(true)
                             }
+                            .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
+                            .padding(12)
+                            .background(hasSelectedContext && context == c
+                                        ? Color.accentColor.opacity(0.12) : Color(.systemGray6),
+                                        in: RoundedRectangle(cornerRadius: 8))
                         }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(hasSelectedContext && context == c ? Color.accentColor.opacity(0.12) : Color(.systemGray6))
-                        )
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("movementContext-\(c.rawValue)")
+                        .accessibilityAddTraits(hasSelectedContext && context == c ? .isSelected : [])
+                        // Keep the tag consistent with recordings already accepted.
+                        .disabled(!trials.isEmpty && context != c)
                     }
-                    .buttonStyle(.plain)
-                    // Keep the session-wide tag consistent with recordings already accepted.
-                    .disabled(!trials.isEmpty && context != c)
                 }
+
+                Divider()
+                MovementMedicationSelection(timing: $medicationTiming)
             }
-            .padding(.horizontal, 24)
-
-            Spacer()
-
+            .padding(24)
+        }
+        .safeAreaInset(edge: .bottom) {
             Button {
                 startInstruction(step: 0)
             } label: {
@@ -1607,27 +1758,14 @@ struct MovementSessionFlowView: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(!hasSelectedContext)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+            .accessibilityIdentifier("movementContextContinue")
+            .padding(.horizontal, 24).padding(.vertical, 12)
+            .background(.bar)
         }
     }
 
     private func contextTitle(_ c: StimulationContext) -> String {
-        switch c {
-        case .baseline:    return L10n("Baseline")
-        case .preStim:     return L10n("Before stimulation")
-        case .postStim:    return L10n("After stimulation")
-        case .unspecified: return L10n("Not specified")
-        }
-    }
-
-    private func contextSubtitle(_ c: StimulationContext) -> String {
-        switch c {
-        case .baseline:    return L10n("No stimulation yet today")
-        case .preStim:     return L10n("Before your vCR / medication session")
-        case .postStim:    return L10n("After your vCR / medication session")
-        case .unspecified: return L10n("Use when none of the above applies")
-        }
+        L10n(c.titleKey)
     }
 
     // MARK: - Instruction
@@ -1712,6 +1850,10 @@ struct MovementSessionFlowView: View {
             Spacer()
 
             VStack(spacing: 12) {
+                DisclosureGroup(L10n("Last Parkinson's medication")) {
+                    MovementMedicationSelection(timing: $medicationTiming, showsHeading: false)
+                        .padding(.vertical, 8)
+                }
                 if usingWatch {
                     WatchPrerequisiteView()
                 }
@@ -1995,6 +2137,7 @@ struct MovementSessionFlowView: View {
             if trials.isEmpty {
                 context = .unspecified
                 hasSelectedContext = false
+                medicationTiming = nil
             }
             destination = .intro
         case .instruction(let step):
@@ -2112,6 +2255,7 @@ struct MovementSessionFlowView: View {
     private func startRecording(step: Int) {
         let current = steps[step]
         let attemptID = captureAttemptID
+        let medicationSnapshot = medicationTiming
         let r = TrialRecorder(taskType: current.task,
                               side: current.side,
                               source: activeSignalSource,
@@ -2128,7 +2272,7 @@ struct MovementSessionFlowView: View {
             // Hardware was already stopped when .analyzing began.
             Task { @MainActor in
                 guard self.captureAttemptID == attemptID else { return }
-                self.phase = .trialResult(trial)
+                self.phase = .trialResult(trial.withMedicationTiming(medicationSnapshot))
             }
             EventStore.shared.append(
                 type: "TASK", tag: "trial_completed",
@@ -2190,6 +2334,7 @@ struct MovementSessionFlowView: View {
         if case .trialResult = phase { return }
         if case .summary = phase { resetFlow(); return }
         hasSelectedContext = false
+        if trials.isEmpty { medicationTiming = nil }
         phase = .intro
     }
 
@@ -2205,6 +2350,7 @@ struct MovementSessionFlowView: View {
         currentStepIndex = 0
         context = .unspecified
         hasSelectedContext = false
+        medicationTiming = nil
         phase = .intro
     }
 }

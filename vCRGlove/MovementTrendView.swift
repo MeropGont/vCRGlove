@@ -120,6 +120,7 @@ struct MovementTrendRecording: Identifiable {
     let id: String
     let date: Date
     let context: StimulationContext
+    let medicationTiming: MedicationTiming?
     let availability: TrendMetricAvailability
     let segment: Int
 }
@@ -140,7 +141,8 @@ struct MovementTrendSummary {
             let availability = metric.availability(for: item.trial)
             if availability.value == nil { segment += 1 }
             return MovementTrendRecording(id: item.id, date: item.trial.startedAt,
-                                          context: item.context, availability: availability, segment: segment)
+                                          context: item.context, medicationTiming: item.trial.medicationTiming,
+                                          availability: availability, segment: segment)
         }
     }
 
@@ -288,7 +290,8 @@ struct MovementTrendView: View {
     private func chart(summary: MovementTrendSummary) -> some View {
         let colors: [String: Color] = [
             contextLabel(.baseline): .gray, contextLabel(.preStim): .orange,
-            contextLabel(.postStim): .green, contextLabel(.unspecified): .blue
+            contextLabel(.postStim): .green, contextLabel(.noStimPlanned): .purple,
+            contextLabel(.unspecified): .blue
         ]
         let usedLabels = StimulationContext.allCases
             .filter { context in summary.points.contains { $0.context == context } }
@@ -347,6 +350,9 @@ struct MovementTrendView: View {
             Text(contextLabel(recording.context))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+            if let timing = recording.medicationTiming {
+                MovementMedicationSummary(timing: timing, recordedAt: recording.date)
+            }
         }
         .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -354,12 +360,7 @@ struct MovementTrendView: View {
     }
 
     private func contextLabel(_ c: StimulationContext) -> String {
-        switch c {
-        case .baseline:    return L10n("Baseline")
-        case .preStim:     return L10n("Before session")
-        case .postStim:    return L10n("After session")
-        case .unspecified: return L10n("Stimulation timing not specified")
-        }
+        L10n(c.titleKey)
     }
 }
 
