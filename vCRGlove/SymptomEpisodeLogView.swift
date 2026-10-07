@@ -19,6 +19,23 @@ struct SymptomEpisodeLogView: View {
     @State private var note = ""
 
     private let calendar = Calendar.current
+    
+    private var isSaveDisabled: Bool {
+        selectedSymptoms.isEmpty || severity == nil
+    }
+
+    private var saveRequirementMessage: String? {
+        switch (selectedSymptoms.isEmpty, severity == nil) {
+        case (true, true):
+            return L10n("Select at least one symptom and its intensity.")
+        case (true, false):
+            return L10n("Select at least one symptom.")
+        case (false, true):
+            return L10n("Select the symptom intensity.")
+        case (false, false):
+            return nil
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -90,27 +107,44 @@ struct SymptomEpisodeLogView: View {
             .padding(.bottom, 90)
         }
         .safeAreaInset(edge: .bottom) {
-            Button(L10n("Save Symptom Episode")) {
-                let cleanNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
+            VStack(spacing: 8) {
+                Text(saveRequirementMessage ?? " ")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, minHeight: 36)
+                    .accessibilityHidden(saveRequirementMessage == nil)
 
-                let entry = JournalEntry(
-                    date: combinedDate,
-                    type: .symptom,
-                    symptomSeverity: severity,
-                    symptoms: selectedSymptoms
-                        .map { $0.rawValue }
-                        .sorted(),
-                    note: cleanNote.isEmpty ? nil : cleanNote,
-                    motorState: motorState
+                Button {
+                    let cleanNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
+
+                    let entry = JournalEntry(
+                        date: combinedDate,
+                        type: .symptom,
+                        symptomSeverity: severity,
+                        symptoms: selectedSymptoms
+                            .map { $0.rawValue }
+                            .sorted(),
+                        note: cleanNote.isEmpty ? nil : cleanNote,
+                        motorState: motorState
+                    )
+
+                    JournalStore.shared.add(entry)
+                    dismiss()
+                } label: {
+                    Text(L10n("Save Symptom Episode"))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(isSaveDisabled)
+                .accessibilityHint(
+                    Text(
+                        saveRequirementMessage
+                            ?? L10n("Saves this symptom episode.")
+                    )
                 )
-
-                JournalStore.shared.add(entry)
-                dismiss()
             }
-            .buttonStyle(.borderedProminent)
-            .disabled(selectedSymptoms.isEmpty || severity == nil)
             .padding()
-            .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)
         }
         .navigationTitle(L10n("Symptom"))

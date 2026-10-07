@@ -165,6 +165,24 @@ struct MovementSession: Identifiable, Codable {
     let stimulationContext: StimulationContext
     var trials: [Trial]
 
+    var recordedTaskCount: Int {
+        Set(trials.map { "\($0.taskType.rawValue)/\($0.side.rawValue)" }).count
+    }
+
+    var isFullMovementSet: Bool {
+        recordedTaskCount == MovementTaskType.allCases.count * BodySide.allCases.count
+    }
+
+    var completionLabelKey: String { isFullMovementSet ? "All tasks recorded" : "Some tasks recorded" }
+
+    mutating func accept(_ trial: Trial) {
+        if let index = trials.firstIndex(where: { $0.taskType == trial.taskType && $0.side == trial.side }) {
+            trials[index] = trial
+        } else {
+            trials.append(trial)
+        }
+    }
+
     init(id: UUID = UUID(),
          patientId: String,
          date: Date = Date(),

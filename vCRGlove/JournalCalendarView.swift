@@ -141,6 +141,9 @@ struct JournalCalendarPanel: View {
                             Text(String(format: L10n("Movement session: %d trial(s)"), session.trials.count))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                            Text(L10n(session.completionLabelKey))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
 
                         Spacer()

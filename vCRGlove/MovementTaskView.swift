@@ -64,65 +64,48 @@ struct MovementTaskView: View {
     var body: some View {
         ZStack(alignment: .top) {
             // Main content
-            Group {
-                switch phase {
-                case .setup:
-                    setupView
-                case .countdown(let n):
-                    countdownView(n)
-                case .recording:
-                    recordingView
-                case .analyzing:
-                    analyzingView
-                case .result(let trial):
-                    MovementTrialResultView(
-                        trial: trial,
-                        onSave: { save(trial) },
-                        onDiscard: { phase = .setup }
-                    )
+            if usingCamera, showsPreview {
+                CameraMovementRecordingView(
+                    taskType: taskType, side: side, capture: cameraCapture,
+                    monitor: signalMonitor, recorder: recorder, stopCondition: stopCondition,
+                    countdown: cameraCountdown, showsDetectionHints: true
+                ) {
+                    if case .recording = phase {
+                        Button(role: .destructive) { recorder?.finish() } label: {
+                            Label(L10n("Stop"), systemImage: "stop.circle.fill")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity, minHeight: 54)
+                        }
+                        .buttonStyle(.borderedProminent)
+                    } else {
+                        Button(L10n("Cancel"), role: .cancel) { cancelEverything() }
+                            .frame(maxWidth: .infinity, minHeight: 54)
+                            .buttonStyle(.bordered)
+                    }
+                }
+            } else {
+                Group {
+                    switch phase {
+                    case .setup:
+                        setupView
+                    case .countdown(let n):
+                        countdownView(n)
+                    case .recording:
+                        recordingView
+                    case .analyzing:
+                        analyzingView
+                    case .result(let trial):
+                        MovementTrialResultView(
+                            trial: trial,
+                            onSave: { save(trial) },
+                            onDiscard: { phase = .setup }
+                        )
+                    }
                 }
             }
 
-            // Persistent camera preview: shown during countdown + recording only.
-            // Lives outside the phase-switch so SwiftUI never tears it down.
-            if usingCamera, let cc = cameraCapture, showsPreview, cc.isSessionRunning {
-                VStack(spacing: 4) {
-                    CameraPreviewView(session: cc.session)
-                        .frame(height: 160)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                        .overlay {
-                            HandGuideOverlay(capture: cc, taskType: taskType, side: side)
-                        }
-                        .overlay {
-                            ClippedWarningOverlay(capture: cc)
-                        }
-                        .overlay(alignment: .bottomLeading) {
-                            HandVisibilityHint(capture: cc)
-                                .padding(8)
-                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-                                .padding(6)
-                        }
-                        .overlay(alignment: .bottomTrailing) {
-                            HandDistanceHint(capture: cc)
-                                .padding(8)
-                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-                                .padding(6)
-                        }
-                    // TODO: Replace placeholder with VideoPlayer(videoURL) once assets are ready.
-                    MovementVideoPlaceholder(taskType: taskType)
-                        .frame(height: 80)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-
-                    // Live signal chart — shows exactly what the analyzer sees.
-                    LiveSignalChart(monitor: signalMonitor)
-                        .frame(height: 40)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
-                }
-                .padding(.horizontal)
-                .padding(.top, 40)
-            }
             // Persistent watch signal chart: same idea as the camera preview.
-            else if usingWatch, let wc = watchCapture, showsPreview {
+            if usingWatch, let wc = watchCapture, showsPreview {
                 VStack(spacing: 4) {
                     WatchStreamHint(capture: wc)
                         .padding(8)
@@ -183,6 +166,11 @@ struct MovementTaskView: View {
         .sheet(isPresented: $isCalibrating) {
             HandCalibrationView { isCalibrating = false }
         }
+    }
+
+    private var cameraCountdown: Int? {
+        if case .countdown(let value) = phase { return value }
+        return nil
     }
 
     // MARK: - Setup
@@ -248,6 +236,10 @@ struct MovementTaskView: View {
                         }
                         .buttonStyle(.bordered)
                     }
+                    Text(L10n("For each new set of tests, we recommend recalibrating."))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
 
@@ -835,16 +827,165 @@ struct LiveSignalChart: View {
 
 // MARK: - Live progress subview
 
+struct MovementRecordingGuidance {
+    let taskType: MovementTaskType
+    let side: BodySide
+
+    var handKey: String { side == .right ? "Right hand" : "Left hand" }
+
+    var instructionKey: String {
+        switch taskType {
+        case .fingerTap:
+            return "Tap your index finger to your thumb.\nOpen wide. Repeat as fast as you can."
+        case .handOpenClose:
+            return "Open your hand fully, then make a fist.\nRepeat as fast as you can."
+        case .pronationSupination:
+            return "Rotate your forearm palm-up / palm-down as fast and as fully as possible."
+        }
+    }
+}
+
+/// A stable preview parent spans countdown and recording; only the progress changes.
+private struct CameraMovementRecordingView<Controls: View>: View {
+    let taskType: MovementTaskType
+    let side: BodySide
+    let capture: VisionHandPoseCapture?
+    let monitor: LiveSignalMonitor
+    let recorder: TrialRecorder?
+    let stopCondition: StopCondition
+    let countdown: Int?
+    var progressText: String? = nil
+    var showsDetectionHints = false
+    @ViewBuilder var controls: () -> Controls
+
+    private var guidance: MovementRecordingGuidance {
+        MovementRecordingGuidance(taskType: taskType, side: side)
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 10) {
+                if let progressText {
+                    Text(progressText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Group {
+                    if let capture {
+                        MovementCameraPreview(capture: capture, taskType: taskType,
+                                              side: side, showsDetectionHints: showsDetectionHints)
+                    } else {
+                        #if DEBUG && targetEnvironment(simulator)
+                        // Layout fixture only; synthetic recording remains unchanged.
+                        Image(systemName: "camera.viewfinder")
+                            .font(.system(size: 48))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(Color(.secondarySystemBackground))
+                        #else
+                        ProgressView(L10n("Starting camera…"))
+                        #endif
+                    }
+                }
+                .frame(height: 160)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .accessibilityIdentifier("movementCameraPreview")
+
+                VStack(spacing: 4) {
+                    Text(L10n(guidance.handKey))
+                        .font(.headline.bold())
+                        .accessibilityIdentifier("movementRecordingHand")
+                    Text(L10n(guidance.instructionKey))
+                        .font(.body)
+                        .accessibilityIdentifier("movementRecordingInstruction")
+                }
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity)
+
+                // Future hand demonstration videos replace this placeholder.
+                MovementVideoPlaceholder(taskType: taskType)
+                    .frame(minHeight: 88)
+                    .padding(.vertical, 4)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+                    .accessibilityIdentifier("movementVideoPlaceholder")
+
+                LiveSignalChart(monitor: monitor)
+                    .frame(height: 40)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+
+                if let countdown {
+                    Text("\(countdown)")
+                        .font(.system(size: 72, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                        .accessibilityLabel(String(format: L10n("Starting in %d"), countdown))
+                } else if let recorder {
+                    RecordingProgressView(recorder: recorder, stopCondition: stopCondition, compact: true)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+        .safeAreaInset(edge: .bottom) {
+            controls()
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+                .background(Color(.systemBackground))
+        }
+    }
+}
+
+private struct MovementCameraPreview: View {
+    @ObservedObject var capture: VisionHandPoseCapture
+    let taskType: MovementTaskType
+    let side: BodySide
+    let showsDetectionHints: Bool
+
+    var body: some View {
+        if capture.isSessionRunning {
+            CameraPreviewView(session: capture.session)
+                .overlay { HandGuideOverlay(capture: capture, taskType: taskType, side: side) }
+                .overlay { ClippedWarningOverlay(capture: capture) }
+                .overlay(alignment: .bottomLeading) {
+                    if showsDetectionHints {
+                        HandVisibilityHint(capture: capture)
+                            .padding(8)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+                            .padding(6)
+                    }
+                }
+                .overlay(alignment: .bottomTrailing) {
+                    if showsDetectionHints {
+                        HandDistanceHint(capture: capture)
+                            .padding(8)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+                            .padding(6)
+                    }
+                }
+        } else {
+            ProgressView(L10n("Starting camera…"))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+}
+
 struct RecordingProgressView: View {
     @ObservedObject var recorder: TrialRecorder
     let stopCondition: StopCondition
+    var compact = false
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "waveform")
-                .font(.system(size: 48))
-                .symbolEffect(.variableColor.iterative, isActive: recorder.isRecording)
-                .foregroundStyle(.tint)
+        VStack(spacing: compact ? 8 : 16) {
+            if !compact {
+                Image(systemName: "waveform")
+                    .font(.system(size: 48))
+                    .symbolEffect(.variableColor.iterative, isActive: recorder.isRecording)
+                    .foregroundStyle(.tint)
+            }
 
             Text(L10n("Recording…"))
                 .font(.title2.bold())
@@ -875,6 +1016,8 @@ struct MovementTrialResultView: View {
     var onDiscard: () -> Void
     var saveTitle: String = "Save"
     var discardTitle: String = "Discard"
+    var onSaveAndFinish: (() -> Void)?
+    var isSaving = false
 
     var body: some View {
         Form {
@@ -923,8 +1066,17 @@ struct MovementTrialResultView: View {
                     onSave()
                 } label: {
                     Label(L10n(saveTitle), systemImage: "checkmark.circle.fill")
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, minHeight: 54)
                         .font(.headline)
+                }
+                .accessibilityIdentifier("movementSaveContinue")
+                if let onSaveAndFinish {
+                    Button(action: onSaveAndFinish) {
+                        Label(L10n("Save & Finish"), systemImage: "flag.checkered")
+                            .frame(maxWidth: .infinity, minHeight: 54)
+                            .font(.headline)
+                    }
+                    .accessibilityIdentifier("movementSaveFinish")
                 }
                 Button(role: .destructive) {
                     onDiscard()
@@ -932,7 +1084,9 @@ struct MovementTrialResultView: View {
                     Text(L10n(discardTitle))
                         .frame(maxWidth: .infinity)
                 }
+                if isSaving { ProgressView(L10n("Saving…")) }
             }
+            .disabled(isSaving)
         }
         .navigationTitle(L10n("Result"))
         .navigationBarBackButtonHidden(true)
@@ -1027,6 +1181,7 @@ struct RawSignalPlotView: View {
 struct MovementSessionFlowView: View {
 
     @AppStorage("patientID") private var patientID = ""
+    @ObservedObject private var sessionStore = TaskSessionStore.shared
 
     // MARK: - Flow state
 
@@ -1056,6 +1211,13 @@ struct MovementSessionFlowView: View {
     @State private var hasSelectedContext = false
     @State private var currentStepIndex: Int = 0
     @State private var trials: [Trial] = []
+    @State private var captureAttemptID = UUID()
+    @State private var isGoingBack = false
+    @State private var confirmsRecordingBack = false
+    @State private var savedSession: MovementSession?
+    @State private var isSaving = false
+    @State private var showsSaveError = false
+    @State private var hasFinishedSession = false
 
     // MARK: - Per-trial recording machinery
 
@@ -1084,7 +1246,14 @@ struct MovementSessionFlowView: View {
     }
 
     private var usingCamera: Bool { activeSignalSource == .camera }
-    private var usingWatch: Bool   { activeSignalSource == .watchMotion }
+    private var usingWatch: Bool {
+        #if DEBUG && targetEnvironment(simulator)
+        // Exercise the disconnected Watch layout without physical hardware.
+        if currentStep.task.preferredSource == .watchMotion,
+           ProcessInfo.processInfo.arguments.contains("--ui-test-watch-layout") { return true }
+        #endif
+        return activeSignalSource == .watchMotion
+    }
     private var usingSynthetic: Bool { activeSignalSource == .synthetic }
     private var canStartRecording: Bool {
         !usingWatch || PhoneWC.shared.isWatchReachable
@@ -1092,7 +1261,12 @@ struct MovementSessionFlowView: View {
 
     private var flowUsesCamera: Bool {
         #if targetEnvironment(simulator)
+        #if DEBUG
+        // UI tests can open setup; task recording still uses the synthetic source.
+        ProcessInfo.processInfo.arguments.contains("--ui-test-calibration")
+        #else
         false
+        #endif
         #else
         steps.contains { $0.task.preferredSource == .camera }
         #endif
@@ -1117,75 +1291,123 @@ struct MovementSessionFlowView: View {
         }
     }
 
+    private var showsCameraRecordingLayout: Bool {
+        if usingCamera { return true }
+        #if DEBUG && targetEnvironment(simulator)
+        return currentStep.task.preferredSource == .camera
+            && ProcessInfo.processInfo.arguments.contains("--ui-test-recording-layout")
+        #else
+        return false
+        #endif
+    }
+
+    private var cameraCountdown: Int? {
+        if case .countdown = phase { return countdownRemaining }
+        return nil
+    }
+
+    private var showsFlowBack: Bool {
+        switch phase {
+        case .intro, .trialResult, .summary: return false
+        default: return true
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
-                Group {
-                    switch phase {
-                    case .intro:              introView
-                    case .contextSelection:   contextSelectionView
-                    case .instruction:        instructionView
-                    case .countdown:            countdownView
-                    case .recording:            recordingView
-                    case .analyzing:            analyzingView
-                    case .trialResult(let t):   trialResultView(t)
-                    case .summary:              summaryView
+                if showsCameraRecordingLayout, showsPreview {
+                    CameraMovementRecordingView(
+                        taskType: currentStep.task, side: currentStep.side, capture: cameraCapture,
+                        monitor: signalMonitor, recorder: recorder, stopCondition: stopCondition,
+                        countdown: cameraCountdown, progressText: progressText
+                    ) {
+                        if case .recording = phase {
+                            Button(role: .destructive) { recorder?.finish() } label: {
+                                Label(L10n("Stop"), systemImage: "stop.circle.fill")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity, minHeight: 54)
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
                     }
-                }
-
-                // Persistent camera preview: shown during countdown + recording,
-                // exactly like the original single-task view.
-                if usingCamera, let cc = cameraCapture, showsPreview, cc.isSessionRunning {
-                    VStack(spacing: 4) {
-                        CameraPreviewView(session: cc.session)
-                            .frame(height: 160)
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
-                            .overlay { HandGuideOverlay(capture: cc, taskType: currentStep.task, side: currentStep.side) }
-                            .overlay { ClippedWarningOverlay(capture: cc) }
-
-                        // TODO: Replace placeholder with VideoPlayer(videoURL) once assets are ready.
-                        MovementVideoPlaceholder(taskType: currentStep.task)
-                            .frame(height: 80)
-                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-
-                        LiveSignalChart(monitor: signalMonitor)
-                            .frame(height: 40)
-                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+                    .disabled(isGoingBack || isSaving)
+                } else {
+                    Group {
+                        switch phase {
+                        case .intro:              introView
+                        case .contextSelection:   contextSelectionView
+                        case .instruction:        instructionView
+                        case .countdown:          countdownView
+                        case .recording:          recordingView
+                        case .analyzing:          analyzingView
+                        case .trialResult(let t): trialResultView(t)
+                        case .summary:            summaryView
+                        }
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 40)
+                    .disabled(isGoingBack || isSaving)
                 }
             }
             .navigationTitle(L10n("Movement Test"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
+                if showsFlowBack {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            if case .recording = phase {
+                                confirmsRecordingBack = true
+                            } else {
+                                goBackInFlow()
+                            }
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .frame(width: 44, height: 44)
+                        }
+                        .accessibilityLabel(L10n("Back"))
+                        .accessibilityIdentifier("movementSessionBack")
+                        .help(L10n("Back"))
+                        .disabled(isGoingBack || isSaving)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
                         MovementTrendView()
                     } label: {
                         Label(L10n("Trends"), systemImage: "chart.xyaxis.line")
                     }
+                    .disabled(isSaving)
                 }
             }
+        }
+        .alert(L10n("Stop this recording and go back?"), isPresented: $confirmsRecordingBack) {
+            Button(L10n("Keep recording"), role: .cancel) {}
+            Button(L10n("Stop and go back"), role: .destructive) { goBackInFlow() }
+        }
+        .alert(L10n("Recording not saved"), isPresented: $showsSaveError) {
+            Button(L10n("OK"), role: .cancel) {}
+        } message: {
+            Text(L10n("Please try saving again. This recording is still here."))
         }
         .onChange(of: recorder?.isRecording) { oldIsRec, newIsRec in
             print("[PERF] isRecording changed from \(String(describing: oldIsRec)) to \(String(describing: newIsRec))")
             // Only switch to .analyzing when the recorder actually stopped recording.
             // Reassigning a fresh recorder (nil -> false or false -> false) must NOT trigger this.
-            if oldIsRec == true, newIsRec == false, case .recording = phase {
+            if oldIsRec == true, newIsRec == false, case .recording = phase, !isGoingBack {
                 print("[PERF] stopping hardware before .analyzing")
                 // Stop the camera/watch BEFORE the preview overlay disappears. If the
                 // AVCaptureSession is still running when the preview layer is torn down,
                 // the main thread blocks until the session stops (~9 s hang).
                 let cam = self.cameraCapture
                 let watch = self.watchCapture
+                let attemptID = captureAttemptID
                 Task.detached(priority: .userInitiated) {
                     let group = DispatchGroup()
                     if let cam { group.enter(); cam.stop { group.leave() } }
                     if let watch { group.enter(); watch.stop { group.leave() } }
                     group.notify(queue: .main) {
                         Task { @MainActor in
+                            guard self.captureAttemptID == attemptID else { return }
                             self.cameraCapture = nil
                             self.watchCapture = nil
                             if case .recording = self.phase {
@@ -1197,6 +1419,27 @@ struct MovementSessionFlowView: View {
                 }
             }
         }
+        #if DEBUG && targetEnvironment(simulator)
+        .onAppear {
+            let arguments = ProcessInfo.processInfo.arguments
+            if phase == .intro, arguments.contains("--ui-test-save-result"),
+               arguments.contains("--ui-test-session-save") {
+                // Isolated UI fixture; no recording is saved until the test taps Save.
+                context = .preStim
+                hasSelectedContext = true
+                phase = .trialResult(Trial(taskType: .fingerTap, side: .right, source: .synthetic,
+                    stopCondition: .thirtySec,
+                    samples: (0...300).map { .init(t: Double($0) / 10, value: sin(Double($0) / 3)) },
+                    metrics: MovementMetrics(cycleCount: 15, frequencyHz: 2, meanAmplitude: 0.2,
+                        amplitudeDecrementSlope: 0, rhythmCV: 0.1, pauseCount: 0,
+                        onsetLatencySec: 0.2, qualityIndex: 0.8)))
+            } else if phase == .intro, arguments.contains("--ui-test-watch-layout") {
+                context = .preStim
+                hasSelectedContext = true
+                startInstruction(step: 4)
+            }
+        }
+        #endif
         .onDisappear { cancelEverything() }
         .sheet(isPresented: $isCalibrating) {
             HandCalibrationView { isCalibrating = false }
@@ -1206,58 +1449,80 @@ struct MovementSessionFlowView: View {
     // MARK: - Intro
 
     private var introView: some View {
-        VStack(spacing: 28) {
-            Spacer()
-            Image(systemName: "hand.tap.fill")
-                .font(.system(size: 72))
-                .foregroundStyle(.tint)
+        ScrollView {
+            VStack(spacing: 28) {
+                Image(systemName: "hand.tap.fill")
+                    .font(.system(size: 72))
+                    .foregroundStyle(.tint)
 
-            Text(L10n("Movement Session"))
-                .font(.largeTitle.bold())
+                Text(L10n("Movement Session"))
+                    .font(.largeTitle.bold())
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
 
-            Text(L10n("We will guide you through 6 short hand recordings. It takes about 2 minutes."))
-                .font(.title3)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 32)
+                Text(L10n("We will guide you through 6 short hand recordings. It takes about 2 minutes."))
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
 
-            VStack(alignment: .leading, spacing: 12) {
-                bullet(L10n("Tap index finger on thumb"))
-                bullet(L10n("Open and close your fist"))
-                bullet(L10n("Rotate forearm palm-up / palm-down"))
-            }
-            .padding(.horizontal, 32)
+                if !trials.isEmpty {
+                    Text(savedRecordingCountText)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
-            if flowUsesCamera {
-                if HandCalibrationStore.shared.isCalibrated {
-                    HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                        Text(L10n("Hand scale calibrated"))
-                            .foregroundStyle(.green)
-                        Spacer()
-                        Button(L10n("Recalibrate")) {
-                            isCalibrating = true
+                #if DEBUG && targetEnvironment(simulator)
+                if ProcessInfo.processInfo.arguments.contains("--ui-test-session-save") {
+                    Text("sessions=\(sessionStore.sessions.count);trials=\(sessionStore.sessions.reduce(0) { $0 + $1.trials.count })")
+                        .font(.caption2)
+                        .accessibilityIdentifier("movementSavedTestCounts")
+                }
+                #endif
+
+                VStack(alignment: .leading, spacing: 12) {
+                    bullet(L10n("Tap index finger on thumb"))
+                    bullet(L10n("Open and close your fist"))
+                    bullet(L10n("Rotate forearm palm-up / palm-down"))
+                }
+
+                if flowUsesCamera {
+                    if HandCalibrationStore.shared.isCalibrated {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                            Text(L10n("Hand scale calibrated"))
+                                .foregroundStyle(.green)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer()
+                            Button(L10n("Recalibrate")) {
+                                isCalibrating = true
+                            }
                         }
+                    } else {
+                        Button {
+                            isCalibrating = true
+                        } label: {
+                            Label(L10n("Calibrate hand size"), systemImage: "hand.raised")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
                     }
-                    .padding(.horizontal, 32)
-                } else {
-                    Button {
-                        isCalibrating = true
-                    } label: {
-                        Label(L10n("Calibrate hand size"), systemImage: "hand.raised")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .padding(.horizontal, 32)
+                    Text(L10n("For each new set of tests, we recommend recalibrating."))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
-
-            Spacer()
-
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 32)
+            .padding(.vertical, 24)
+        }
+        .safeAreaInset(edge: .bottom) {
             Button {
-                hasSelectedContext = false
+                hasSelectedContext = !trials.isEmpty
                 phase = .contextSelection
             } label: {
                 Label(L10n("Start"), systemImage: "arrow.right.circle.fill")
@@ -1267,7 +1532,9 @@ struct MovementSessionFlowView: View {
             }
             .buttonStyle(.borderedProminent)
             .padding(.horizontal, 32)
-            .padding(.bottom, 24)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .background(Color(.systemBackground))
         }
     }
 
@@ -1277,6 +1544,7 @@ struct MovementSessionFlowView: View {
                 .foregroundStyle(.green)
             Text(L10n(text))
                 .font(.body)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -1321,6 +1589,8 @@ struct MovementSessionFlowView: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    // Keep the session-wide tag consistent with recordings already accepted.
+                    .disabled(!trials.isEmpty && context != c)
                 }
             }
             .padding(.horizontal, 24)
@@ -1363,6 +1633,13 @@ struct MovementSessionFlowView: View {
     // MARK: - Instruction
 
     private var instructionView: some View {
+        ScrollView {
+            instructionContent
+                .padding(.top, 24)
+        }
+    }
+
+    private var instructionContent: some View {
         let step = currentStep
         return VStack(spacing: 24) {
             Spacer()
@@ -1370,6 +1647,15 @@ struct MovementSessionFlowView: View {
             Text(progressText)
                 .font(.headline)
                 .foregroundStyle(.secondary)
+
+            if !trials.isEmpty {
+                Text(savedRecordingCountText)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 32)
+            }
 
             Image(systemName: taskIcon(step.task))
                 .font(.system(size: 64))
@@ -1452,6 +1738,15 @@ struct MovementSessionFlowView: View {
                 }
                 .buttonStyle(.bordered)
                 .tint(.secondary)
+                .accessibilityIdentifier("movementSkipMeasurement")
+
+                if !trials.isEmpty {
+                    Button { finishAcceptedFlow() } label: {
+                        Label(L10n("Finish for now"), systemImage: "flag.checkered")
+                            .frame(maxWidth: .infinity, minHeight: 54)
+                    }
+                    .accessibilityIdentifier("movementFinishForNow")
+                }
             }
             .padding(.horizontal, 32)
             .padding(.bottom, 24)
@@ -1461,7 +1756,7 @@ struct MovementSessionFlowView: View {
 
     private func skipStep() {
         if isLastStep {
-            phase = .summary
+            finishAcceptedFlow()
         } else {
             currentStepIndex += 1
             startInstruction(step: currentStepIndex)
@@ -1576,23 +1871,52 @@ struct MovementSessionFlowView: View {
 
             MovementTrialResultView(
                 trial: trial,
-                onSave: { acceptTrial(trial) },
+                onSave: { acceptTrial(trial, finish: isLastStep) },
                 onDiscard: { retakeTrial() },
-                saveTitle: isLastStep ? "Use & Finish" : "Use & Continue",
-                discardTitle: "Retake"
+                saveTitle: isLastStep ? "Save & Finish" : "Save & Continue",
+                discardTitle: "Retake",
+                onSaveAndFinish: isLastStep ? nil : { acceptTrial(trial, finish: true) },
+                isSaving: isSaving
             )
         }
     }
 
-    private func acceptTrial(_ trial: Trial) {
-        trials.append(trial)
-        cleanupAfterTrial()
-        if isLastStep {
-            phase = .summary
-        } else {
-            currentStepIndex += 1
-            startInstruction(step: currentStepIndex)
+    private func acceptTrial(_ trial: Trial, finish: Bool) {
+        guard !isSaving else { return }
+        var session = savedSession ?? MovementSession(
+            patientId: patientID.isEmpty ? "unset" : patientID,
+            date: trial.startedAt, stimulationContext: context)
+        session.accept(trial)
+        isSaving = true
+        sessionStore.saveAcceptedSession(session) { result in
+            isSaving = false
+            switch result {
+            case .success:
+                savedSession = session
+                trials = session.trials
+                // Only advance the result that initiated this save.
+                guard case .trialResult(let current) = phase, current.id == trial.id else { return }
+                cleanupAfterTrial()
+                if finish {
+                    finishAcceptedFlow()
+                } else {
+                    currentStepIndex += 1
+                    startInstruction(step: currentStepIndex)
+                }
+            case .failure:
+                phase = .trialResult(trial)
+                showsSaveError = true
+            }
         }
+    }
+
+    private func finishAcceptedFlow() {
+        guard !isSaving else { return }
+        if let savedSession, !hasFinishedSession {
+            sessionStore.finishAcceptedSession(savedSession)
+            hasFinishedSession = true
+        }
+        phase = .summary
     }
 
     private func retakeTrial() {
@@ -1603,67 +1927,115 @@ struct MovementSessionFlowView: View {
     // MARK: - Summary
 
     private var summaryView: some View {
-        VStack(spacing: 20) {
-            Spacer()
+        ScrollView {
+            VStack(spacing: 20) {
+                Image(systemName: trials.isEmpty ? "minus.circle" : "checkmark.circle.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(trials.isEmpty ? Color.secondary : Color.green)
 
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(.green)
+                Text(L10n(trials.isEmpty ? "No recordings saved" : "Recordings saved"))
+                    .font(.title2.bold())
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("movementSavedSummary")
 
-            Text(L10n("All done!"))
-                .font(.largeTitle.bold())
+                if let savedSession {
+                    Text(savedRecordingCountText)
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(L10n(savedSession.completionLabelKey))
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("movementSavedSetStatus")
 
-            Text(summaryRecordingCountText)
-                .font(.title3)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
+                    Text(contextTitle(savedSession.stimulationContext))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
 
-            List {
-                Section("Recordings") {
                     ForEach(trials) { trial in
-                        HStack {
+                        VStack(alignment: .leading, spacing: 4) {
                             Text(trial.taskType.displayName)
-                            Spacer()
+                                .font(.headline)
+                                .fixedSize(horizontal: false, vertical: true)
                             Text(trial.side.displayName)
+                                .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                }
-
-                Section {
-                    LabeledContent(L10n("Context"), value: contextTitle(context))
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .frame(height: 260)
-
-            Spacer()
-
-            VStack(spacing: 12) {
-                Button {
-                    saveSession()
-                } label: {
-                    Label(L10n("Save Session"), systemImage: "checkmark.circle.fill")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(trials.isEmpty)
-
-                Button(role: .destructive) {
-                    resetFlow()
-                } label: {
-                    Text(trials.isEmpty ? L10n("Start over") : L10n("Discard"))
-                        .frame(maxWidth: .infinity)
                 }
             }
             .padding(.horizontal, 32)
-            .padding(.bottom, 24)
+            .padding(.vertical, 24)
+        }
+        .safeAreaInset(edge: .bottom) {
+            Button { resetFlow() } label: {
+                Label(L10n("Done"), systemImage: "checkmark")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 54)
+            }
+            .buttonStyle(.borderedProminent)
+            .accessibilityIdentifier("movementSummaryDone")
+            .padding(.horizontal, 32)
+            .padding(.vertical, 12)
+            .background(Color(.systemBackground))
         }
     }
 
     // MARK: - Flow navigation
+
+    private func goBackInFlow() {
+        guard showsFlowBack, !isGoingBack, !isSaving else { return }
+        let destination: FlowPhase
+        switch phase {
+        case .contextSelection:
+            if trials.isEmpty {
+                context = .unspecified
+                hasSelectedContext = false
+            }
+            destination = .intro
+        case .instruction(let step):
+            destination = step == 0 ? .contextSelection : .instruction(step: step - 1)
+        default:
+            destination = .instruction(step: currentStepIndex)
+        }
+
+        isGoingBack = true
+        captureAttemptID = UUID()
+        let attemptID = captureAttemptID
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+        recorder?.onComplete = nil
+        recorder?.finish()
+        syntheticSource?.stop()
+        cameraCapture?.onSample = nil
+        watchCapture?.onSample = nil
+        // Keep the live preview attached until its capture session has actually stopped.
+        let group = DispatchGroup()
+        if let cameraCapture {
+            group.enter()
+            cameraCapture.stop { group.leave() }
+        }
+        if let watchCapture {
+            group.enter()
+            watchCapture.stop { group.leave() }
+        }
+        group.notify(queue: .main) {
+            guard captureAttemptID == attemptID else { return }
+            cameraCapture = nil
+            watchCapture = nil
+            syntheticSource = nil
+            recorder = nil
+            signalMonitor.reset()
+            cameraError = nil
+            if case .instruction(let step) = destination { currentStepIndex = step }
+            phase = destination
+            isGoingBack = false
+        }
+    }
 
     private func startInstruction(step: Int) {
         currentStepIndex = step
@@ -1671,6 +2043,8 @@ struct MovementSessionFlowView: View {
     }
 
     private func startCountdown(step: Int) {
+        captureAttemptID = UUID()
+        let attemptID = captureAttemptID
         cameraError = nil
         signalMonitor.reset()
 
@@ -1681,6 +2055,7 @@ struct MovementSessionFlowView: View {
                 signalMonitor.ingest(value: value, at: time)
             }
             capture.start { result in
+                guard captureAttemptID == attemptID else { return }
                 switch result {
                 case .success:
                     beginCountdown(step: step)
@@ -1700,6 +2075,7 @@ struct MovementSessionFlowView: View {
                 signalMonitor.ingest(value: value, at: time)
             }
             capture.start(taskType: currentStep.task) { result in
+                guard captureAttemptID == attemptID else { capture.stop(); return }
                 if case .failure(let error) = result {
                     cameraError = error.localizedDescription
                     cleanupAfterTrial()
@@ -1735,6 +2111,7 @@ struct MovementSessionFlowView: View {
 
     private func startRecording(step: Int) {
         let current = steps[step]
+        let attemptID = captureAttemptID
         let r = TrialRecorder(taskType: current.task,
                               side: current.side,
                               source: activeSignalSource,
@@ -1750,6 +2127,7 @@ struct MovementSessionFlowView: View {
 
             // Hardware was already stopped when .analyzing began.
             Task { @MainActor in
+                guard self.captureAttemptID == attemptID else { return }
                 self.phase = .trialResult(trial)
             }
             EventStore.shared.append(
@@ -1792,6 +2170,8 @@ struct MovementSessionFlowView: View {
     }
 
     private func cleanupAfterTrial() {
+        captureAttemptID = UUID()
+        isGoingBack = false
         countdownTimer?.invalidate()
         countdownTimer = nil
         cameraCapture?.stop()
@@ -1807,30 +2187,21 @@ struct MovementSessionFlowView: View {
 
     private func cancelEverything() {
         cleanupAfterTrial()
+        if case .trialResult = phase { return }
+        if case .summary = phase { resetFlow(); return }
         hasSelectedContext = false
         phase = .intro
     }
 
-    private var summaryRecordingCountText: String {
-        if trials.count == 1 {
-            return L10n("1 recording is ready to be saved as one session.")
-        }
-
-        return String(format: L10n("%d recordings are ready to be saved as one session."), trials.count)
-    }
-
-    private func saveSession() {
-        let session = MovementSession(
-            patientId: patientID.isEmpty ? "unset" : patientID,
-            stimulationContext: context,
-            trials: trials
-        )
-        TaskSessionStore.shared.add(session)
-        resetFlow()
+    private var savedRecordingCountText: String {
+        String(format: L10n("Saved recordings: %d / %d"), trials.count, steps.count)
     }
 
     private func resetFlow() {
         trials.removeAll()
+        savedSession = nil
+        hasFinishedSession = false
+        showsSaveError = false
         currentStepIndex = 0
         context = .unspecified
         hasSelectedContext = false
@@ -1868,7 +2239,7 @@ private struct MovementVideoPlaceholder: View {
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "play.rectangle.fill")
-                .font(.system(size: 40))
+                .font(.system(size: 24))
                 .foregroundStyle(.secondary.opacity(0.6))
             Text(String(format: L10n("Instruction video for %@"), taskType.displayName))
                 .font(.callout)
@@ -1877,115 +2248,313 @@ private struct MovementVideoPlaceholder: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.horizontal, 8)
+        .frame(maxWidth: .infinity)
     }
 }
 
 // MARK: - One-time hand scale calibration
 
 private struct HandCalibrationView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
     @StateObject private var capture = VisionHandPoseCapture()
-    @State private var progress: Double = 0
-    @State private var samples: [Double] = []
-    @State private var isCollecting = true
+    @State private var gate = HandCalibrationQualityGate()
+    @State private var showsIntroduction = true
     @State private var isActive = true
-    @State private var error: String?
+    @State private var isStarting = false
+    @State private var isFinishing = false
+    @State private var cameraPaused = false
+    @State private var cameraError: VisionHandPoseCapture.CaptureError?
+    private let ticker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
     let onComplete: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        ScrollView {
+            VStack(spacing: 20) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(L10n("Hand calibration"))
+                        .font(.title2.bold())
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 12)
+                    Button(L10n("Cancel")) { close(save: false) }
+                        .frame(minHeight: 44)
+                        .disabled(isFinishing)
+                }
 
-            Text(L10n("Hand calibration"))
-                .font(.largeTitle.bold())
-            Text(L10n("Hold your hand steady in front of the camera for 2 seconds."))
-                .font(.headline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-
-            if let error {
-                Text(L10n(error))
-                    .foregroundStyle(.red)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-            } else if capture.isSessionRunning {
-                CameraPreviewView(session: capture.session)
-                    .frame(height: 200)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-                    .overlay {
-                        if capture.isHandVisible {
-                            RoundedRectangle(cornerRadius: 14)
-                                .strokeBorder(Color.green, lineWidth: 4)
-                        }
+                if showsIntroduction {
+                    Image(systemName: "camera.viewfinder")
+                        .font(.system(size: 88))
+                        .foregroundStyle(.tint)
+                        .accessibilityHidden(true)
+                        .padding(.vertical, 24)
+                    instruction("A quick camera check before your tests.")
+                    instruction("Keep your phone still. Show your open hand.")
+                    Text(L10n("Either hand is fine"))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else if let cameraError {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 56))
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                    instruction(cameraErrorTitle(cameraError))
+                    if case .permissionDenied = cameraError {
+                        instruction("Allow camera access in Settings.")
+                    }
+                } else if gate.phase == .complete && !capture.isSessionRunning {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 72))
+                        .foregroundStyle(.green)
+                        .accessibilityHidden(true)
+                    Text(L10n("Hand calibration complete"))
+                        .font(.title2.bold())
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Label(L10n("Camera check passed"), systemImage: "checkmark.shield")
+                        .foregroundStyle(.green)
+                    instruction("Keep the same hand distance during your tests.")
+                } else {
+                    instruction("Open your hand inside the guide. Face your palm toward the camera.")
+                    if capture.isSessionRunning {
+                        CalibrationCameraPreview(session: capture.session)
+                            .frame(width: 180, height: 320)
+                            .background(Color.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay {
+                                CalibrationPositionGuide(isReady: gate.guidance == .ready)
+                                    .allowsHitTesting(false)
+                            }
+                            .accessibilityLabel(L10n("Hand camera preview"))
+                    } else {
+                        ProgressView(L10n("Starting camera…"))
+                            .frame(height: 120)
                     }
 
-                Text(isCollecting ? L10n("Calibrating…") : L10n("Done"))
-                    .font(.title2.bold())
-
-                ProgressView(value: progress, total: 2.0)
-                    .padding(.horizontal)
-            } else {
-                ProgressView("Starting camera…")
+                    if gate.phase == .countdown {
+                        Text("\(gate.countdown)")
+                            .font(.system(size: 56, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                            .frame(height: 72)
+                            .accessibilityLabel(String(format: L10n("Starting in %d"), gate.countdown))
+                        instruction("Keep your hand still")
+                    } else if gate.phase == .collecting {
+                        Label(L10n("Checking camera setup…"), systemImage: "camera")
+                            .font(.headline)
+                        ProgressView(value: gate.progress)
+                        instruction("Keep your hand still")
+                    } else if gate.phase == .retry {
+                        Label(L10n("Let's try again"), systemImage: "exclamationmark.circle")
+                            .font(.headline)
+                            .foregroundStyle(.orange)
+                        instruction(guidanceText)
+                    } else if gate.phase == .complete {
+                        ProgressView(L10n("Camera check passed"))
+                    } else {
+                        Label(L10n(guidanceText), systemImage: gate.isReady ? "checkmark.circle" : "viewfinder")
+                            .font(.headline)
+                            .foregroundStyle(gate.isReady ? Color.green : Color.primary)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity)
+            .padding(20)
         }
-        .padding()
-        .onAppear(perform: start)
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 8) {
+                if showsIntroduction {
+                    primaryButton("Continue", icon: "arrow.right") {
+                        showsIntroduction = false
+                        startCamera()
+                    }
+                } else if let cameraError {
+                    if case .permissionDenied = cameraError {
+                        primaryButton("Open Settings", icon: "gearshape") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                        }
+                    } else {
+                        primaryButton("Try again", icon: "arrow.counterclockwise") { startCamera() }
+                    }
+                } else if gate.phase == .complete {
+                    primaryButton("Continue", icon: "arrow.right", enabled: !capture.isSessionRunning) {
+                        close(save: true)
+                    }
+                    Button(L10n("Try again")) { retry() }
+                        .frame(minHeight: 44)
+                        .disabled(capture.isSessionRunning || isFinishing)
+                } else if gate.phase == .retry {
+                    primaryButton("Try again", icon: "arrow.counterclockwise") { retry() }
+                } else {
+                    primaryButton("Start check", icon: "camera", enabled: gate.isReady && capture.isSessionRunning) {
+                        gate.start(frame: capture.calibrationFrame, now: ProcessInfo.processInfo.systemUptime)
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .background(.regularMaterial)
+        }
+        .onReceive(capture.$calibrationFrame) { frame in updateQuality(frame: frame) }
+        .onReceive(ticker) { _ in updateQuality(frame: capture.calibrationFrame) }
+        .onChange(of: gate.phase) { _, phase in
+            if phase == .complete { capture.stop() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard !showsIntroduction, gate.phase != .complete, !isFinishing else { return }
+            if phase != .active, capture.isSessionRunning {
+                cameraPaused = true
+                gate.reset()
+                capture.stop()
+            } else if phase == .active, cameraPaused || cameraError != nil {
+                cameraPaused = false
+                startCamera()
+            }
+        }
         .onDisappear {
             isActive = false
             capture.stop()
         }
     }
 
-    private func start() {
+    private var guidanceText: String {
+        switch gate.guidance {
+        case .showHand: return "Show your open hand"
+        case .wholeHand: return "Keep your wrist and all fingers visible"
+        case .openHand: return "Open your hand. Show all five fingers."
+        case .faceCamera: return "Face your palm toward the camera"
+        case .insideGuide: return "Keep your whole hand inside the guide"
+        case .closer: return "Move your hand closer"
+        case .farther: return "Move your hand farther away"
+        case .holdStill: return "Keep your hand still"
+        case .ready: return "Hand in position"
+        case .retry: return "Keep your phone and hand still, then try again."
+        }
+    }
+
+    private func instruction(_ key: String) -> some View {
+        Text(L10n(key))
+            .font(.body)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity)
+    }
+
+    private func primaryButton(_ key: String, icon: String, enabled: Bool = true,
+                               action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(L10n(key), systemImage: icon)
+                .font(.headline)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, minHeight: 54)
+        }
+        .buttonStyle(.borderedProminent)
+        .disabled(!enabled || isFinishing)
+    }
+
+    private func cameraErrorTitle(_ error: VisionHandPoseCapture.CaptureError) -> String {
+        switch error {
+        case .permissionDenied: return "Camera access is off"
+        case .noCamera: return "Camera unavailable"
+        }
+    }
+
+    private func startCamera() {
+        guard isActive, !isStarting, !isFinishing else { return }
+        isStarting = true
+        cameraError = nil
+        gate.reset()
+        capture.tracksCalibration = true
         capture.start(taskType: .fingerTap) { [self] result in
-            guard isActive else { return }
+            isStarting = false
+            guard isActive, !isFinishing else { capture.stop(); return }
             switch result {
             case .success:
-                collectForTwoSeconds()
+                if scenePhase != .active {
+                    cameraPaused = true
+                    capture.stop()
+                }
             case .failure(let err):
-                error = err.localizedDescription
+                cameraError = err
             }
         }
     }
 
-    private func collectForTwoSeconds() {
-        let start = ProcessInfo.processInfo.systemUptime
-        let timer = Timer(timeInterval: 0.05, repeats: true) { [weak capture] t in
-            guard isActive, let capture else {
-                t.invalidate()
-                return
-            }
-            let elapsed = ProcessInfo.processInfo.systemUptime - start
-            self.progress = min(elapsed, 2.0)
-
-            if capture.isHandVisible, capture.handScale > 0.005 {
-                self.samples.append(capture.handScale)
-            }
-
-            guard elapsed >= 2.0 else { return }
-            t.invalidate()
-            finish()
-        }
-        RunLoop.main.add(timer, forMode: .common)
+    private func updateQuality(frame: HandCalibrationFrame?) {
+        guard isActive, !isFinishing, !showsIntroduction, cameraError == nil,
+              capture.isSessionRunning, scenePhase == .active else { return }
+        gate.update(frame: frame, now: ProcessInfo.processInfo.systemUptime)
     }
 
-    private func finish() {
-        guard isActive else { return }
-        let avg = samples.isEmpty ? 0 : samples.reduce(0, +) / Double(samples.count)
-        if avg > 0.005 {
-            HandCalibrationStore.shared.set(scale: avg)
+    private func retry() {
+        gate.reset()
+        if !capture.isSessionRunning { startCamera() }
+    }
+
+    private func close(save: Bool) {
+        guard isActive, !isFinishing else { return }
+        if save {
+            guard gate.phase == .complete, let result = gate.result else { return }
+            HandCalibrationStore.shared.set(scale: result.scale)
         }
-        capture.stop()
-        isCollecting = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [self] in
+        isFinishing = true
+        capture.stop { [self] in
             guard isActive else { return }
             onComplete()
         }
     }
+}
+
+/// The same normalized target zone is used by the pose check and the portrait preview.
+struct CalibrationPositionGuide: View {
+    let isReady: Bool
+
+    var body: some View {
+        GeometryReader { geometry in
+            let zone = HandCalibrationPose.guideRect
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(isReady ? Color.green : Color.orange,
+                              style: StrokeStyle(lineWidth: 2.5, dash: [7, 6]))
+                .frame(width: geometry.size.width * zone.width, height: geometry.size.height * zone.height)
+                .position(x: geometry.size.width * zone.midX, y: geometry.size.height * (1 - zone.midY))
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// Shows the complete portrait feed for calibration without changing task previews.
+private struct CalibrationCameraPreview: UIViewRepresentable {
+    let session: AVCaptureSession
+
+    func makeUIView(context: Context) -> CameraPreviewView.PreviewUIView {
+        let view = CameraPreviewView.PreviewUIView()
+        view.previewLayer.session = session
+        view.previewLayer.videoGravity = .resizeAspect
+        if let connection = view.previewLayer.connection {
+            if #available(iOS 17.0, *) {
+                connection.videoRotationAngle = 90
+            } else {
+                connection.videoOrientation = .portrait
+            }
+            if connection.isVideoMirroringSupported {
+                connection.automaticallyAdjustsVideoMirroring = false
+                connection.isVideoMirrored = true
+            }
+        }
+        return view
+    }
+
+    func updateUIView(_ uiView: CameraPreviewView.PreviewUIView, context: Context) {}
 }
 
 #Preview {

@@ -53,6 +53,10 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
     /// be attached/removed while the session is in a known running state.
     @Published private(set) var isSessionRunning = false
 
+    /// Opt-in setup observations; movement recording and its scalar stay unchanged.
+    var tracksCalibration = false
+    @Published private(set) var calibrationFrame: HandCalibrationFrame?
+
     /// One normalized scalar per processed frame. Called on the main queue.
     /// `time` is in the host/monotonic clock (comparable to systemUptime).
     var onSample: ((_ value: Double, _ time: Double) -> Void)?
@@ -258,7 +262,14 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
         do {
             try handler.perform([handPoseRequest])
         } catch {
+            publishCalibrationFrame(nil, at: time)
             return
+        }
+
+        if tracksCalibration, let image = CMSampleBufferGetImageBuffer(sampleBuffer) {
+            publishCalibrationFrame(handPoseRequest.results?.first, at: time,
+                                    imageAspectRatio: Double(CVPixelBufferGetWidth(image))
+                                        / Double(CVPixelBufferGetHeight(image)))
         }
 
         guard let observation = handPoseRequest.results?.first else {
@@ -373,9 +384,254 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
         return p.location
     }
 
+    private func publishCalibrationFrame(_ observation: VNHumanHandPoseObservation?,
+                                         at time: Double, imageAspectRatio: Double = 9.0 / 16.0) {
+        guard tracksCalibration else { return }
+        var frame = HandCalibrationFrame(timestamp: time, scale: 0,
+                                         isDetected: false, isFullyVisible: false,
+                                         isOpenHand: false, isFacingCamera: false, isInsideGuide: false)
+        if let observation,
+           let wrist = point(observation, .wrist),
+           let middleMCP = point(observation, .middleMCP) {
+            // Calibration needs reliable complete finger chains, not just inferred tips.
+            func finger(_ names: [VNHumanHandPoseObservation.JointName]) -> HandCalibrationPose.Finger? {
+                let positions = names.compactMap { name -> CGPoint? in
+                    guard let joint = try? observation.recognizedPoint(name),
+                          joint.confidence >= 0.5 else { return nil }
+                    return joint.location
+                }
+                guard positions.count == 4 else { return nil }
+                return .init(base: positions[0], middle: positions[1], distal: positions[2], tip: positions[3])
+            }
+            var pose: HandCalibrationPose?
+            if let wristPoint = try? observation.recognizedPoint(.wrist), wristPoint.confidence >= 0.5,
+               let thumb = finger([.thumbCMC, .thumbMP, .thumbIP, .thumbTip]),
+               let index = finger([.indexMCP, .indexPIP, .indexDIP, .indexTip]),
+               let middle = finger([.middleMCP, .middlePIP, .middleDIP, .middleTip]),
+               let ring = finger([.ringMCP, .ringPIP, .ringDIP, .ringTip]),
+               let little = finger([.littleMCP, .littlePIP, .littleDIP, .littleTip]) {
+                pose = HandCalibrationPose(wrist: wristPoint.location, thumb: thumb,
+                                           fingers: [index, middle, ring, little],
+                                           imageAspectRatio: imageAspectRatio)
+            }
+            frame = HandCalibrationFrame(timestamp: time,
+                                         scale: distance(wrist, middleMCP),
+                                         isDetected: true, isFullyVisible: pose?.isFullyVisible ?? false,
+                                         isOpenHand: pose?.hasOpenFingers ?? false,
+                                         isFacingCamera: pose?.isFacingCamera ?? false,
+                                         isInsideGuide: pose?.isInsideGuide ?? false)
+        }
+        let observationFrame = frame
+        DispatchQueue.main.async { [weak self] in self?.calibrationFrame = observationFrame }
+    }
+
     private func distance(_ a: CGPoint, _ b: CGPoint) -> Double {
         let dx = a.x - b.x, dy = a.y - b.y
         return (dx * dx + dy * dy).squareRoot()
+    }
+}
+
+// MARK: - Calibration quality gate
+
+struct HandCalibrationPose {
+    struct Finger {
+        let base: CGPoint
+        let middle: CGPoint
+        let distal: CGPoint
+        let tip: CGPoint
+        var points: [CGPoint] { [base, middle, distal, tip] }
+    }
+
+    let wrist: CGPoint
+    let thumb: Finger
+    /// Index, middle, ring, little, in that order.
+    let fingers: [Finger]
+    let imageAspectRatio: Double
+
+    static let guideRect = CGRect(x: 0.12, y: 0.08, width: 0.76, height: 0.84)
+    private var points: [CGPoint] { [wrist] + thumb.points + fingers.flatMap(\.points) }
+    private var isValid: Bool {
+        fingers.count == 4 && imageAspectRatio.isFinite && imageAspectRatio > 0
+            && points.allSatisfy { $0.x.isFinite && $0.y.isFinite }
+    }
+    var isFullyVisible: Bool {
+        isValid && points.allSatisfy { $0.x >= 0.04 && $0.x <= 0.96 && $0.y >= 0.04 && $0.y <= 0.96 }
+    }
+    var isInsideGuide: Bool { isValid && points.allSatisfy { Self.guideRect.contains($0) } }
+    private var palmScale: Double { isValid ? distance(wrist, fingers[1].base) : 0 }
+
+    var isFacingCamera: Bool {
+        guard isValid, palmScale > 0 else { return false }
+        // A narrow projected palm indicates an edge-on view. This cannot distinguish palm from back.
+        let width = distance(fingers[0].base, fingers[3].base)
+        let axisX = (fingers[1].base.x - wrist.x) * imageAspectRatio
+        let axisY = fingers[1].base.y - wrist.y
+        let acrossX = (fingers[0].base.x - fingers[3].base.x) * imageAspectRatio
+        let acrossY = fingers[0].base.y - fingers[3].base.y
+        let perpendicularWidth = abs(axisX * acrossY - axisY * acrossX) / palmScale
+        return width / palmScale >= 0.55 && perpendicularWidth / palmScale >= 0.50
+    }
+
+    var hasOpenFingers: Bool {
+        guard isValid, palmScale > 0 else { return false }
+        return fingers.allSatisfy { finger in
+            straightness(finger) >= 0.80
+                && distance(finger.base, finger.tip) / palmScale >= 0.65
+                && distance(wrist, finger.tip) - distance(wrist, finger.base) >= 0.45 * palmScale
+        } && straightness(thumb) >= 0.75
+            && distance(thumb.base, thumb.tip) / palmScale >= 0.45
+            && distance(thumb.tip, fingers[0].base) / palmScale >= 0.55
+    }
+
+    private func straightness(_ finger: Finger) -> Double {
+        let length = distance(finger.base, finger.middle) + distance(finger.middle, finger.distal)
+            + distance(finger.distal, finger.tip)
+        return length > 0 ? distance(finger.base, finger.tip) / length : 0
+    }
+
+    private func distance(_ a: CGPoint, _ b: CGPoint) -> Double {
+        // Vision normalizes x and y separately; restore pixel proportions for shape checks.
+        hypot((a.x - b.x) * imageAspectRatio, a.y - b.y)
+    }
+}
+
+struct HandCalibrationFrame: Equatable {
+    let timestamp: TimeInterval
+    let scale: Double
+    let isDetected: Bool
+    let isFullyVisible: Bool
+    let isOpenHand: Bool
+    let isFacingCamera: Bool
+    let isInsideGuide: Bool
+}
+
+/// Camera-setup checks, not a score of the patient's movement ability.
+struct HandCalibrationQualityGate {
+    enum Phase: Equatable { case positioning, countdown, collecting, retry, complete }
+    enum Guidance: Equatable {
+        case showHand, wholeHand, openHand, faceCamera, insideGuide, closer, farther, holdStill, ready, retry
+    }
+
+    struct Result {
+        let scale: Double
+        let sampleCount: Int
+        let relativeVariation: Double
+    }
+
+    private(set) var phase: Phase = .positioning
+    private(set) var guidance: Guidance = .showHand
+    private(set) var result: Result?
+    private(set) var progress: Double = 0
+    private(set) var countdown = 3
+
+    // Match the existing positioning guide. These are setup tolerances, not clinical cutoffs.
+    static let scaleRange = 0.06...0.20
+    static let maximumFrameAge = 0.35
+    private static let maximumFrameGap = 0.25
+    private static let maximumVariation = 0.10
+    private var positioningFrames: [HandCalibrationFrame] = []
+    private var samples: [HandCalibrationFrame] = []
+    private var lastTimestamp: TimeInterval?
+    private var phaseStartedAt: TimeInterval = 0
+    private var referenceScale: Double = 0
+
+    var isReady: Bool { phase == .positioning && guidance == .ready }
+
+    mutating func update(frame: HandCalibrationFrame?, now: TimeInterval) {
+        guard phase != .complete, phase != .retry else { return }
+        guard now.isFinite, let frame, frame.timestamp.isFinite,
+              now >= frame.timestamp, now - frame.timestamp <= Self.maximumFrameAge,
+              frame.isDetected, frame.scale.isFinite, frame.scale > 0 else {
+            reject(.showHand)
+            return
+        }
+        guard frame.isFullyVisible else { reject(.wholeHand); return }
+        guard frame.scale >= Self.scaleRange.lowerBound else { reject(.closer); return }
+        guard frame.scale <= Self.scaleRange.upperBound else { reject(.farther); return }
+        guard frame.isFacingCamera else { reject(.faceCamera); return }
+        guard frame.isOpenHand else { reject(.openHand); return }
+        guard frame.isInsideGuide else { reject(.insideGuide); return }
+        if let lastTimestamp {
+            guard frame.timestamp >= lastTimestamp else { reject(.showHand); return }
+            if frame.timestamp - lastTimestamp > Self.maximumFrameGap {
+                reject(.holdStill)
+                if phase == .retry { return }
+            }
+        }
+        let isNewFrame = frame.timestamp != lastTimestamp
+        if isNewFrame { lastTimestamp = frame.timestamp }
+
+        switch phase {
+        case .positioning:
+            if isNewFrame { positioningFrames.append(frame) }
+            positioningFrames.removeAll { frame.timestamp - $0.timestamp > 1.0 }
+            let span = frame.timestamp - (positioningFrames.first?.timestamp ?? frame.timestamp)
+            let quality = statistics(positioningFrames)
+            guidance = positioningFrames.count >= 8 && span >= 0.8
+                && quality.variation <= Self.maximumVariation ? .ready : .holdStill
+        case .countdown:
+            guard abs(frame.scale - referenceScale) / referenceScale <= 0.25 else {
+                reject(.holdStill)
+                return
+            }
+            countdown = max(1, 3 - Int(max(0, now - phaseStartedAt)))
+            if now - phaseStartedAt >= 3 {
+                phase = .collecting
+                phaseStartedAt = now
+                samples = []
+                if isNewFrame, frame.timestamp >= now { samples.append(frame) }
+            }
+        case .collecting:
+            guard abs(frame.scale - referenceScale) / referenceScale <= 0.25 else {
+                reject(.holdStill)
+                return
+            }
+            if isNewFrame, frame.timestamp >= phaseStartedAt { samples.append(frame) }
+            progress = min(max(0, now - phaseStartedAt) / 2, 1)
+            if now - phaseStartedAt >= 2 {
+                let span = (samples.last?.timestamp ?? 0) - (samples.first?.timestamp ?? 0)
+                let quality = statistics(samples)
+                guard samples.count >= 20, span >= 1.8,
+                      quality.variation <= Self.maximumVariation else {
+                    reject(.retry)
+                    return
+                }
+                result = Result(scale: quality.mean, sampleCount: samples.count,
+                                relativeVariation: quality.variation)
+                phase = .complete
+            }
+        case .retry, .complete:
+            break
+        }
+    }
+
+    mutating func start(frame: HandCalibrationFrame?, now: TimeInterval) {
+        update(frame: frame, now: now)
+        guard isReady else { return }
+        referenceScale = statistics(positioningFrames).mean
+        phaseStartedAt = now
+        phase = .countdown
+        countdown = 3
+    }
+
+    mutating func reset() { self = Self() }
+
+    private mutating func reject(_ reason: Guidance) {
+        if phase == .countdown || phase == .collecting {
+            phase = .retry
+            samples = []
+            progress = 0
+        }
+        positioningFrames = []
+        lastTimestamp = nil
+        guidance = reason
+    }
+
+    private func statistics(_ frames: [HandCalibrationFrame]) -> (mean: Double, variation: Double) {
+        guard !frames.isEmpty else { return (0, .infinity) }
+        let mean = frames.reduce(0) { $0 + $1.scale } / Double(frames.count)
+        let variance = frames.reduce(0) { $0 + pow($1.scale - mean, 2) } / Double(frames.count)
+        return (mean, variance.squareRoot() / mean)
     }
 }
 

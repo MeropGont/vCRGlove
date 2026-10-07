@@ -416,7 +416,7 @@ struct PatientVCRView: View {
             }
 
             if let sessionMessage {
-                Text(sessionMessage)
+                Text(L10n(sessionMessage))
                     .font(.caption)
                     .foregroundStyle(.orange)
             }
@@ -800,7 +800,10 @@ struct PatientVCRView: View {
         }
 
         if vcrSessionPlan == "twoByTwo" {
-            return "vCR \(nextSplitSessionNumber) of 2"
+            return String(
+                format: L10n("vCR %lld of 2"),
+                nextSplitSessionNumber
+            )
         }
 
         return L10n("vCR session")
@@ -834,10 +837,14 @@ struct PatientVCRView: View {
     }
 
     private var headerStatusText: String {
-        if isSessionPaused { return "Paused" }
-        if isSessionRunning { return "Running" }
-        if readyGloves.isEmpty { return "Not ready" }
-        return "\(readyGloves.count) ready"
+        if isSessionPaused { return L10n("Paused") }
+        if isSessionRunning { return L10n("Running") }
+        if readyGloves.isEmpty { return L10n("Not ready") }
+
+        return String(
+            format: L10n("%lld ready"),
+            readyGloves.count
+        )
     }
 
     private var headerStatusColor: Color {
