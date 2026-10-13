@@ -1,104 +1,95 @@
 # vCRGlove
 
-iOS and Apple Watch research app for **vibrotactile Coordinated Reset (vCR) stimulation** and daily Parkinson's disease (PD) symptom tracking.
+iPhone and Apple Watch research app for **vibrotactile Coordinated Reset (vCR) stimulation**, hand-movement recordings, and Parkinson's symptom journaling.
 
-The iPhone app connects to **bHaptics TactGlove DK2** gloves, delivers configurable fingertip vibration patterns, and provides a Journal module for daily check-ins, symptom episodes, medication events, and notes. The Apple Watch companion app records motion data for future tremor/activity analysis.
+Developed at the **Institute for Computational Neuroscience (ICNS), University Medical Center Hamburg-Eppendorf (UKE)**.
 
-Developed within the **ICNS group at University Medical Center Hamburg-Eppendorf (UKE)**.
+**Status:** active research development. Movement measurements are not validated clinical ratings, and the app does not assign MDS-UPDRS scores.
 
-## Background
+## Current Features
 
-**Coordinated Reset (CR) stimulation** was first proposed by *Peter A. Tass and colleagues* as a neuromodulation method to desynchronize abnormally synchronized neuronal activity.  
-In Parkinson’s disease, such abnormal synchronization has been linked to motor symptoms such as tremor, rigidity, and bradykinesia.  
-The CR concept has been adapted to **vibrotactile stimulation (vCR)**, where mechanical pulses delivered to the fingertips aim to induce desynchronization in sensorimotor networks.  
+### Stimulation
+- Bluetooth scanning and left/right connection management for **bHaptics TactGlove DK2**.
+- Patient session controls, including pause/resume and hold-to-stop, with connection and interruption feedback.
+- Continued stimulation with one connected glove; automatic interruption when both disconnect.
+- Research-mode stimulation parameters and local event logging.
 
-See:  
-- Tass, P.A. et al. (2012). *Coordinated reset neuromodulation of pathological synchronization in Parkinson's disease.* Frontiers in Systems Neuroscience.  
-- Pfeifer, K.J. et al. (2021). *Vibrotactile coordinated reset stimulation for Parkinson’s disease: Proof of concept.* Annals of Neurology.  
+### Movement Tasks
+- Finger tapping and hand opening/closing for each hand, captured with the iPhone camera.
+- Pronation/supination using live motion data from the Apple Watch companion.
+- Guided hand-size calibration, silent demonstration videos for camera tasks, preparation countdown, and live tracking feedback.
+- Timed 30-second research recordings, with early stopping and retake options.
+- Automatic local saving of completed recordings in the guided session flow, without requiring every task to be finished.
+- Recording timestamps, stimulation context, and patient-reported medication timing.
 
-This app explores how **consumer hardware** (bHaptics TactGlove + iPhone + Apple Watch) can support a **home-friendly, closed-loop research setup** combining stimulation delivery, patient-reported diary data, and wearable motion signals.
+### Results and Data
+- Rate and rhythm-variability plots over time, separated by task, hand, and capture source.
+- Date, stimulation-context, and medication-context filters, plus a separate recording history.
+- Measurement export and private-video playback, sharing, and deletion, including multi-video selection.
+- Unavailable measurements are shown as unavailable rather than plotted as zero.
 
----
-
-## Features
-
-### vCR stimulation
-- Connects to **bHaptics TactGlove DK2** via Bluetooth using the official bHaptics iOS SDK.
-- Scans, pairs, and manages left/right glove connections.
-- Provides manual vibration controls for amplitude, frequency, pulse length, stimulation duration, and number of active fingers per cycle.
-- Includes a vCR mode using randomized, desynchronizing multi-finger bursts inspired by Tass and Pfeifer publications.
-- Logs major stimulation and connection events.
-- Provides a patient-facing vCR session view with large left/right glove status cards, scan flow, clear connection feedback, pause/resume, and hold-to-stop controls.
-- Supports automatic session interruption handling when no gloves remain connected.
-- Allows a newly connected glove to join an active session without interrupting the first glove.
-- Includes a separate Research mode with manual stimulation parameters, per-glove disconnect/reconnect controls, and filtered visible logs.
-
-
-### Journal and daily log
-- Calendar-based Journal home for selecting days and reviewing entries.
-- Daily Log page for each selected date.
-- Daily Check-In for mood, overall symptom intensity, and symptom selection.
-- Symptom Episode logging for OFF periods, tremor, freezing, dyskinesia, and other symptom changes.
-- Medication logging focused on patient-friendly event types:
-  - usual medication
-  - late medication
-  - missed medication
-  - extra/rescue medication
-- Medication context fields for ON/OFF state, dyskinesia, and factors such as food, protein, stress, poor sleep, constipation, and activity.
-- Free-text notes for unusual events or clinically relevant observations.
-- Day timeline summarizing saved check-ins, symptoms, medication events, and notes.
-
-### Apple Watch companion
-- Records Apple Watch motion data using CoreMotion.
-- Shows simple live RMS motion feedback.
-- Exports motion recordings to the iPhone through WatchConnectivity.
-
-### Local data
-- App event logs are written under the app Documents directory:
-  - `vcr/logs/events.jsonl`
-  - `vcr/logs/handshake.jsonl`
-- Journal entries are currently stored locally as:
-  - `vcr/journal/journal_entries.json`
-- File sharing is enabled in `Info.plist` so app data can be copied from the phone for inspection and analysis.
-- Full app events are preserved in JSONL, while the in-app Research log hides repetitive Bluetooth noise for readability.
-- Current bHaptics device JSON does not expose glove battery percentage reliably; battery display is deferred until the SDK exposes it through the app-facing API.
-
-
----
+### Journal and Settings
+- Calendar with an entry legend and a daily timeline.
+- Mood and symptom check-ins, symptom episodes, medication events, and optional notes.
+- English/German interface using one string catalog, with an in-app language selector.
+- Text-size settings, instructions, and troubleshooting guidance.
 
 ## Getting Started
-1. Clone this repo.  
-2. Open `vCRGlove.xcodeproj` in Xcode (>= 15).  
-3. Build & run on iPhone with iOS 17+.  
-4. Requires **bHaptics iOS SDK** (included via Swift Package Manager).  
-5. Pair TactGlove DK2 via the app interface.  
-6. Optional: install the Apple Watch companion app for motion recording and WatchConnectivity testing.
 
----
+Deployment targets are **iOS 17+** and **watchOS 10+**. Use an Xcode version that supports the operating systems installed on your test devices.
 
-## Roadmap
-- Test and improve Bluetooth connection stability between the iPhone app and bHaptics TactGlove DK2 during longer vCR sessions.
-- Harden stimulation-session logging, error handling, and recovery behavior for real-world home use.
-- Migrate Journal storage from a single JSON array to append-only JSONL for longer studies.
-- Add export tooling for journal, stimulation, and watch-motion datasets.
-- Refine and expand Journal features:
-  - medication profile templates while keeping daily logging patient-friendly
-  - simple motivational feedback, weekly streaks, and gentle adherence/reward cues
-  - summary views for symptoms, OFF periods, medication timing, notes, and stimulation sessions
-  - adding a long-term feeback system so the patients can monitor their symptom trajectories
-- Add an MDS-UPDRS-inspired task module for structured hand-movement recordings, including:
-  - pronation/supination
-  - hand opening/closing
-  - finger tapping
-  - task timing, repetition counts, and patient/task metadata
-- Explore camera-based hand-movement detection while patients wear the gloves.
-- Integrate Apple Watch motion recording into the task ecosystem with timestamped hand/wrist movement data.
-- Align iPhone, Apple Watch, stimulation, journal, and camera-derived events into a shared timeline for later analysis.
-- Continue UI simplification and accessibility improvements for patient use.
+1. Clone the repository and open `vCRGlove.xcodeproj` in Xcode.
+2. Select the `vCRGlove` scheme and configure Signing & Capabilities for your authorized development team.
+3. Build and run on a physical iPhone for camera and Bluetooth testing.
+4. Turn on the TactGlove DK2 gloves and scan for them inside the app.
+5. Install the Watch companion for pronation/supination testing. The Watch is not required for iPhone camera tasks or glove control.
 
----
+The bHaptics SDK is included as a local Swift package at `Vendor/bhaptics-ios-0.2.0`. Bundled demonstration videos are in `vCRGlove/Resources/hand_videos`; no separate download is needed.
+
+Simulator tests can check interface and software behaviour, but do not replace physical camera, glove, and Watch testing.
+
+## Storage and Privacy
+
+Data is stored inside the app's container on the iPhone:
+
+| Data | Location |
+| --- | --- |
+| Stimulation and app events | `Documents/vcr/logs/events.jsonl` |
+| Journal entries | `Documents/vcr/journal/journal_entries.json` |
+| Movement sessions and signals | `Documents/vcr/tasks/sessions.jsonl` |
+| Recorded camera-task videos | `Application Support/vcr/tasks/videos/` |
+
+Camera-task videos are silent and are not automatically saved to Photos. Video storage requests iOS file protection and is excluded from automatic backup. **Local storage is not a backup:** deleting the app or losing the device can lose recordings.
+
+Use **Settings > Data** to review, share, or delete recorded videos. Deleting a video keeps its movement measurements and does not delete copies previously shared elsewhere. JSON/CSV measurement exports do not contain video files; videos must be shared separately.
+
+Backend upload code exists but is not configured at app launch. It is not yet a completed consent-based research-sharing workflow, and that upload path does not transfer video files. Formal privacy information and additional patient controls remain planned work.
+
+## Next Priorities
+
+- Complete privacy information and consent controls, including a choice not to store videos.
+- Improve multi-day trends and validate additional movement metrics and task-specific composite scores.
+- Simplify journal check-ins, strengthen saving/editing, and add streak feedback. PDQ-8 remains planned, subject to permissions and study requirements.
+- Add a combined research-data export and a verified backup workflow before introducing consent-based transfers.
+- Complete long-duration stimulation, reconnect, storage, and physical Watch validation.
+
+## Documentation
+
+- [Movement demonstrations and recording layout](docs/MOVEMENT_DEMONSTRATIONS.md)
+- [Recording plots and context filters](docs/MOVEMENT_RESULTS.md)
+- [Video storage, export, and deletion](docs/MOVEMENT_VIDEO_STORAGE.md)
+- [Movement composite-score research and proposals](docs/MOVEMENT_COMPOSITE_RESEARCH.md)
+- [Journal review and proposed redesign](docs/JOURNAL_REVIEW_PROPOSAL.md)
+
+## Research Background
+
+vCR research investigates whether patterned fingertip stimulation can support desynchronization of abnormal neuronal activity. Relevant publications include:
+
+- Popovych, O. V., & Tass, P. A. (2012). [Desynchronizing electrical and sensory coordinated reset neuromodulation](https://www.frontiersin.org/journals/human-neuroscience/articles/10.3389/fnhum.2012.00058/full). *Frontiers in Human Neuroscience*, 6:58.
+- Pfeifer, K. J., et al. (2021). [Coordinated Reset Vibrotactile Stimulation Induces Sustained Cumulative Benefits in Parkinson's Disease](https://pmc.ncbi.nlm.nih.gov/articles/PMC8055937/). *Frontiers in Physiology*, 12:624317.
+
+These publications inform the research direction; they do not validate this app, its glove implementation, or its movement scores.
 
 ## License
-This project is part of ongoing research at **ICNS, University Medical Center Hamburg-Eppendorf (UKE)**.  
-Licensing terms are under review. For now: **all rights reserved**.  
-Please contact the authors for research collaboration inquiries.  
+
+This project is part of ongoing research at ICNS, UKE. Licensing terms are under review; **all rights reserved** for now. Please contact the authors for research collaboration inquiries.
