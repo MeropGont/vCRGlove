@@ -12,7 +12,6 @@
 
 import SwiftUI
 import AVFoundation
-import Photos
 
 struct MovementTaskView: View {
 
@@ -42,14 +41,18 @@ struct MovementTaskView: View {
     @State private var cameraError: String?
     @StateObject private var signalMonitor = LiveSignalMonitor()
     @State private var isCalibrating = false
-    @State private var measurementVideoURL: URL?
-    @State private var recordingStartDate: Date?
+    @StateObject private var videoDraft = MovementVideoDraft()
+    @State private var completedTrial: Trial?
+    @State private var isFinishingRecording = false
+    @State private var captureAttemptID = UUID()
+    @State private var isSaving = false
+    @State private var showsSaveError = false
 
     private var usingCamera: Bool { activeSignalSource == .camera }
     private var usingWatch: Bool { activeSignalSource == .watchMotion }
     private var canStartRecording: Bool {
         StimulationContext.patientChoices.contains(context) &&
-            (!usingWatch || PhoneWC.shared.isWatchReachable)
+            (!usingWatch || PhoneWC.shared.isWatchReachable) && cameraCapture == nil && watchCapture == nil
     }
 
     private var showsPreview: Bool {
@@ -70,15 +73,17 @@ struct MovementTaskView: View {
                 CameraMovementRecordingView(
                     taskType: taskType, side: side, capture: cameraCapture,
                     monitor: signalMonitor, recorder: recorder, stopCondition: stopCondition,
-                    countdown: cameraCountdown, showsDetectionHints: true
+                    countdown: cameraCountdown, showsDetectionHints: true,
+                    isFinishingRecording: isFinishingRecording
                 ) {
                     if case .recording = phase {
-                        Button(role: .destructive) { recorder?.finish() } label: {
-                            Label(L10n("Stop"), systemImage: "stop.circle.fill")
+                        Button(role: .destructive) { requestRecordingStop() } label: {
+                            Label(L10n(isFinishingRecording ? "Finishing recording…" : "Stop"), systemImage: "stop.circle.fill")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity, minHeight: 54)
                         }
                         .buttonStyle(.borderedProminent)
+                        .disabled(isFinishingRecording)
                     } else {
                         Button(L10n("Cancel"), role: .cancel) { cancelEverything() }
                             .frame(maxWidth: .infinity, minHeight: 54)
@@ -100,7 +105,9 @@ struct MovementTaskView: View {
                         MovementTrialResultView(
                             trial: trial,
                             onSave: { save(trial) },
-                            onDiscard: { phase = .setup }
+                            onDiscard: { cancelEverything() },
+                            isSaving: isSaving,
+                            videoMessage: videoDraft.messageKey
                         )
                     }
                 }
@@ -124,36 +131,13 @@ struct MovementTaskView: View {
         .navigationTitle(L10n("Movement Test"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.visible, for: .navigationBar)
-        .onChange(of: recorder?.isRecording) { oldIsRec, newIsRec in
-            if oldIsRec == true, newIsRec == false, case .recording = phase {
-                // Stop the camera/watch BEFORE the preview overlay disappears. If the
-                // AVCaptureSession is still running when the preview layer is torn down,
-                // the main thread blocks until the session stops.
-                let cam = self.cameraCapture
-                let watch = self.watchCapture
-                Task.detached(priority: .userInitiated) {
-                    let group = DispatchGroup()
-                    if let cam {
-                        group.enter()
-                        cam.stopRecording { url in
-                            self.measurementVideoURL = url
-                            cam.stop { group.leave() }
-                        }
-                    }
-                    if let watch { group.enter(); watch.stop { group.leave() } }
-                    group.notify(queue: .main) {
-                        Task { @MainActor in
-                            self.cameraCapture = nil
-                            self.watchCapture = nil
-                            if case .recording = self.phase {
-                                self.phase = .analyzing
-                            }
-                            self.saveMeasurementVideoToPhotosIfNeeded()
-                            print("[PERF] single-task hardware stopped; phase now \(String(describing: self.phase))")
-                        }
-                    }
-                }
+        .alert(L10n("Recording not saved"), isPresented: $showsSaveError) {
+            Button(L10n("OK"), role: .cancel) {}
+            if videoDraft.url != nil, case .result(let trial) = phase {
+                Button(L10n("Save without video")) { save(trial, includeVideo: false) }
             }
+        } message: {
+            Text(L10n("Please try saving again. This recording is still here."))
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -164,7 +148,10 @@ struct MovementTaskView: View {
                 }
             }
         }
-        .onDisappear { cancelEverything() }
+        .onDisappear {
+            if case .result = phase { return }
+            if !isSaving { cancelEverything() }
+        }
         .sheet(isPresented: $isCalibrating) {
             HandCalibrationView { isCalibrating = false }
         }
@@ -192,6 +179,12 @@ struct MovementTaskView: View {
                 .pickerStyle(.segmented)
             }
 
+            if MovementDemonstrationClip.clip(task: taskType, side: side) != nil {
+                Section {
+                    MovementDemonstrationView(taskType: taskType, side: side)
+                }
+            }
+
             Section("Protocol") {
                 LabeledContent(L10n("Stop after"), value: L10n("10 repetitions"))
             }
@@ -211,7 +204,7 @@ struct MovementTaskView: View {
 
             Section {
                 if usingCamera {
-                    Text(L10n("This task uses the front camera to track your hand. The measurement video is saved to your Photo Library."))
+                    Text(L10n("This task uses the front camera to track your hand. Accepted videos stay in this app."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else if usingWatch {
@@ -227,7 +220,7 @@ struct MovementTaskView: View {
                 Section("Calibration") {
                     if HandCalibrationStore.shared.isCalibrated {
                         HStack {
-                            Text(L10n("Hand scale calibrated"))
+                            Text(L10n("Hand size calibrated"))
                                 .foregroundStyle(.green)
                             Spacer()
                             Button(L10n("Recalibrate")) {
@@ -243,7 +236,7 @@ struct MovementTaskView: View {
                         }
                         .buttonStyle(.bordered)
                     }
-                    Text(L10n("For each new set of tests, we recommend recalibrating."))
+                    Text(L10n("For each new session, we recommend recalibrating."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -310,6 +303,10 @@ struct MovementTaskView: View {
 
     private func startCountdown() {
         guard canStartRecording else { return }
+        captureAttemptID = UUID()
+        let attemptID = captureAttemptID
+        completedTrial = nil
+        videoDraft.discard()
         cameraError = nil
         signalMonitor.reset()
 
@@ -320,6 +317,7 @@ struct MovementTaskView: View {
                 signalMonitor.ingest(value: value, at: time)
             }
             capture.start { result in
+                guard captureAttemptID == attemptID else { capture.stop(); return }
                 switch result {
                 case .success:
                     beginCountdown()
@@ -338,17 +336,22 @@ struct MovementTaskView: View {
                 signalMonitor.ingest(value: value, at: time)
             }
             capture.start(taskType: taskType) { result in
+                guard captureAttemptID == attemptID else { capture.stop(); return }
                 if case .failure(let error) = result {
                     cameraError = error.localizedDescription
                     cancelEverything()
+                } else {
+                    beginCountdown()
                 }
             }
+            return
         }
 
         beginCountdown()
     }
 
     private func beginCountdown() {
+        isFinishingRecording = false
         phase = .countdown(3)
         countdownTimer?.invalidate()
 
@@ -387,31 +390,77 @@ struct MovementTaskView: View {
             // Top padding so content doesn't overlap the persistent preview overlay.
             if usingCamera { Color.clear.frame(height: 340) }
             if usingWatch { Color.clear.frame(height: 114) }
+            Text(taskType.displayName)
+                .font(.title2.bold())
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
             if let recorder {
                 RecordingProgressView(recorder: recorder,
                                       stopCondition: stopCondition)
             }
             Button(role: .destructive) {
-                recorder?.finish()
+                requestRecordingStop()
             } label: {
-                Label(L10n("Stop"), systemImage: "stop.circle.fill")
+                Label(L10n(isFinishingRecording ? "Finishing recording…" : "Stop"), systemImage: "stop.circle.fill")
                     .font(.headline)
             }
+            .disabled(isFinishingRecording)
         }
         .padding()
     }
 
     private var stopCondition: StopCondition { .thirtySec }
 
+    private func requestRecordingStop() {
+        guard !isFinishingRecording else { return }
+        isFinishingRecording = true
+        recorder?.finish()
+    }
+
+    private func finishRecordingCapture() {
+        isFinishingRecording = true
+        // Keep the preview mounted until capture stops. Completion, not a
+        // SwiftUI-observed flag transition, owns this teardown.
+        let cam = self.cameraCapture
+        let watch = self.watchCapture
+        let attemptID = captureAttemptID
+        let group = DispatchGroup()
+        if let cam {
+            group.enter()
+            cam.finishMeasurement { url in
+                if captureAttemptID == attemptID { videoDraft.receive(url) }
+                else if let url { try? FileManager.default.removeItem(at: url) }
+                group.leave()
+            }
+        }
+        if let watch { group.enter(); watch.stop { group.leave() } }
+        group.notify(queue: .main) {
+            Task { @MainActor in
+                guard self.captureAttemptID == attemptID else { return }
+                self.cameraCapture = nil
+                self.watchCapture = nil
+                if case .recording = self.phase {
+                    self.phase = .analyzing
+                }
+                self.showCompletedTrialIfReady()
+                print("[PERF] single-task capture finalized")
+            }
+        }
+    }
+
     private func startRecording() {
+        isFinishingRecording = false
+        completedTrial = nil
+        let attemptID = captureAttemptID
         let medicationSnapshot = medicationTiming
         let r = TrialRecorder(taskType: taskType,
                               side: side,
                               source: activeSignalSource,
                               stopCondition: stopCondition)
         r.onComplete = { trial in
-            // Hardware is already being stopped by the .isRecording onChange.
-            phase = .result(trial.withMedicationTiming(medicationSnapshot))
+            guard captureAttemptID == attemptID else { return }
+            completedTrial = trial.withMedicationTiming(medicationSnapshot)
+            finishRecordingCapture()
             EventStore.shared.append(
                 type: "TASK", tag: "trial_completed",
                 message: "Movement trial completed",
@@ -422,11 +471,6 @@ struct MovementTaskView: View {
         }
         recorder = r
         phase = .recording
-        recordingStartDate = Date()
-        if usingCamera {
-            cameraCapture?.startRecordingToTemporaryFile()
-        }
-        r.start()
         if let cameraCapture {
             cameraCapture.onSample = { [signalMonitor] value, time in
                 r.ingest(value: value, at: time)
@@ -438,6 +482,14 @@ struct MovementTaskView: View {
                 signalMonitor.ingest(value: value, at: time)
             }
         }
+        if let cameraCapture {
+            cameraCapture.startRecordingToTemporaryFile { started in
+                guard captureAttemptID == attemptID else { return }
+                if !started { videoDraft.receive(nil) }
+                r.start()
+                if isFinishingRecording { r.finish() }
+            }
+        } else { r.start() }
         EventStore.shared.append(
             type: "TASK", tag: "trial_started",
             message: "Movement trial started",
@@ -449,165 +501,38 @@ struct MovementTaskView: View {
 
     // MARK: - Save / cleanup
 
-    private func save(_ trial: Trial) {
+    private func showCompletedTrialIfReady() {
+        guard cameraCapture == nil, watchCapture == nil, let completedTrial else { return }
+        phase = .result(completedTrial)
+    }
+
+    private func save(_ trial: Trial, includeVideo: Bool = true) {
+        guard !isSaving else { return }
         let session = MovementSession(
             patientId: patientID.isEmpty ? "unset" : patientID,
-            stimulationContext: context,
-            trials: [trial]
+            date: trial.startedAt, stimulationContext: context
         )
-        TaskSessionStore.shared.add(session)
-        medicationTiming = nil
-        phase = .setup
-    }
-
-    private func saveMeasurementVideoToPhotosIfNeeded() {
-        guard let originalURL = measurementVideoURL else { return }
-        measurementVideoURL = nil
-        let recordedAt = recordingStartDate ?? Date()
-        recordingStartDate = nil
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd-HHmmss"
-        let timestamp = formatter.string(from: recordedAt)
-        let videoName = "vCRGlove_\(taskType.rawValue)_\(side.rawValue)_\(context.rawValue)_\(timestamp).mov"
-        let exportedURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
-            .appendingPathExtension("mov")
-
-        exportVideoWithMetadata(
-            inputURL: originalURL,
-            outputURL: exportedURL,
-            videoName: videoName,
-            recordedAt: recordedAt
-        ) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let finalURL):
-                    self.addVideoToPhotoLibrary(url: finalURL, name: videoName, recordedAt: recordedAt)
-                case .failure(let error):
-                    EventStore.shared.append(
-                        type: "TASK", tag: "video_export_error",
-                        message: "Failed to embed metadata in measurement video: \(error.localizedDescription)")
-                }
-                try? FileManager.default.removeItem(at: originalURL)
-                try? FileManager.default.removeItem(at: exportedURL)
-            }
-        }
-    }
-
-    private func exportVideoWithMetadata(
-        inputURL: URL,
-        outputURL: URL,
-        videoName: String,
-        recordedAt: Date,
-        completion: @escaping (Result<URL, Error>) -> Void
-    ) {
-        let asset = AVAsset(url: inputURL)
-        guard let session = AVAssetExportSession(
-            asset: asset,
-            presetName: AVAssetExportPresetHighestQuality
-        ) else {
-            completion(.failure(NSError(domain: "VideoMetadata", code: 1,
-                                        userInfo: [NSLocalizedDescriptionKey: "Could not create export session"])))
-            return
-        }
-
-        session.outputURL = outputURL
-        session.outputFileType = .mov
-        session.shouldOptimizeForNetworkUse = false
-        session.metadata = makeVideoMetadataItems(recordedAt: recordedAt)
-
-        session.exportAsynchronously {
-            DispatchQueue.main.async {
-                switch session.status {
-                case .completed:
-                    completion(.success(outputURL))
-                case .failed:
-                    completion(.failure(session.error ?? NSError(domain: "VideoMetadata", code: 2)))
-                case .cancelled:
-                    completion(.failure(session.error ?? NSError(domain: "VideoMetadata", code: 3,
-                                                                  userInfo: [NSLocalizedDescriptionKey: "Export cancelled"])))
-                default:
-                    completion(.failure(session.error ?? NSError(domain: "VideoMetadata", code: 4,
-                                                                  userInfo: [NSLocalizedDescriptionKey: "Unexpected export status"])))
-                }
-            }
-        }
-    }
-
-    private func makeVideoMetadataItems(recordedAt: Date) -> [AVMetadataItem] {
-        let isoFormatter = ISO8601DateFormatter()
-        let recordedAtString = isoFormatter.string(from: recordedAt)
-        let patient = patientID.isEmpty ? "unset" : patientID
-
-        let title = "vCRGlove \(taskType.rawValue) – \(side.rawValue) – \(context.rawValue)"
-        let description = [
-            "Patient ID: \(patient)",
-            "Task: \(taskType.rawValue)",
-            "Side: \(side.rawValue)",
-            "Context: \(context.rawValue)",
-            "Recorded: \(recordedAtString)"
-        ].joined(separator: "\n")
-
-        var items: [AVMetadataItem] = [
-            metadataItem(key: .commonKeyTitle, keySpace: .common, value: title),
-            metadataItem(key: .commonKeyDescription, keySpace: .common, value: description),
-            metadataItem(key: .commonKeyCreationDate, keySpace: .common,
-                         value: isoFormatter.string(from: recordedAt)),
-            customMetadataItem(key: "patientID", value: patient),
-            customMetadataItem(key: "taskType", value: taskType.rawValue),
-            customMetadataItem(key: "side", value: side.rawValue),
-            customMetadataItem(key: "context", value: context.rawValue),
-            customMetadataItem(key: "recordedAt", value: recordedAtString)
-        ]
-
-        #if DEBUG
-        items.append(customMetadataItem(key: "appBuild", value: "debug"))
-        #else
-        items.append(customMetadataItem(key: "appBuild", value: "release"))
-        #endif
-
-        return items
-    }
-
-    private func metadataItem(key: AVMetadataKey, keySpace: AVMetadataKeySpace, value: String) -> AVMutableMetadataItem {
-        let item = AVMutableMetadataItem()
-        item.key = key as (NSCopying & NSObjectProtocol)
-        item.keySpace = keySpace
-        item.value = value as (NSCopying & NSObjectProtocol)
-        item.locale = Locale.current
-        return item
-    }
-
-    private func customMetadataItem(key: String, value: String) -> AVMutableMetadataItem {
-        metadataItem(
-            key: AVMetadataKey(rawValue: "com.vcrglove.\(key)"),
-            keySpace: .quickTimeMetadata,
-            value: value
-        )
-    }
-
-    private func addVideoToPhotoLibrary(url: URL, name: String, recordedAt: Date) {
-        PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
-            guard status == .authorized || status == .limited else { return }
-            PHPhotoLibrary.shared().performChanges {
-                let request = PHAssetCreationRequest.forAsset()
-                request.creationDate = recordedAt
-
-                let options = PHAssetResourceCreationOptions()
-                options.originalFilename = name
-                request.addResource(with: .video, fileURL: url, options: options)
-            } completionHandler: { success, error in
-                if let error {
-                    EventStore.shared.append(
-                        type: "TASK", tag: "video_save_error",
-                        message: "Failed to save measurement video: \(error.localizedDescription)")
-                }
+        isSaving = true
+        TaskSessionStore.shared.saveAcceptedTrial(trial, in: session,
+            temporaryVideoURL: includeVideo ? videoDraft.url : nil) { result in
+            isSaving = false
+            switch result {
+            case .success(let saved):
+                videoDraft.discard()
+                TaskSessionStore.shared.finishAcceptedSession(saved)
+                medicationTiming = nil
+                phase = .setup
+            case .failure:
+                showsSaveError = true
             }
         }
     }
 
     private func cancelEverything() {
+        guard !isSaving else { return }
+        captureAttemptID = UUID()
+        completedTrial = nil
+        videoDraft.discard()
         countdownTimer?.invalidate()
         countdownTimer = nil
         cameraCapture?.stop()
@@ -616,6 +541,7 @@ struct MovementTaskView: View {
         watchCapture = nil
         signalMonitor.reset()
         recorder?.onComplete = nil
+        if recorder?.isRecording == true { recorder?.finish() }
         recorder = nil
         phase = .setup
     }
@@ -636,10 +562,25 @@ struct CameraPreviewView: UIViewRepresentable {
         let view = PreviewUIView()
         view.previewLayer.session = session
         view.previewLayer.videoGravity = .resizeAspectFill
+        mirrorFrontPreview(view)
         return view
     }
 
-    func updateUIView(_ uiView: PreviewUIView, context: Context) {}
+    func updateUIView(_ uiView: PreviewUIView, context: Context) {
+        mirrorFrontPreview(uiView)
+    }
+
+    private func mirrorFrontPreview(_ view: PreviewUIView) {
+        guard session.inputs.contains(where: { ($0 as? AVCaptureDeviceInput)?.device.position == .front }),
+              let connection = view.previewLayer.connection, connection.isVideoMirroringSupported else { return }
+        // Only the self-view is mirrored; analysis frames and saved videos stay unchanged.
+        if connection.automaticallyAdjustsVideoMirroring {
+            connection.automaticallyAdjustsVideoMirroring = false
+        }
+        if !connection.isVideoMirrored {
+            connection.isVideoMirrored = true
+        }
+    }
 }
 
 /// "Show your hand" prompt driven by the capture's live detection state.
@@ -714,8 +655,7 @@ struct HandGuideOverlay: View {
                     .scaledToFit()
                     .frame(height: zone.height * 0.55)
                     .foregroundStyle(color.opacity(good ? 0.25 : 0.55))
-                    // Mirror the silhouette for the left hand so it matches the user's own hand.
-                    .scaleEffect(x: side == .left ? -1 : 1, y: 1)
+                    .scaleEffect(x: MovementRecordingGuidance(taskType: taskType, side: side).cameraGuideHorizontalScale, y: 1)
                     .position(x: zone.midX, y: zone.midY)
 
                 if !good {
@@ -838,6 +778,24 @@ struct MovementRecordingGuidance {
 
     var handKey: String { side == .right ? "Right hand" : "Left hand" }
 
+    var cameraGuideHorizontalScale: CGFloat {
+        if taskType == .handOpenClose {
+            return side == .right ? -1 : 1
+        }
+        return side == .left ? -1 : 1
+    }
+
+    // Instruction symbols face the reader; camera guides keep their separate mirrored rule.
+    var taskIconHorizontalScale: CGFloat {
+        switch taskType {
+        case .handOpenClose: return handIconHorizontalScale
+        case .fingerTap: return side == .left ? -1 : 1
+        case .pronationSupination: return 1
+        }
+    }
+
+    var handIconHorizontalScale: CGFloat { side == .right ? -1 : 1 }
+
     var instructionKey: String {
         switch taskType {
         case .fingerTap:
@@ -852,6 +810,7 @@ struct MovementRecordingGuidance {
 
 /// A stable preview parent spans countdown and recording; only the progress changes.
 private struct CameraMovementRecordingView<Controls: View>: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let taskType: MovementTaskType
     let side: BodySide
     let capture: VisionHandPoseCapture?
@@ -861,20 +820,67 @@ private struct CameraMovementRecordingView<Controls: View>: View {
     let countdown: Int?
     var progressText: String? = nil
     var showsDetectionHints = false
+    var isFinishingRecording = false
     @ViewBuilder var controls: () -> Controls
 
     private var guidance: MovementRecordingGuidance {
         MovementRecordingGuidance(taskType: taskType, side: side)
     }
 
+    private var usesCompactHandLayout: Bool {
+        taskType == .handOpenClose && dynamicTypeSize <= .large
+    }
+
+    private var usesCompactTappingLayout: Bool {
+        taskType == .fingerTap && dynamicTypeSize <= .large
+    }
+
+    private var usesCompactHeader: Bool {
+        usesCompactHandLayout || usesCompactTappingLayout
+    }
+
+    private var handLabel: some View {
+        Text(L10n(guidance.handKey))
+            .font(.headline.bold())
+            .accessibilityIdentifier("movementRecordingHand")
+    }
+
+    private var movementInstruction: some View {
+        Text(L10n(guidance.instructionKey))
+            .font(.body)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("movementRecordingInstruction")
+    }
+
+    private var demonstration: some View {
+        MovementDemonstrationView(taskType: taskType, side: side, automaticallyPlays: true,
+                                  allowsPlayback: !isFinishingRecording)
+            .frame(maxWidth: 240)
+    }
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 10) {
-                if let progressText {
-                    Text(progressText)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+            VStack(spacing: usesCompactTappingLayout ? 4 : (usesCompactHandLayout ? 6 : 10)) {
+                if usesCompactHeader {
+                    HStack {
+                        if let progressText {
+                            Text(progressText)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 8)
+                        handLabel
+                    }
+                } else if let progressText {
+                    Text(progressText).font(.subheadline).foregroundStyle(.secondary)
                 }
+
+                Text(taskType.displayName)
+                    .font(usesCompactHeader ? .headline : .title2.bold())
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityIdentifier("movementRecordingTask")
 
                 Group {
                     if let capture {
@@ -893,49 +899,67 @@ private struct CameraMovementRecordingView<Controls: View>: View {
                         #endif
                     }
                 }
-                .frame(height: 160)
+                .frame(height: usesCompactTappingLayout ? 200 : (usesCompactHandLayout ? 210 : 230))
                 .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay {
+                    if let countdown {
+                        Text("\(countdown)")
+                            .font(.system(size: 64, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(.white)
+                            .frame(width: 88, height: 88)
+                            .background(.black.opacity(0.6), in: Circle())
+                            .accessibilityLabel(String(format: L10n("Starting in %d"), countdown))
+                            .accessibilityIdentifier("movementCameraCountdown")
+                    }
+                }
                 .accessibilityIdentifier("movementCameraPreview")
 
-                VStack(spacing: 4) {
-                    Text(L10n(guidance.handKey))
-                        .font(.headline.bold())
-                        .accessibilityIdentifier("movementRecordingHand")
-                    Text(L10n(guidance.instructionKey))
-                        .font(.body)
-                        .accessibilityIdentifier("movementRecordingInstruction")
+                if usesCompactHandLayout {
+                    HStack(spacing: 12) {
+                        demonstration.frame(width: 170)
+                        movementInstruction
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                } else if usesCompactTappingLayout {
+                    movementInstruction
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                    demonstration
+                } else {
+                    VStack(spacing: 4) {
+                        handLabel
+                        movementInstruction
+                    }
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity)
+
+                    demonstration
                 }
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity)
 
-                // Future hand demonstration videos replace this placeholder.
-                MovementVideoPlaceholder(taskType: taskType)
-                    .frame(minHeight: 88)
-                    .padding(.vertical, 4)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-                    .accessibilityIdentifier("movementVideoPlaceholder")
-
-                LiveSignalChart(monitor: monitor)
-                    .frame(height: 40)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
-
-                if let countdown {
-                    Text("\(countdown)")
-                        .font(.system(size: 72, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                        .accessibilityLabel(String(format: L10n("Starting in %d"), countdown))
-                } else if let recorder {
-                    RecordingProgressView(recorder: recorder, stopCondition: stopCondition, compact: true)
+                if isFinishingRecording {
+                    ProgressView(L10n("Finishing recording…"))
+                        .accessibilityIdentifier("movementFinishingRecording")
+                } else {
+                    LiveSignalChart(monitor: monitor)
+                        .frame(height: 40)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+                        .accessibilityIdentifier("movementLiveRhythm")
                 }
+
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, usesCompactHeader ? 4 : 8)
         }
         .safeAreaInset(edge: .bottom) {
-            controls()
+            VStack(spacing: 8) {
+                if countdown == nil, let recorder {
+                    RecordingProgressView(recorder: recorder, stopCondition: stopCondition, compact: true)
+                }
+                controls()
+            }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .frame(maxWidth: .infinity)
@@ -980,6 +1004,7 @@ private struct MovementCameraPreview: View {
 
 struct RecordingProgressView: View {
     @ObservedObject var recorder: TrialRecorder
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let stopCondition: StopCondition
     var compact = false
 
@@ -992,24 +1017,46 @@ struct RecordingProgressView: View {
                     .foregroundStyle(.tint)
             }
 
-            Text(L10n("Recording…"))
-                .font(.title2.bold())
+            if compact {
+                if dynamicTypeSize.isAccessibilitySize {
+                    progressLabel.font(.body.monospacedDigit())
+                        .frame(maxWidth: .infinity)
+                        .accessibilityIdentifier("movementRecordingTimer")
+                } else {
+                    HStack {
+                        Text(L10n("Recording…"))
+                            .font(.headline)
+                        Spacer()
+                        progressLabel.font(.body.monospacedDigit())
+                            .accessibilityIdentifier("movementRecordingTimer")
+                    }
+                }
+            } else {
+                Text(L10n("Recording…"))
+                    .font(.title2.bold())
+                progressLabel.font(.title3.monospacedDigit())
+            }
 
             switch stopCondition.mode {
             case .repetitions:
-                Text(String(format: L10n("%d / %d repetitions"), recorder.liveCycleCount, stopCondition.targetReps))
-                    .font(.title3.monospacedDigit())
                 ProgressView(value: Double(min(recorder.liveCycleCount, stopCondition.targetReps)),
                              total: Double(stopCondition.targetReps))
             case .duration:
-                Text(String(format: L10n("%.1f / %.0f s"), min(recorder.elapsed, stopCondition.targetDuration), stopCondition.targetDuration))
-                    .font(.title3.monospacedDigit())
                 let progress = max(0.0, min(recorder.elapsed, stopCondition.targetDuration))
                 ProgressView(value: progress,
                              total: stopCondition.targetDuration)
             }
         }
         .padding(.horizontal)
+    }
+
+    private var progressLabel: Text {
+        switch stopCondition.mode {
+        case .repetitions:
+            Text(String(format: L10n("%d / %d repetitions"), recorder.liveCycleCount, stopCondition.targetReps))
+        case .duration:
+            Text(String(format: L10n("%.1f / %.0f s"), min(recorder.elapsed, stopCondition.targetDuration), stopCondition.targetDuration))
+        }
     }
 }
 
@@ -1160,20 +1207,65 @@ struct MovementMedicationSummary: View {
 }
 
 struct MovementTrialResultView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let trial: Trial
     var onSave: () -> Void
     var onDiscard: () -> Void
     var saveTitle: String = "Save"
-    var discardTitle: String = "Discard"
+    var discardTitle: String = "Retake"
     var onSaveAndFinish: (() -> Void)?
     var isSaving = false
+    var videoMessage: String?
+    var showsTrendsHint = false
+    var recordingIsSaved = false
+    @State private var confirmsRetake = false
+
+    private var feedback: MovementRecordingFeedback { MovementRecordingFeedback(trial: trial) }
 
     var body: some View {
         Form {
             Section {
-                LabeledContent(L10n("Task"), value: "\(trial.taskType.rawValue) \(trial.taskType.displayName)")
+                Label {
+                    Text(L10n(feedback.titleKey))
+                } icon: {
+                    Image(systemName: feedback == .captured ? "waveform" : "exclamationmark.circle")
+                        .accessibilityHidden(true)
+                }
+                    .font(.headline)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(L10n(feedback.titleKey))
+                    .accessibilityIdentifier("movementRecordingFeedback")
+                Text(L10n(feedback.detailKey))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if recordingIsSaved {
+                    Label(L10n("Recording saved automatically."), systemImage: "checkmark.circle")
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("movementAutosaveStatus")
+                }
+                if showsTrendsHint {
+                    Text(L10n(recordingIsSaved
+                              ? "Open Trends using the chart button at the top right."
+                              : "After saving, open Trends using the chart button at the top right."))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("movementResultTrendsHint")
+                }
+                if let videoMessage {
+                    Label(L10n(videoMessage), systemImage: "video")
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("movementVideoNotice")
+                }
+            }
+            Section {
+                LabeledContent(L10n("Task"), value: trial.taskType.displayName)
                 LabeledContent(L10n("Hand"), value: trial.side.displayName)
-                LabeledContent(L10n("Duration"), value: String(format: L10n("%.1f s"), trial.samples.last?.t ?? 0))
+                metricRow("Duration", MovementSignalAssessment(samples: trial.samples).hasPlottableSignal
+                          ? String(format: L10n("%.1f s"), trial.samples.last?.t ?? 0) : L10n("Value unavailable"))
+                    .accessibilityIdentifier("movementResultDuration")
             } header: {
                 Text(L10n("Trial"))
             }
@@ -1185,13 +1277,14 @@ struct MovementTrialResultView: View {
             }
 
             Section {
-                metricRow("Cycles", "\(trial.metrics.cycleCount)")
-                metricRow("Speed", String(format: L10n("%.2f Hz"), trial.metrics.frequencyHz))
-                metricRow("Mean amplitude", String(format: L10n("%.3f"), trial.metrics.meanAmplitude))
-                metricRow("Amplitude decrement", String(format: L10n("%.3f /cycle"), trial.metrics.amplitudeDecrementSlope))
-                metricRow("Rhythm variability", String(format: L10n("%.2f"), trial.metrics.rhythmCV))
-                metricRow("Pauses", "\(trial.metrics.pauseCount)")
-                metricRow("Onset latency", String(format: L10n("%.2f s"), trial.metrics.onsetLatencySec))
+                metricRow("Cycles", MovementSignalAssessment(samples: trial.samples).hasAnalysisInput
+                          && trial.metrics.cycleCount >= 0 ? "\(trial.metrics.cycleCount)" : L10n("Value unavailable"))
+                resultMetricRow("Speed", metric: .frequency)
+                resultMetricRow("Mean amplitude", metric: .amplitude)
+                resultMetricRow("Amplitude decrement", metric: .decrement)
+                resultMetricRow("Rhythm variability", metric: .rhythm)
+                resultMetricRow("Pauses", metric: .pauses)
+                resultMetricRow("Onset latency", metric: .onset)
             } header: {
                 Text(L10n("Metrics"))
             } footer: {
@@ -1199,71 +1292,107 @@ struct MovementTrialResultView: View {
             }
 
             Section {
-                Gauge(value: trial.metrics.qualityIndex) {
-                    Text(L10n("Movement quality (heuristic)"))
-                }
-                .gaugeStyle(.accessoryLinear)
-                .tint(Gradient(colors: [.red, .orange, .green]))
-            } footer: {
-                Text(L10n("Heuristic 0–1 index for personal trends — not a validated UPDRS score."))
-            }
-
-            Section {
                 RawSignalPlotView(samples: trial.samples)
                     .frame(height: 180)
                     .padding(.vertical, 8)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier("movementResultSignal")
             } header: {
                 Text(L10n("Signal"))
+            } footer: {
+                if MovementSignalAssessment(samples: trial.samples).hasPlottableSignal
+                    && MovementSignalAssessment(samples: trial.samples,
+                                                recordedDurationSeconds: trial.recordedDurationSeconds).hasGaps {
+                    Text(L10n("Gaps mean no signal was captured during those intervals."))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("movementResultSignalGap")
+                }
             }
 
-            Section {
+        }
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 8) {
                 Button {
                     onSave()
                 } label: {
                     Label(L10n(saveTitle), systemImage: "checkmark.circle.fill")
-                        .frame(maxWidth: .infinity, minHeight: 54)
-                        .font(.headline)
+                        .frame(maxWidth: .infinity, minHeight: 32)
+                        .font(.body.weight(.semibold))
                 }
+                .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("movementSaveContinue")
                 if let onSaveAndFinish {
                     Button(action: onSaveAndFinish) {
                         Label(L10n("Save & Finish"), systemImage: "flag.checkered")
-                            .frame(maxWidth: .infinity, minHeight: 54)
-                            .font(.headline)
+                            .frame(maxWidth: .infinity, minHeight: 32)
+                            .font(.body.weight(.semibold))
                     }
+                    .buttonStyle(.bordered)
                     .accessibilityIdentifier("movementSaveFinish")
                 }
-                Button(role: .destructive) {
-                    onDiscard()
+                Button {
+                    confirmsRetake = true
                 } label: {
-                    Text(L10n(discardTitle))
-                        .frame(maxWidth: .infinity)
+                    Label(L10n(discardTitle), systemImage: "arrow.counterclockwise")
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 32)
                 }
+                .buttonStyle(.bordered)
+                .accessibilityIdentifier("movementRetake")
                 if isSaving { ProgressView(L10n("Saving…")) }
             }
             .disabled(isSaving)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(.bar)
+        }
+        .alert(L10n("Retake this recording?"), isPresented: $confirmsRetake) {
+            Button(L10n("Keep this result"), role: .cancel) {}
+            Button(L10n("Retake"), role: .destructive) { onDiscard() }
+        } message: {
+            Text(L10n(recordingIsSaved
+                      ? "Your saved recording stays until a new one is saved."
+                      : "This unsaved recording will be replaced. Previously saved recordings stay."))
         }
         .navigationTitle(L10n("Result"))
         .navigationBarBackButtonHidden(true)
     }
 
     private func metricRow(_ label: String, _ value: String) -> some View {
-        LabeledContent(L10n(label), value: value)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L10n(label)).foregroundStyle(.secondary)
+                    Text(value)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                LabeledContent(L10n(label), value: value)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(L10n(label))
+        .accessibilityValue(value)
+    }
+
+    private func resultMetricRow(_ label: String, metric: TrendMetric) -> some View {
+        metricRow(label, metric.availability(for: trial).value.map { metric.formatted($0) }
+                  ?? L10n("Value unavailable"))
+            .accessibilityIdentifier("movementResultMetric-\(metric.rawValue)")
     }
 }
 
 struct RawSignalPlotView: View {
     let samples: [TimestampedSample]
 
-    private var cleanSamples: [TimestampedSample] {
-        samples.filter { $0.t >= 0 }
-    }
+    private var signal: MovementSignalAssessment { MovementSignalAssessment(samples: samples) }
 
     var body: some View {
         VStack(spacing: 6) {
             Canvas { context, size in
-                let points = cleanSamples
-                guard points.count >= 2,
+                let points = samples
+                guard signal.hasPlottableSignal,
                       let tMin = points.first?.t,
                       let tMax = points.last?.t,
                       let vMin = points.map(\.value).min(),
@@ -1287,7 +1416,7 @@ struct RawSignalPlotView: View {
                 for (index, sample) in points.enumerated() {
                     let x = CGFloat((sample.t - tMin) / tRange) * size.width
                     let y = topPadding + plotHeight - CGFloat((sample.value - vMin) / vRange) * plotHeight
-                    if index == 0 {
+                    if index == 0 || sample.t - points[index - 1].t >= MovementSignalAssessment.gapWarningSeconds {
                         path.move(to: CGPoint(x: x, y: y))
                     } else {
                         path.addLine(to: CGPoint(x: x, y: y))
@@ -1296,17 +1425,17 @@ struct RawSignalPlotView: View {
                 context.stroke(path, with: .color(.accentColor), lineWidth: 1.8)
             }
             .overlay {
-                if cleanSamples.count < 2 {
-                    Text(L10n("No signal samples saved"))
+                if !signal.hasPlottableSignal {
+                    Text(L10n("No usable signal to display"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
 
             HStack {
-                Text("0 s")
+                Text(String(format: L10n("%.1f s"), signal.hasPlottableSignal ? samples.first?.t ?? 0.0 : 0.0))
                 Spacer()
-                Text(String(format: L10n("%.1f s"), cleanSamples.last?.t ?? 0))
+                Text(String(format: L10n("%.1f s"), signal.hasPlottableSignal ? samples.last?.t ?? 0.0 : 0.0))
             }
             .font(.caption2.monospacedDigit())
             .foregroundStyle(.secondary)
@@ -1374,6 +1503,13 @@ struct MovementSessionFlowView: View {
     @State private var isSaving = false
     @State private var showsSaveError = false
     @State private var hasFinishedSession = false
+    @StateObject private var videoDraft = MovementVideoDraft()
+    @State private var completedTrial: Trial?
+    @State private var isFinishingRecording = false
+    @State private var showsTaskInformation = false
+    @State private var pendingSaveFinishes: Bool?
+    @State private var attemptedAutomaticSaveID: UUID?
+    @State private var savedVideoMessage: String?
 
     // MARK: - Per-trial recording machinery
 
@@ -1412,7 +1548,7 @@ struct MovementSessionFlowView: View {
     }
     private var usingSynthetic: Bool { activeSignalSource == .synthetic }
     private var canStartRecording: Bool {
-        !usingWatch || PhoneWC.shared.isWatchReachable
+        (!usingWatch || PhoneWC.shared.isWatchReachable) && cameraCapture == nil && watchCapture == nil
     }
 
     private var flowUsesCamera: Bool {
@@ -1476,15 +1612,17 @@ struct MovementSessionFlowView: View {
                     CameraMovementRecordingView(
                         taskType: currentStep.task, side: currentStep.side, capture: cameraCapture,
                         monitor: signalMonitor, recorder: recorder, stopCondition: stopCondition,
-                        countdown: cameraCountdown, progressText: progressText
+                        countdown: cameraCountdown, progressText: progressText,
+                        isFinishingRecording: isFinishingRecording
                     ) {
                         if case .recording = phase {
-                            Button(role: .destructive) { recorder?.finish() } label: {
-                                Label(L10n("Stop"), systemImage: "stop.circle.fill")
+                            Button(role: .destructive) { requestRecordingStop() } label: {
+                                Label(L10n(isFinishingRecording ? "Finishing recording…" : "Stop"), systemImage: "stop.circle.fill")
                                     .font(.headline)
                                     .frame(maxWidth: .infinity, minHeight: 54)
                             }
                             .buttonStyle(.borderedProminent)
+                            .disabled(isFinishingRecording)
                         }
                     }
                     .disabled(isGoingBack || isSaving)
@@ -1542,53 +1680,51 @@ struct MovementSessionFlowView: View {
         }
         .alert(L10n("Recording not saved"), isPresented: $showsSaveError) {
             Button(L10n("OK"), role: .cancel) {}
-        } message: {
-            Text(L10n("Please try saving again. This recording is still here."))
-        }
-        .onChange(of: recorder?.isRecording) { oldIsRec, newIsRec in
-            print("[PERF] isRecording changed from \(String(describing: oldIsRec)) to \(String(describing: newIsRec))")
-            // Only switch to .analyzing when the recorder actually stopped recording.
-            // Reassigning a fresh recorder (nil -> false or false -> false) must NOT trigger this.
-            if oldIsRec == true, newIsRec == false, case .recording = phase, !isGoingBack {
-                print("[PERF] stopping hardware before .analyzing")
-                // Stop the camera/watch BEFORE the preview overlay disappears. If the
-                // AVCaptureSession is still running when the preview layer is torn down,
-                // the main thread blocks until the session stops (~9 s hang).
-                let cam = self.cameraCapture
-                let watch = self.watchCapture
-                let attemptID = captureAttemptID
-                Task.detached(priority: .userInitiated) {
-                    let group = DispatchGroup()
-                    if let cam { group.enter(); cam.stop { group.leave() } }
-                    if let watch { group.enter(); watch.stop { group.leave() } }
-                    group.notify(queue: .main) {
-                        Task { @MainActor in
-                            guard self.captureAttemptID == attemptID else { return }
-                            self.cameraCapture = nil
-                            self.watchCapture = nil
-                            if case .recording = self.phase {
-                                self.phase = .analyzing
-                            }
-                            print("[PERF] hardware stopped; phase now \(String(describing: self.phase))")
-                        }
-                    }
+            if videoDraft.url != nil, case .trialResult(let trial) = phase {
+                Button(L10n("Save without video")) {
+                    persistTrial(trial, finish: pendingSaveFinishes, includeVideo: false)
                 }
             }
+        } message: {
+            Text(L10n("Please try saving again. This recording is still here."))
         }
         #if DEBUG && targetEnvironment(simulator)
         .onAppear {
             let arguments = ProcessInfo.processInfo.arguments
             if phase == .intro, arguments.contains("--ui-test-save-result"),
                arguments.contains("--ui-test-session-save") {
-                // Isolated UI fixture; no recording is saved until the test taps Save.
+                // Isolated completed-recording fixture, including automatic local saving.
                 context = .preStim
                 hasSelectedContext = true
-                phase = .trialResult(Trial(taskType: .fingerTap, side: .right, source: .synthetic,
+                let scenarioIndex = arguments.firstIndex(of: "--ui-test-recording-feedback")
+                let scenario = scenarioIndex.flatMap { arguments.indices.contains($0 + 1) ? arguments[$0 + 1] : nil }
+                let samples: [TimestampedSample]
+                switch scenario {
+                case "missing": samples = []
+                case "gaps": samples = [0.0, 0.1, 0.2, 10.0, 10.1, 10.2].map { .init(t: $0, value: sin($0)) }
+                case "trailingGap": samples = (0...100).map { .init(t: Double($0) / 10, value: sin(Double($0) / 3)) }
+                default: samples = (0...300).map { .init(t: Double($0) / 10, value: sin(Double($0) / 3)) }
+                }
+                let hasVideo = arguments.contains("--ui-test-private-video")
+                let trial = Trial(taskType: .fingerTap, side: .right, source: hasVideo ? .camera : .synthetic,
                     stopCondition: .thirtySec,
-                    samples: (0...300).map { .init(t: Double($0) / 10, value: sin(Double($0) / 3)) },
-                    metrics: MovementMetrics(cycleCount: 15, frequencyHz: 2, meanAmplitude: 0.2,
+                    samples: samples,
+                    metrics: MovementMetrics(cycleCount: scenario == "noCycles" ? 0 : 15, frequencyHz: 2, meanAmplitude: 0.2,
                         amplitudeDecrementSlope: 0, rhythmCV: 0.1, pauseCount: 0,
-                        onsetLatencySec: 0.2, qualityIndex: 0.8)))
+                        onsetLatencySec: 0.2, qualityIndex: scenario == "lowIndex" ? 0 : 0.8),
+                    recordedDurationSeconds: scenario == "trailingGap" ? 30 : nil)
+                if hasVideo {
+                    Task { @MainActor in
+                        do {
+                            let url = try await makeMovementVideoTestFixture()
+                            videoDraft.receive(url)
+                            if arguments.contains("--ui-test-video-save-failure") {
+                                try? FileManager.default.removeItem(at: url)
+                            }
+                        } catch { videoDraft.receive(nil) }
+                        phase = .trialResult(trial)
+                    }
+                } else { phase = .trialResult(trial) }
             } else if phase == .intro, arguments.contains("--ui-test-watch-layout") {
                 context = .preStim
                 hasSelectedContext = true
@@ -1596,9 +1732,31 @@ struct MovementSessionFlowView: View {
             }
         }
         #endif
-        .onDisappear { cancelEverything() }
+        .onDisappear { handleFlowDisappearance() }
         .sheet(isPresented: $isCalibrating) {
             HandCalibrationView { isCalibrating = false }
+        }
+        .sheet(isPresented: $showsTaskInformation) {
+            NavigationStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(L10n("These tasks are adapted from hand-movement tests in MDS-UPDRS Part III, used by clinicians to assess movement in Parkinson's disease."))
+                        Text(L10n("They measure speed, movement size and rhythm, including pauses or slowing."))
+                        Text(L10n("This app records each hand for 30 seconds."))
+                        Text(L10n("The recordings can help you follow changes in your movement. They complement a clinical examination, but do not provide an MDS-UPDRS score."))
+                    }
+                    .font(.body)
+                    .padding()
+                }
+                .navigationTitle(L10n("About these tasks"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(L10n("Done")) { showsTaskInformation = false }
+                    }
+                }
+            }
+            .presentationDetents([.medium, .large])
         }
     }
 
@@ -1611,12 +1769,21 @@ struct MovementSessionFlowView: View {
                     .font(.system(size: 72))
                     .foregroundStyle(.tint)
 
-                Text(L10n("Movement Session"))
-                    .font(.largeTitle.bold())
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(spacing: 4) {
+                    Text(L10n("Movement Session"))
+                        .font(.largeTitle.bold())
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button { showsTaskInformation = true } label: {
+                        Image(systemName: "info.circle")
+                            .font(.title2)
+                            .frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel(L10n("About these tasks"))
+                    .accessibilityIdentifier("movementSessionInfo")
+                }
 
-                Text(L10n("We will guide you through 6 short hand recordings. It takes about 2 minutes."))
+                Text(L10n("6 recordings, about 5–7 minutes. Take breaks whenever you need."))
                     .font(.title3)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
@@ -1637,9 +1804,9 @@ struct MovementSessionFlowView: View {
                 #endif
 
                 VStack(alignment: .leading, spacing: 12) {
-                    bullet(L10n("Tap index finger on thumb"))
-                    bullet(L10n("Open and close your fist"))
-                    bullet(L10n("Rotate forearm palm-up / palm-down"))
+                    numberedTask(1, "Tap index finger on thumb")
+                    numberedTask(2, "Open and close your fist")
+                    numberedTask(3, "Rotate forearm palm-up / palm-down")
                 }
 
                 if flowUsesCamera {
@@ -1647,7 +1814,7 @@ struct MovementSessionFlowView: View {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundStyle(.green)
-                            Text(L10n("Hand scale calibrated"))
+                            Text(L10n("Hand size calibrated"))
                                 .foregroundStyle(.green)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer()
@@ -1665,7 +1832,7 @@ struct MovementSessionFlowView: View {
                         }
                         .buttonStyle(.bordered)
                     }
-                    Text(L10n("For each new set of tests, we recommend recalibrating."))
+                    Text(L10n("For each new session, we recommend recalibrating."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -1694,10 +1861,12 @@ struct MovementSessionFlowView: View {
         }
     }
 
-    private func bullet(_ text: String) -> some View {
+    private func numberedTask(_ number: Int, _ text: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(.green)
+            Text("\(number).")
+                .font(.body.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .frame(width: 28, alignment: .trailing)
             Text(L10n(text))
                 .font(.body)
                 .fixedSize(horizontal: false, vertical: true)
@@ -1773,15 +1942,19 @@ struct MovementSessionFlowView: View {
     private var instructionView: some View {
         ScrollView {
             instructionContent
-                .padding(.top, 24)
+                .padding(.vertical, 12)
+        }
+        .safeAreaInset(edge: .bottom) {
+            instructionActions
+                .padding(.horizontal, 24)
+                .padding(.vertical, 8)
+                .background(Color(.systemBackground))
         }
     }
 
     private var instructionContent: some View {
         let step = currentStep
-        return VStack(spacing: 24) {
-            Spacer()
-
+        return VStack(spacing: 14) {
             Text(progressText)
                 .font(.headline)
                 .foregroundStyle(.secondary)
@@ -1795,9 +1968,12 @@ struct MovementSessionFlowView: View {
                     .padding(.horizontal, 32)
             }
 
-            Image(systemName: taskIcon(step.task))
-                .font(.system(size: 64))
-                .foregroundStyle(.tint)
+            if MovementDemonstrationClip.clip(task: step.task, side: step.side) == nil {
+                Image(systemName: taskIcon(step.task))
+                    .font(.system(size: 48))
+                    .foregroundStyle(.tint)
+                    .accessibilityIdentifier("movementInstructionTaskIcon")
+            }
 
             Text(step.task.displayName)
                 .font(.title.bold())
@@ -1807,6 +1983,9 @@ struct MovementSessionFlowView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 32)
 
+            MovementDemonstrationView(taskType: step.task, side: step.side)
+                .padding(.horizontal, 24)
+
             Text(taskInstruction(step.task))
                 .font(.title3)
                 .multilineTextAlignment(.center)
@@ -1814,20 +1993,13 @@ struct MovementSessionFlowView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 32)
 
-            Text(L10n("Please perform the movement as fast and as far as possible."))
-                .font(.title3.bold())
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.primary)
-                .padding(.horizontal, 32)
-
             HStack(spacing: 12) {
                 Image(systemName: "hand.raised.fill")
                     .font(.title)
-                    .scaleEffect(x: step.side == .left ? -1 : 1, y: 1)
+                    .scaleEffect(x: MovementRecordingGuidance(taskType: step.task, side: step.side).handIconHorizontalScale, y: 1)
                 Text(L10n("\(step.side.rawValue.capitalized) hand"))
                     .font(.title2.bold())
             }
-            .padding(.top, 8)
 
             if usingCamera {
                 Text(L10n("Hold your hand in front of the camera so it fills the frame."))
@@ -1847,51 +2019,47 @@ struct MovementSessionFlowView: View {
                     .padding(.horizontal, 32)
             }
 
-            Spacer()
-
-            VStack(spacing: 12) {
-                DisclosureGroup(L10n("Last Parkinson's medication")) {
-                    MovementMedicationSelection(timing: $medicationTiming, showsHeading: false)
-                        .padding(.vertical, 8)
-                }
-                if usingWatch {
-                    WatchPrerequisiteView()
-                }
-
-                TimelineView(.periodic(from: .now, by: 1.0)) { _ in
-                    Button {
-                        startCountdown(step: currentStepIndex)
-                    } label: {
-                        Label(L10n("Start Recording"), systemImage: "record.circle")
-                            .font(.title3.bold())
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!canStartRecording)
-                }
-
-                Button {
-                    skipStep()
-                } label: {
-                    Text(L10n("Skip this measurement"))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                }
-                .buttonStyle(.bordered)
-                .tint(.secondary)
-                .accessibilityIdentifier("movementSkipMeasurement")
-
-                if !trials.isEmpty {
-                    Button { finishAcceptedFlow() } label: {
-                        Label(L10n("Finish for now"), systemImage: "flag.checkered")
-                            .frame(maxWidth: .infinity, minHeight: 54)
-                    }
-                    .accessibilityIdentifier("movementFinishForNow")
-                }
+            if usingWatch {
+                WatchPrerequisiteView()
+                    .padding(.horizontal, 24)
             }
-            .padding(.horizontal, 32)
-            .padding(.bottom, 24)
+        }
+    }
+
+    private var instructionActions: some View {
+        VStack(spacing: 8) {
+            TimelineView(.periodic(from: .now, by: 1.0)) { _ in
+                Button {
+                    startCountdown(step: currentStepIndex)
+                } label: {
+                    Label(L10n("Start Recording"), systemImage: "record.circle")
+                        .font(.title3.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!canStartRecording)
+                .accessibilityIdentifier("movementStartRecording")
+            }
+
+            Button {
+                skipStep()
+            } label: {
+                Text(L10n("Skip this measurement"))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.bordered)
+            .tint(.secondary)
+            .accessibilityIdentifier("movementSkipMeasurement")
+
+            if !trials.isEmpty {
+                Button { finishAcceptedFlow() } label: {
+                    Label(L10n("Finish for now"), systemImage: "flag.checkered")
+                        .frame(maxWidth: .infinity, minHeight: 54)
+                }
+                .accessibilityIdentifier("movementFinishForNow")
+            }
         }
     }
 
@@ -1936,6 +2104,11 @@ struct MovementSessionFlowView: View {
                 .font(.headline)
                 .foregroundStyle(.secondary)
 
+            Text(currentStep.task.displayName)
+                .font(.title2.bold())
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
             if usingWatch {
                 WatchStatusView(capture: watchCapture)
             }
@@ -1968,6 +2141,12 @@ struct MovementSessionFlowView: View {
                 .font(.headline)
                 .foregroundStyle(.secondary)
 
+            Text(currentStep.task.displayName)
+                .font(.title2.bold())
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("movementRecordingTask")
+
             if usingWatch {
                 WatchStatusView(capture: watchCapture)
             }
@@ -1977,11 +2156,12 @@ struct MovementSessionFlowView: View {
             }
 
             Button(role: .destructive) {
-                recorder?.finish()
+                requestRecordingStop()
             } label: {
-                Label(L10n("Stop"), systemImage: "stop.circle.fill")
+                Label(L10n(isFinishingRecording ? "Finishing recording…" : "Stop"), systemImage: "stop.circle.fill")
                     .font(.headline)
             }
+            .disabled(isFinishingRecording)
         }
         .padding(.horizontal)
         .padding(.top, 4)
@@ -2018,37 +2198,73 @@ struct MovementSessionFlowView: View {
                 saveTitle: isLastStep ? "Save & Finish" : "Save & Continue",
                 discardTitle: "Retake",
                 onSaveAndFinish: isLastStep ? nil : { acceptTrial(trial, finish: true) },
-                isSaving: isSaving
+                isSaving: isSaving,
+                videoMessage: isSaved(trial) ? savedVideoMessage : videoDraft.messageKey,
+                showsTrendsHint: true,
+                recordingIsSaved: isSaved(trial)
             )
+        }
+        .task(id: trial.id) { automaticallySaveTrial(trial) }
+    }
+
+    private func isSaved(_ trial: Trial) -> Bool {
+        savedSession?.trials.contains(where: { $0.id == trial.id }) == true
+    }
+
+    private func automaticallySaveTrial(_ trial: Trial) {
+        guard !isSaving, !isSaved(trial), attemptedAutomaticSaveID != trial.id else { return }
+        attemptedAutomaticSaveID = trial.id
+        persistTrial(trial, finish: nil)
+    }
+
+    private func acceptTrial(_ trial: Trial, finish: Bool, includeVideo: Bool = true) {
+        guard !isSaving else { return }
+        if isSaved(trial) {
+            advanceAfterSavedTrial(trial, finish: finish)
+        } else {
+            persistTrial(trial, finish: finish, includeVideo: includeVideo)
         }
     }
 
-    private func acceptTrial(_ trial: Trial, finish: Bool) {
+    // A completed take is checkpointed locally; only an explicit Finish requests upload.
+    private func persistTrial(_ trial: Trial, finish: Bool?, includeVideo: Bool = true) {
         guard !isSaving else { return }
-        var session = savedSession ?? MovementSession(
+        let session = savedSession ?? MovementSession(
             patientId: patientID.isEmpty ? "unset" : patientID,
             date: trial.startedAt, stimulationContext: context)
-        session.accept(trial)
+        pendingSaveFinishes = finish
         isSaving = true
-        sessionStore.saveAcceptedSession(session) { result in
+        sessionStore.saveAcceptedTrial(trial, in: session,
+            temporaryVideoURL: includeVideo ? videoDraft.url : nil) { result in
             isSaving = false
             switch result {
-            case .success:
+            case .success(let session):
+                if session.trials.first(where: { $0.id == trial.id })?.video != nil {
+                    savedVideoMessage = "Video saved in this app."
+                } else if videoDraft.unavailable || (!includeVideo && videoDraft.url != nil) {
+                    savedVideoMessage = "Video not saved. Your measurement is saved."
+                } else {
+                    savedVideoMessage = nil
+                }
+                videoDraft.discard()
                 savedSession = session
                 trials = session.trials
-                // Only advance the result that initiated this save.
-                guard case .trialResult(let current) = phase, current.id == trial.id else { return }
-                cleanupAfterTrial()
-                if finish {
-                    finishAcceptedFlow()
-                } else {
-                    currentStepIndex += 1
-                    startInstruction(step: currentStepIndex)
-                }
+                if let finish { advanceAfterSavedTrial(trial, finish: finish) }
             case .failure:
                 phase = .trialResult(trial)
                 showsSaveError = true
             }
+        }
+    }
+
+    private func advanceAfterSavedTrial(_ trial: Trial, finish: Bool) {
+        guard case .trialResult(let current) = phase, current.id == trial.id else { return }
+        cleanupAfterTrial()
+        if finish {
+            finishAcceptedFlow()
+        } else {
+            currentStepIndex += 1
+            startInstruction(step: currentStepIndex)
         }
     }
 
@@ -2062,6 +2278,7 @@ struct MovementSessionFlowView: View {
     }
 
     private func retakeTrial() {
+        guard !isSaving else { return }
         cleanupAfterTrial()
         startInstruction(step: currentStepIndex)
     }
@@ -2105,6 +2322,15 @@ struct MovementSessionFlowView: View {
                             Text(trial.side.displayName)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
+                            if trial.video != nil {
+                                NavigationLink {
+                                    MovementVideoPlayerView(trial: trial, videoStore: sessionStore.videoStore)
+                                } label: {
+                                    Label(L10n("View recording"), systemImage: "play.circle")
+                                        .frame(minHeight: 44)
+                                }
+                                .accessibilityIdentifier("movementSavedVideo")
+                            }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -2148,6 +2374,8 @@ struct MovementSessionFlowView: View {
 
         isGoingBack = true
         captureAttemptID = UUID()
+        completedTrial = nil
+        videoDraft.discard()
         let attemptID = captureAttemptID
         countdownTimer?.invalidate()
         countdownTimer = nil
@@ -2186,7 +2414,10 @@ struct MovementSessionFlowView: View {
     }
 
     private func startCountdown(step: Int) {
+        guard canStartRecording else { return }
         captureAttemptID = UUID()
+        completedTrial = nil
+        videoDraft.discard()
         let attemptID = captureAttemptID
         cameraError = nil
         signalMonitor.reset()
@@ -2223,8 +2454,11 @@ struct MovementSessionFlowView: View {
                     cameraError = error.localizedDescription
                     cleanupAfterTrial()
                     phase = .instruction(step: step)
+                } else {
+                    beginCountdown(step: step)
                 }
             }
+            return
         }
 
         if usingSynthetic {
@@ -2236,6 +2470,7 @@ struct MovementSessionFlowView: View {
     }
 
     private func beginCountdown(step: Int) {
+        isFinishingRecording = false
         phase = .countdown(step: step)
         countdownRemaining = 3
         countdownTimer?.invalidate()
@@ -2252,7 +2487,47 @@ struct MovementSessionFlowView: View {
         countdownTimer = timer
     }
 
+
+    private func requestRecordingStop() {
+        guard !isFinishingRecording else { return }
+        isFinishingRecording = true
+        recorder?.finish()
+    }
+
+    private func finishRecordingCapture() {
+        isFinishingRecording = true
+        // Keep the preview mounted until capture stops. Completion, not a
+        // SwiftUI-observed flag transition, owns this teardown.
+        let cam = self.cameraCapture
+        let watch = self.watchCapture
+        let attemptID = captureAttemptID
+        let group = DispatchGroup()
+        if let cam {
+            group.enter()
+            cam.finishMeasurement { url in
+                if captureAttemptID == attemptID { videoDraft.receive(url) }
+                else if let url { try? FileManager.default.removeItem(at: url) }
+                group.leave()
+            }
+        }
+        if let watch { group.enter(); watch.stop { group.leave() } }
+        group.notify(queue: .main) {
+            Task { @MainActor in
+                guard self.captureAttemptID == attemptID else { return }
+                self.cameraCapture = nil
+                self.watchCapture = nil
+                self.syntheticSource?.stop()
+                if case .recording = self.phase {
+                    self.phase = .analyzing
+                }
+                self.showCompletedTrialIfReady()
+                print("[PERF] guided capture finalized")
+            }
+        }
+    }
+
     private func startRecording(step: Int) {
+        isFinishingRecording = false
         let current = steps[step]
         let attemptID = captureAttemptID
         let medicationSnapshot = medicationTiming
@@ -2269,10 +2544,11 @@ struct MovementSessionFlowView: View {
                           "task": trial.taskType.rawValue,
                           "side": trial.side.rawValue])
 
-            // Hardware was already stopped when .analyzing began.
+            // Completion also handles an empty or very short recording.
             Task { @MainActor in
                 guard self.captureAttemptID == attemptID else { return }
-                self.phase = .trialResult(trial.withMedicationTiming(medicationSnapshot))
+                self.completedTrial = trial.withMedicationTiming(medicationSnapshot)
+                self.finishRecordingCapture()
             }
             EventStore.shared.append(
                 type: "TASK", tag: "trial_completed",
@@ -2284,7 +2560,6 @@ struct MovementSessionFlowView: View {
         }
         recorder = r
         phase = .recording(step: step)
-        r.start()
 
         if let cameraCapture {
             cameraCapture.onSample = { [signalMonitor] value, time in
@@ -2297,12 +2572,34 @@ struct MovementSessionFlowView: View {
                 signalMonitor.ingest(value: value, at: time)
             }
         } else if let syntheticSource {
-            syntheticSource.start(preset: .parkinsonian,
-                                  feeding: r,
-                                  onSample: { [signalMonitor] value, time in
-                signalMonitor.ingest(value: value, at: time)
-            })
+            let startSynthetic = {
+                r.start()
+                syntheticSource.start(preset: .parkinsonian, feeding: r,
+                                      onSample: { [signalMonitor] value, time in
+                    signalMonitor.ingest(value: value, at: time)
+                })
+            }
+            #if DEBUG && targetEnvironment(simulator)
+            if ProcessInfo.processInfo.arguments.contains("--ui-test-delayed-recorder-start") {
+                // Exercise Stop before capture starts, without inventing signal samples.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    guard captureAttemptID == attemptID else { return }
+                    r.start()
+                    if isFinishingRecording { r.finish() }
+                }
+            } else { startSynthetic() }
+            #else
+            startSynthetic()
+            #endif
         }
+        if let cameraCapture {
+            cameraCapture.startRecordingToTemporaryFile { started in
+                guard captureAttemptID == attemptID else { return }
+                if !started { videoDraft.receive(nil) }
+                r.start()
+                if isFinishingRecording { r.finish() }
+            }
+        } else if watchCapture != nil { r.start() }
 
         EventStore.shared.append(
             type: "TASK", tag: "trial_started",
@@ -2313,8 +2610,16 @@ struct MovementSessionFlowView: View {
                       "mode": stopCondition.mode.rawValue])
     }
 
+    private func showCompletedTrialIfReady() {
+        guard cameraCapture == nil, watchCapture == nil, let completedTrial else { return }
+        phase = .trialResult(completedTrial)
+        automaticallySaveTrial(completedTrial)
+    }
+
     private func cleanupAfterTrial() {
         captureAttemptID = UUID()
+        completedTrial = nil
+        videoDraft.discard()
         isGoingBack = false
         countdownTimer?.invalidate()
         countdownTimer = nil
@@ -2326,16 +2631,22 @@ struct MovementSessionFlowView: View {
         syntheticSource = nil
         signalMonitor.reset()
         recorder?.onComplete = nil
+        if recorder?.isRecording == true { recorder?.finish() }
         recorder = nil
     }
 
-    private func cancelEverything() {
-        cleanupAfterTrial()
-        if case .trialResult = phase { return }
-        if case .summary = phase { resetFlow(); return }
-        hasSelectedContext = false
-        if trials.isEmpty { medicationTiming = nil }
-        phase = .intro
+    private func handleFlowDisappearance() {
+        guard !isSaving else { return }
+        switch phase {
+        case .trialResult(let trial):
+            automaticallySaveTrial(trial)
+        case .countdown, .recording:
+            cleanupAfterTrial()
+            phase = .instruction(step: currentStepIndex)
+        default:
+            // Navigation to a video, Trends, or another tab is not a new session.
+            break
+        }
     }
 
     private var savedRecordingCountText: String {
@@ -2346,6 +2657,9 @@ struct MovementSessionFlowView: View {
         trials.removeAll()
         savedSession = nil
         hasFinishedSession = false
+        attemptedAutomaticSaveID = nil
+        savedVideoMessage = nil
+        pendingSaveFinishes = nil
         showsSaveError = false
         currentStepIndex = 0
         context = .unspecified
@@ -2374,30 +2688,6 @@ private struct WatchStatusView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
-    }
-}
-
-/// Placeholder shown under the camera preview during movement tasks.
-/// Swap in a `VideoPlayer` here once the instruction videos are ready.
-private struct MovementVideoPlaceholder: View {
-    let taskType: MovementTaskType
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "play.rectangle.fill")
-                .font(.system(size: 24))
-                .foregroundStyle(.secondary.opacity(0.6))
-            Text(String(format: L10n("Instruction video for %@"), taskType.displayName))
-                .font(.callout)
-                .foregroundStyle(.secondary)
-            Text(L10n("Coming soon"))
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-        }
-        .multilineTextAlignment(.center)
-        .fixedSize(horizontal: false, vertical: true)
-        .padding(.horizontal, 8)
-        .frame(maxWidth: .infinity)
     }
 }
 

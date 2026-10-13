@@ -149,6 +149,36 @@ struct TimestampedSample: Codable, Equatable {
     let value: Double  // e.g. thumb–index distance, or forearm rotation rate
 }
 
+/// Capture evidence only. Slow, small or irregular movements are not capture failures.
+struct MovementSignalAssessment: Equatable {
+    // Advisory discontinuity, not a sampling-rate or clinical validity threshold.
+    static let gapWarningSeconds = 2.0
+    let hasPlottableSignal: Bool
+    let hasAnalysisInput: Bool
+    let hasGaps: Bool
+
+    init(samples: [TimestampedSample], recordedDurationSeconds: Double? = nil) {
+        let ordered = samples.allSatisfy { $0.t.isFinite && $0.value.isFinite && $0.t >= 0 }
+            && zip(samples, samples.dropFirst()).allSatisfy { pair in pair.0.t <= pair.1.t }
+        let hasSpan = samples.first.map { first in
+            samples.last.map { $0.t > first.t } ?? false
+        } ?? false
+        hasPlottableSignal = ordered && hasSpan && samples.count >= 2
+        hasAnalysisInput = ordered && hasSpan && samples.count >= 4
+        let hasTrailingGap: Bool
+        if let duration = recordedDurationSeconds, duration.isFinite, duration >= 0,
+           let last = samples.last {
+            hasTrailingGap = duration - last.t >= Self.gapWarningSeconds
+        } else {
+            hasTrailingGap = false
+        }
+        hasGaps = ordered && ((samples.first?.t ?? 0) >= Self.gapWarningSeconds
+            || zip(samples, samples.dropFirst()).contains { pair in
+                pair.1.t - pair.0.t >= Self.gapWarningSeconds
+            } || hasTrailingGap)
+    }
+}
+
 // MARK: - Computed metrics
 
 /// Continuous metrics mapped 1:1 to the five UPDRS scoring criteria,
@@ -176,6 +206,12 @@ struct MovementMetrics: Codable, Equatable {
 
 // MARK: - Trial & Session
 
+/// A relative file reference for an accepted, privately stored camera movie.
+struct MovementVideoReference: Codable, Equatable {
+    let fileName: String
+    let byteCount: Int64
+}
+
 /// A single recording of one task on one hand.
 struct Trial: Identifiable, Codable, Equatable {
     let id: UUID
@@ -193,6 +229,10 @@ struct Trial: Identifiable, Codable, Equatable {
     let metrics: MovementMetrics
     /// Nil means unanswered (including older recordings), not "none taken".
     let medicationTiming: MedicationTiming?
+    /// Actual elapsed recording time, independent of tracking. Nil for older recordings.
+    let recordedDurationSeconds: Double?
+    /// Relative private-file reference. No video bytes or absolute device paths in JSONL.
+    let video: MovementVideoReference?
 
     init(id: UUID = UUID(),
          taskType: MovementTaskType,
@@ -203,7 +243,9 @@ struct Trial: Identifiable, Codable, Equatable {
          startUptime: Double? = nil,
          samples: [TimestampedSample],
          metrics: MovementMetrics,
-         medicationTiming: MedicationTiming? = nil) {
+         medicationTiming: MedicationTiming? = nil,
+         recordedDurationSeconds: Double? = nil,
+         video: MovementVideoReference? = nil) {
         self.id = id
         self.taskType = taskType
         self.side = side
@@ -214,13 +256,23 @@ struct Trial: Identifiable, Codable, Equatable {
         self.samples = samples
         self.metrics = metrics
         self.medicationTiming = medicationTiming
+        self.recordedDurationSeconds = recordedDurationSeconds
+        self.video = video
     }
 
     func withMedicationTiming(_ timing: MedicationTiming?) -> Self {
         Self(id: id, taskType: taskType, side: side, source: source,
              stopCondition: stopCondition, startedAt: startedAt, startUptime: startUptime,
              samples: samples, metrics: metrics,
-             medicationTiming: timing?.forRecording(at: startedAt))
+             medicationTiming: timing?.forRecording(at: startedAt),
+             recordedDurationSeconds: recordedDurationSeconds, video: video)
+    }
+
+    func withVideo(_ video: MovementVideoReference?) -> Self {
+        Self(id: id, taskType: taskType, side: side, source: source,
+             stopCondition: stopCondition, startedAt: startedAt, startUptime: startUptime,
+             samples: samples, metrics: metrics, medicationTiming: medicationTiming,
+             recordedDurationSeconds: recordedDurationSeconds, video: video)
     }
 }
 

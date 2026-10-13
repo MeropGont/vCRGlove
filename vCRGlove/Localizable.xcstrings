@@ -1,149 +1,38 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Baseline (older recording)" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ausgangsmessung (ältere Aufnahme)"
-          }
-        }
-      }
-    },
-    "No stimulation planned today" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Heute keine Stimulation geplant"
-          }
-        }
-      }
-    },
-    "Choose stimulation timing" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stimulationszeitpunkt wählen"
-          }
-        }
-      }
-    },
-    "Last Parkinson's medication" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Letzte Parkinson-Medikation"
-          }
-        }
-      }
-    },
-    "Not entered" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicht angegeben"
-          }
-        }
-      }
-    },
-    "At a specific time" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zu einer bestimmten Zeit"
-          }
-        }
-      }
-    },
-    "None taken today" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Heute keine eingenommen"
-          }
-        }
-      }
-    },
-    "Last dose" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Letzte Einnahme"
-          }
-        }
-      }
-    },
-    "Last intake in your journal" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Letzte Einnahme im Journal"
-          }
-        }
-      }
-    },
-    "Confirm journal time" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Journal-Zeit bestätigen"
-          }
-        }
-      }
-    },
-    "Time since last dose: %d min" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seit der letzten Einnahme: %d Min."
-          }
-        }
-      }
-    },
-    "No medication taken today" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Heute keine Medikation eingenommen"
-          }
-        }
-      }
-    },
-    "Medication time: not sure" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einnahmezeit: unsicher"
-          }
-        }
-      }
-    },
+    "vCR log" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "vCR-Eintrag" } } } },
+    "Journal entry" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Journaleintrag" } } } },
+    "Movement session" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Bewegungssitzung" } } } },
+    "Selected day" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewählter Tag" } } } },
+    "Select" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Auswählen" } } } },
+    "Select videos" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Videos auswählen" } } } },
+    "Share videos" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Videos teilen" } } } },
+    "Delete video" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Video löschen" } } } },
+    "Permanently delete this video?" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Dieses Video endgültig löschen?" } } } },
+    "This saved copy will be permanently deleted from this phone. This cannot be undone." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese gespeicherte Kopie wird endgültig von diesem iPhone gelöscht. Dies lässt sich nicht rückgängig machen." } } } },
+    "Video deletion failed" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Video konnte nicht gelöscht werden" } } } },
+    "Movement measurements and videos" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Bewegungsmessungen und Videos" } } } },
+    "View or delete videos" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Videos ansehen oder löschen" } } } },
+    "Select video" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Video auswählen" } } } },
+    "Selected" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewählt" } } } },
+    "Not selected" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Nicht ausgewählt" } } } },
+    "Deleting videos keeps your movement measurements. Copies you already shared are not deleted." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ihre Bewegungsmessungen bleiben erhalten. Bereits geteilte Kopien werden nicht gelöscht." } } } },
+    "Delete selected videos (%d)" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewählte Videos löschen (%d)" } } } },
+    "Permanently delete selected videos?" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewählte Videos endgültig löschen?" } } } },
+    "Delete videos" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Videos löschen" } } } },
+    "These saved copies will be permanently deleted from this phone. This cannot be undone." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese gespeicherten Kopien werden endgültig von diesem iPhone gelöscht. Dies lässt sich nicht rückgängig machen." } } } },
+    "For example: Today I feel strong." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Heute fühle ich mich stark." } } } },
+    "For example: My mood is low today." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Heute bin ich niedergeschlagen." } } } },
+    "For example: I slept well last night." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Ich habe letzte Nacht gut geschlafen." } } } },
+    "For example: Walking felt easier today." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Das Gehen fiel mir heute leichter." } } } },
+    "For example: I needed more breaks today." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Heute brauchte ich mehr Pausen." } } } },
+    "For example: Today was a quiet day." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Heute war ein ruhiger Tag." } } } },
+    "Videos deleted: %d. Measurements kept." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Videos gelöscht: %d. Messungen bleiben erhalten." } } } },
+    "Some videos could not be deleted. Please try again." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Einige Videos konnten nicht gelöscht werden. Bitte versuchen Sie es erneut." } } } },
+    "Deletion could not be completed. Please try again to finish removing the video references." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Das Löschen konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut, um die Videoliste zu aktualisieren." } } } },
+    "Recording history" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Bisherige Aufnahmen" } } } },
+    "Show older recordings" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ältere Aufnahmen anzeigen" } } } },
     "/cycle" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -162,6 +51,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%.1f / %.0f s"
+          }
+        }
+      }
+    },
+    "%.1f %%" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.1f %%"
+          }
+        }
+      }
+    },
+    "%.1f repetitions/s" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.1f Wiederholungen/s"
+          }
+        }
+      }
+    },
+    "%.1f seconds" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.1f Sekunden"
+          }
+        }
+      }
+    },
+    "%.1f taps/s" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.1f Taps/s"
           }
         }
       }
@@ -237,6 +170,16 @@
         }
       }
     },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
     "%@ glove" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -265,6 +208,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@: %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@, %3$@"
           }
         }
       }
@@ -345,6 +298,9 @@
         }
       }
     },
+    "%lld." : {
+
+    },
     "%lld%%" : {
       "localizations" : {
         "de" : {
@@ -406,6 +362,7 @@
       }
     },
     "0 s" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -566,6 +523,28 @@
         }
       }
     },
+    "6 recordings, about 5–7 minutes. Take breaks whenever you need." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 Aufnahmen, etwa 5–7 Minuten. Machen Sie Pausen nach Bedarf."
+          }
+        }
+      }
+    },
+    "7 days" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7 Tage"
+          }
+        }
+      }
+    },
     "10 repetitions" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -573,6 +552,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "10 Wiederholungen"
+          }
+        }
+      }
+    },
+    "30 days" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 Tage"
           }
         }
       }
@@ -605,6 +595,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ein kurzer Kameracheck vor den Tests."
+          }
+        }
+      }
+    },
+    "A signal was captured, but movement values could not be calculated. This does not mean you performed the task incorrectly." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Signal wurde erfasst, aber Bewegungswerte konnten nicht berechnet werden. Das bedeutet nicht, dass Sie den Test falsch durchgeführt haben."
+          }
+        }
+      }
+    },
+    "A signal was captured. Some values need more detected repetitions or could not be calculated." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Signal wurde erfasst. Einige Werte benötigen mehr erkannte Wiederholungen oder konnten nicht berechnet werden."
+          }
+        }
+      }
+    },
+    "About these tasks" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über diese Aufgaben"
           }
         }
       }
@@ -642,6 +665,17 @@
         }
       }
     },
+    "After saving, open Trends using the chart button at the top right." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach dem Speichern öffnen Sie die Ergebnisse über die Diagramm-Schaltfläche oben rechts."
+          }
+        }
+      }
+    },
     "After session" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -675,6 +709,17 @@
         }
       }
     },
+    "All dates" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Zeiträume"
+          }
+        }
+      }
+    },
     "All done!" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -682,6 +727,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fertig!"
+          }
+        }
+      }
+    },
+    "All medication timings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Medikamentenzeitpunkte"
+          }
+        }
+      }
+    },
+    "All stimulation timings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Stimulationszeitpunkte"
           }
         }
       }
@@ -853,6 +920,17 @@
         }
       }
     },
+    "At a specific time" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zu einer bestimmten Zeit"
+          }
+        }
+      }
+    },
     "Avatar selection will go here." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -937,6 +1015,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Baseline (vor jeder Stimulation)"
+          }
+        }
+      }
+    },
+    "Baseline (older recording)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgangsmessung (ältere Aufnahme)"
           }
         }
       }
@@ -1182,6 +1271,17 @@
         }
       }
     },
+    "Choose stimulation timing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulationszeitpunkt wählen"
+          }
+        }
+      }
+    },
     "Clear Event Log File" : {
       "localizations" : {
         "de" : {
@@ -1262,6 +1362,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Konzentration"
+          }
+        }
+      }
+    },
+    "Confirm journal time" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journal-Zeit bestätigen"
           }
         }
       }
@@ -1494,6 +1605,17 @@
         }
       }
     },
+    "Demonstration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beispiel"
+          }
+        }
+      }
+    },
     "Detected" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1645,6 +1767,17 @@
         }
       }
     },
+    "Duration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dauer"
+          }
+        }
+      }
+    },
     "Duration, gloves, and session preferences" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1726,6 +1859,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bewegung/Aktivität"
+          }
+        }
+      }
+    },
+    "Experimental movement index" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimenteller Bewegungsindex"
           }
         }
       }
@@ -1828,6 +1972,17 @@
         }
       }
     },
+    "Filters" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter"
+          }
+        }
+      }
+    },
     "Finger check" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1872,6 +2027,17 @@
         }
       }
     },
+    "Finishing recording…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahme wird beendet…"
+          }
+        }
+      }
+    },
     "Font Size" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1879,6 +2045,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Schriftgröße"
+          }
+        }
+      }
+    },
+    "For each new session, we recommend recalibrating." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für jede neue Sitzung empfehlen wir, erneut zu kalibrieren."
           }
         }
       }
@@ -1937,6 +2114,17 @@
         }
       }
     },
+    "From %d hours" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ab %d Stunden"
+          }
+        }
+      }
+    },
     "Future movement tasks" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1944,6 +2132,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zukünftige Bewegungsaufgaben"
+          }
+        }
+      }
+    },
+    "Gaps mean no signal was captured during those intervals." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In den Lücken wurde kein Signal erfasst."
           }
         }
       }
@@ -2187,6 +2386,17 @@
         }
       }
     },
+    "Hand size calibrated" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handgröße kalibriert"
+          }
+        }
+      }
+    },
     "Heuristic 0–1 index for personal trends — not a validated UPDRS score." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2292,6 +2502,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wie stark war es?"
+          }
+        }
+      }
+    },
+    "How quickly you repeated the movement." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie schnell Sie die Bewegung wiederholt haben."
           }
         }
       }
@@ -3284,6 +3505,17 @@
         }
       }
     },
+    "Keep this result" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Ergebnis behalten"
+          }
+        }
+      }
+    },
     "Keep your hand still" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3383,6 +3615,17 @@
         }
       }
     },
+    "Last dose" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzte Einnahme"
+          }
+        }
+      }
+    },
     "Last export" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3394,12 +3637,34 @@
         }
       }
     },
+    "Last intake in your journal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzte Einnahme im Journal"
+          }
+        }
+      }
+    },
     "Last log update" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Letzte Protokollaktualisierung"
+          }
+        }
+      }
+    },
+    "Last Parkinson's medication" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzte Parkinson-Medikation"
           }
         }
       }
@@ -3633,6 +3898,28 @@
         }
       }
     },
+    "Medication time: not sure" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einnahmezeit: unsicher"
+          }
+        }
+      }
+    },
+    "Medication timing unknown" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medikamentenzeitpunkt unbekannt"
+          }
+        }
+      }
+    },
     "Metric" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3829,6 +4116,28 @@
         }
       }
     },
+    "Movement values are available." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegungswerte sind verfügbar."
+          }
+        }
+      }
+    },
+    "Movement values are available. They are not a recording-quality score or a clinical rating." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegungswerte sind verfügbar. Sie bewerten weder die Aufnahmequalität noch den klinischen Zustand."
+          }
+        }
+      }
+    },
     "Need Help?" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3873,6 +4182,17 @@
         }
       }
     },
+    "No complete repetitions detected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine vollständigen Wiederholungen erkannt"
+          }
+        }
+      }
+    },
     "No entries saved for this day yet." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3880,6 +4200,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Für diesen Tag sind noch keine Einträge gespeichert."
+          }
+        }
+      }
+    },
+    "No matching recordings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine passenden Aufnahmen"
+          }
+        }
+      }
+    },
+    "No medication taken today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heute keine Medikation eingenommen"
           }
         }
       }
@@ -3906,6 +4248,17 @@
         }
       }
     },
+    "No saved videos yet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noch keine Videos gespeichert"
+          }
+        }
+      }
+    },
     "No signal samples saved" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3917,6 +4270,17 @@
         }
       }
     },
+    "No stimulation planned today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heute keine Stimulation geplant"
+          }
+        }
+      }
+    },
     "No stimulation yet today" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3924,6 +4288,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Heute noch keine Stimulation"
+          }
+        }
+      }
+    },
+    "No usable signal captured" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein nutzbares Signal erfasst"
+          }
+        }
+      }
+    },
+    "No usable signal to display" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein nutzbares Signal zur Anzeige"
+          }
+        }
+      }
+    },
+    "None taken today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heute keine eingenommen"
           }
         }
       }
@@ -3971,6 +4368,17 @@
         }
       }
     },
+    "Not entered" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht angegeben"
+          }
+        }
+      }
+    },
     "Not present" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4011,6 +4419,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unsicher"
+          }
+        }
+      }
+    },
+    "Not taken today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heute nicht eingenommen"
           }
         }
       }
@@ -4134,6 +4553,17 @@
         }
       }
     },
+    "Open a recording to view or share its video. JSON and CSV exports contain measurement data only." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnen Sie eine Aufnahme, um das Video anzusehen oder zu teilen. JSON- und CSV-Exporte enthalten nur Messdaten."
+          }
+        }
+      }
+    },
     "Open and close your fist" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4243,6 +4673,17 @@
         }
       }
     },
+    "Open Trends using the chart button at the top right." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnen Sie Trends über das Diagrammsymbol oben rechts."
+          }
+        }
+      }
+    },
     "Open your hand fully, then make a fist.\nRepeat as fast as you can." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4316,6 +4757,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Schmerzen"
+          }
+        }
+      }
+    },
+    "Part of the signal is missing. The available values may be less reliable. You can keep this recording or try again." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Teil des Signals fehlt. Die verfügbaren Werte können weniger zuverlässig sein. Sie können die Aufnahme behalten oder wiederholen."
           }
         }
       }
@@ -4395,6 +4847,17 @@
         }
       }
     },
+    "Pause demonstration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beispiel pausieren"
+          }
+        }
+      }
+    },
     "Paused" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4413,6 +4876,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pausen"
+          }
+        }
+      }
+    },
+    "Period" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitraum"
           }
         }
       }
@@ -4457,6 +4931,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Halten Sie Ihre %@ Hand hierher"
+          }
+        }
+      }
+    },
+    "Play demonstration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beispiel abspielen"
           }
         }
       }
@@ -4677,6 +5162,50 @@
         }
       }
     },
+    "Recorded videos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gespeicherte Videos"
+          }
+        }
+      }
+    },
+    "Recorded: %.1f seconds" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahmedauer: %.1f Sekunden"
+          }
+        }
+      }
+    },
+    "Recording captured" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahme erfasst"
+          }
+        }
+      }
+    },
+    "Recording details" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahmedetails"
+          }
+        }
+      }
+    },
     "Recording not saved" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4684,6 +5213,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aufnahme nicht gespeichert"
+          }
+        }
+      }
+    },
+    "Recording saved automatically." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahme automatisch gespeichert."
           }
         }
       }
@@ -4783,6 +5323,28 @@
         }
       }
     },
+    "Repetition rate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederholungsrate"
+          }
+        }
+      }
+    },
+    "Repetitions/second" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederholungen/Sekunde"
+          }
+        }
+      }
+    },
     "Research" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4855,6 +5417,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wiederholen"
+          }
+        }
+      }
+    },
+    "Retake this recording?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Aufnahme wiederholen?"
           }
         }
       }
@@ -5055,6 +5628,17 @@
         }
       }
     },
+    "Save without video" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ohne Video speichern"
+          }
+        }
+      }
+    },
     "Saved recordings: %d / %d" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5140,9 +5724,6 @@
           }
         }
       }
-    },
-    "Segment" : {
-
     },
     "Select at least one symptom and its intensity." : {
       "extractionState" : "manual",
@@ -5264,6 +5845,17 @@
         }
       }
     },
+    "Share video" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video teilen"
+          }
+        }
+      }
+    },
     "Share…" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5271,6 +5863,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Teilen…"
+          }
+        }
+      }
+    },
+    "Shared copies leave this app. Share only with your study team." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geteilte Kopien verlassen diese App. Teilen Sie sie nur mit Ihrem Studienteam."
           }
         }
       }
@@ -5329,6 +5932,28 @@
         }
       }
     },
+    "Signal has gaps" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signal hat Lücken"
+          }
+        }
+      }
+    },
+    "Signal has gaps. These values may be less reliable." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Signal hat Lücken. Diese Werte können weniger zuverlässig sein."
+          }
+        }
+      }
+    },
     "Skip this measurement" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5375,6 +6000,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How Recording Works"
+          }
+        }
+      }
+    },
+    "Some movement values unavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einige Bewegungswerte nicht verfügbar"
           }
         }
       }
@@ -5863,6 +6499,28 @@
         }
       }
     },
+    "Tapping rate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tapprate"
+          }
+        }
+      }
+    },
+    "Taps/second" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taps/Sekunde"
+          }
+        }
+      }
+    },
     "Task" : {
       "localizations" : {
         "de" : {
@@ -5959,6 +6617,17 @@
         }
       }
     },
+    "The recordings can help you follow changes in your movement. They complement a clinical examination, but do not provide an MDS-UPDRS score." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Aufnahmen können Ihnen helfen, Veränderungen Ihrer Bewegung zu verfolgen. Sie ergänzen eine klinische Untersuchung, liefern aber keinen MDS-UPDRS-Punktwert."
+          }
+        }
+      }
+    },
     "The wrong finger buzzed" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5966,6 +6635,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Der falsche Finger hat vibriert"
+          }
+        }
+      }
+    },
+    "There is not enough signal for movement values. You can keep this recording or try again." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für Bewegungswerte reicht das Signal nicht aus. Sie können die Aufnahme behalten oder wiederholen."
+          }
+        }
+      }
+    },
+    "These tasks are adapted from hand-movement tests in MDS-UPDRS Part III, used by clinicians to assess movement in Parkinson's disease." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Aufgaben sind an die Handbewegungstests des MDS-UPDRS Teil III angelehnt, mit denen Fachleute die Bewegung bei Parkinson beurteilen."
           }
         }
       }
@@ -5988,6 +6679,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diese Werte beschreiben Ihre Aufnahmen. Sie sind keine klinische Bewertung."
+          }
+        }
+      }
+    },
+    "They measure speed, movement size and rhythm, including pauses or slowing." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie erfassen Tempo, Bewegungsumfang und Rhythmus, einschließlich Pausen oder Verlangsamung."
+          }
+        }
+      }
+    },
+    "This app records each hand for 30 seconds." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App zeichnet jede Hand 30 Sekunden lang auf."
+          }
+        }
+      }
+    },
+    "This app records for 30 seconds per hand. Its measurements are not MDS-UPDRS scores and do not replace a clinical examination." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App nimmt jede Hand 30 Sekunden lang auf. Ihre Messwerte sind keine MDS-UPDRS-Scores und ersetzen keine klinische Untersuchung."
           }
         }
       }
@@ -6024,6 +6748,17 @@
         }
       }
     },
+    "This task uses the front camera to track your hand. Accepted videos stay in this app." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Aufgabe nutzt die Frontkamera, um Ihre Hand zu erfassen. Übernommene Videos bleiben in dieser App."
+          }
+        }
+      }
+    },
     "This task uses the front camera to track your hand. No video is stored — only movement measurements." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6035,6 +6770,17 @@
         }
       }
     },
+    "This unsaved recording will be replaced. Previously saved recordings stay." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese ungespeicherte Aufnahme wird ersetzt. Bereits gespeicherte Aufnahmen bleiben erhalten."
+          }
+        }
+      }
+    },
     "This value is unavailable. Your recording is still saved." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6042,6 +6788,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dieser Wert ist nicht verfügbar. Ihre Aufnahme bleibt gespeichert."
+          }
+        }
+      }
+    },
+    "This video is no longer available on this phone." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Video ist auf diesem iPhone nicht mehr verfügbar."
           }
         }
       }
@@ -6074,6 +6831,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verbleibende Zeit"
+          }
+        }
+      }
+    },
+    "Time since last dose" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeit seit letzter Einnahme"
+          }
+        }
+      }
+    },
+    "Time since last dose: %d min" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seit der letzten Einnahme: %d Min."
+          }
+        }
+      }
+    },
+    "Timing unknown" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitpunkt unbekannt"
+          }
+        }
+      }
+    },
+    "To %d hours" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bis %d Stunden"
           }
         }
       }
@@ -6206,6 +7007,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erneut versuchen"
+          }
+        }
+      }
+    },
+    "Try changing the filters below." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ändern Sie die Filter unten."
           }
         }
       }
@@ -6417,6 +7229,17 @@
         }
       }
     },
+    "Variation in the time between repetitions. Lower values mean a more even rhythm, not a clinical rating." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schwankung der Zeit zwischen Wiederholungen. Kleinere Werte bedeuten einen gleichmäßigeren Rhythmus, keine klinische Bewertung."
+          }
+        }
+      }
+    },
     "vCR" : {
       "localizations" : {
         "de" : {
@@ -6583,6 +7406,72 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sehr gut"
+          }
+        }
+      }
+    },
+    "Video not saved. Your measurement is saved." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video nicht gespeichert. Ihr Messwert ist gespeichert."
+          }
+        }
+      }
+    },
+    "Video saved in this app." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video in dieser App gespeichert."
+          }
+        }
+      }
+    },
+    "Video stays in the app when you save." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Video bleibt nach dem Speichern in der App."
+          }
+        }
+      }
+    },
+    "Video unavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video nicht verfügbar"
+          }
+        }
+      }
+    },
+    "Video unavailable. Your measurement can still be saved." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Video verfügbar. Sie können Ihre Messung trotzdem speichern."
+          }
+        }
+      }
+    },
+    "View recording" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahme ansehen"
           }
         }
       }
@@ -6861,6 +7750,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ihr letzter Check-in erscheint hier."
+          }
+        }
+      }
+    },
+    "Your saved recording stays until a new one is saved." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre gespeicherte Aufnahme bleibt erhalten, bis eine neue gespeichert ist."
           }
         }
       }

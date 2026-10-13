@@ -106,7 +106,7 @@ final class TrialRecorder: ObservableObject {
             }
             switch self.stopCondition.mode {
             case .duration:
-                if elapsed >= self.stopCondition.targetDuration + 3.0 {
+                if elapsed >= self.stopCondition.targetDuration {
                     self._finish()
                 }
             case .repetitions:
@@ -131,6 +131,11 @@ final class TrialRecorder: ObservableObject {
             guard let self, self.isActive else { return }
             let t = monotonicTime - self.startMonotonic
             guard t >= 0 else { return }
+
+            if self.stopCondition.mode == .duration && t > self.stopCondition.targetDuration {
+                self._finish()
+                return
+            }
 
             self.latestSampleElapsed = t
             self.buffer.append(TimestampedSample(t: t, value: value))
@@ -200,6 +205,9 @@ final class TrialRecorder: ObservableObject {
         let snapshotStop      = stopCondition
         let snapshotStart     = startWallClock ?? Date()
         let snapshotUptime    = startMonotonic
+        let elapsed = max(0, ProcessInfo.processInfo.systemUptime - startMonotonic)
+        let snapshotDuration = stopCondition.mode == .duration
+            ? min(elapsed, stopCondition.targetDuration) : elapsed
 
         // Tell the UI the recording is over right now — no waiting for analysis.
         Task { @MainActor [weak self] in
@@ -223,7 +231,8 @@ final class TrialRecorder: ObservableObject {
                 startedAt:     snapshotStart,
                 startUptime:   snapshotUptime,
                 samples:       snapshotBuffer,
-                metrics:       metrics
+                metrics:       metrics,
+                recordedDurationSeconds: snapshotDuration
             )
 
             print("[PERF] analyzed \(snapshotBuffer.count) samples in \(String(format: "%.3f", analysisElapsed)) s")

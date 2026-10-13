@@ -56,8 +56,8 @@ struct SettingsView: View {
                     SettingsRow(
                         icon: "figure.hand.cycling",
                         color: .purple,
-                        title: "Movement Export",
-                        subtitle: "Export movement task sessions"
+                        title: "Data",
+                        subtitle: "Movement measurements and videos"
                     )
                 }
             }

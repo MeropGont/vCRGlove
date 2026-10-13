@@ -10,10 +10,20 @@ import SwiftUI
 struct NoteLogView: View {
     let date: Date
 
+    static let noteExamples = [
+        "For example: Today I feel strong.",
+        "For example: My mood is low today.",
+        "For example: I slept well last night.",
+        "For example: Walking felt easier today.",
+        "For example: I needed more breaks today.",
+        "For example: Today was a quiet day."
+    ]
+
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedTime = Date()
     @State private var note = ""
+    @State private var noteExample = NoteLogView.noteExamples.randomElement() ?? "For example: Today I feel strong."
 
     private let calendar = Calendar.current
 
@@ -28,9 +38,11 @@ struct NoteLogView: View {
                 Text(L10n("What would you like to record?"))
                     .font(.headline)
 
-                TextField(L10n("Add a note"), text: $note, axis: .vertical)
+                TextField(L10n(noteExample), text: $note, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(5...10)
+                    .accessibilityLabel(L10n("Add a note"))
+                    .accessibilityIdentifier("journalNoteField")
             }
             .padding()
             .padding(.bottom, 90)
@@ -50,6 +62,7 @@ struct NoteLogView: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .accessibilityIdentifier("journalSaveNote")
             .padding()
             .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)

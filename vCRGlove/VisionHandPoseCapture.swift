@@ -12,7 +12,7 @@
 //
 //  The scalar is delivered via `onSample` with a monotonic timestamp — the
 //  consumer (MovementTaskView) feeds it into the same TrialRecorder used by
-//  the synthetic source. No video is ever stored.
+//  the synthetic source. Task movies are finalized separately from scalar analysis.
 //
 //  NOTE: Requires a real device — the Simulator has no camera.
 //
@@ -80,8 +80,12 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
     /// Records the camera feed to a temporary movie file during the measurement.
     private let movieFileOutput = AVCaptureMovieFileOutput()
     private let recordingDelegate = MovieFileOutputDelegate()
-    /// Set before `stopRecording`; called on the main queue with the recorded file URL.
-    private var recordingCompletion: ((URL?) -> Void)?
+    private var recordingURL: URL?
+    private var finishedRecordingURL: URL?
+    private var movieHasFinished = false
+    private var movieStopRequested = false
+    private var movieStartCompletion: ((Bool) -> Void)?
+    private var recordingCompletions: [(URL?) -> Void] = []
 
     // MARK: - Lifecycle
 
@@ -115,15 +119,21 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
     }
 
     func stop(completion: (() -> Void)? = nil) {
-        videoQueue.async { [weak self] in
-            guard let self else {
-                DispatchQueue.main.async { completion?() }
-                return
-            }
-            // Make sure any active recording is aborted cleanly before tearing down.
-            if self.movieFileOutput.isRecording {
-                self.movieFileOutput.stopRecording()
-            }
+        stopRecording { url in
+            if let url { try? FileManager.default.removeItem(at: url) }
+            self.stopSession(completion: completion)
+        }
+    }
+
+    /// Keep a completed movie for acceptance while stopping the live preview safely.
+    func finishMeasurement(completion: @escaping (URL?) -> Void) {
+        stopRecording { url in
+            self.stopSession { completion(url) }
+        }
+    }
+
+    private func stopSession(completion: (() -> Void)?) {
+        videoQueue.async {
             if self.session.isRunning {
                 let start = CFAbsoluteTimeGetCurrent()
                 self.session.stopRunning()
@@ -136,31 +146,68 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
     }
 
     /// Start writing the camera feed to a temporary `.mov` file.
-    /// - Returns: the temporary URL, or `nil` if the movie output is not available.
-    @discardableResult
-    func startRecordingToTemporaryFile() -> URL? {
-        guard movieFileOutput.isRecording == false,
-              session.outputs.contains(movieFileOutput) else { return nil }
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
-            .appendingPathExtension("mov")
-        movieFileOutput.startRecording(to: url, recordingDelegate: recordingDelegate)
-        return url
+    /// Camera operations and movie state are owned by the video queue.
+    func startRecordingToTemporaryFile(completion: @escaping (Bool) -> Void) {
+        videoQueue.async {
+            guard self.session.isRunning, self.recordingURL == nil,
+                  self.session.outputs.contains(self.movieFileOutput) else {
+                DispatchQueue.main.async { completion(false) }
+                return
+            }
+            let url = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString).appendingPathExtension("mov")
+            self.recordingURL = url
+            self.movieStartCompletion = completion
+            self.recordingDelegate.onStart = {
+                self.videoQueue.async {
+                    let started = self.movieStartCompletion
+                    self.movieStartCompletion = nil
+                    DispatchQueue.main.async { started?(true) }
+                    if self.movieStopRequested { self.movieFileOutput.stopRecording() }
+                }
+            }
+            self.recordingDelegate.onComplete = { finishedURL in
+                self.videoQueue.async {
+                    let started = self.movieStartCompletion
+                    self.movieStartCompletion = nil
+                    DispatchQueue.main.async { started?(false) }
+                    self.finishedRecordingURL = finishedURL
+                    self.movieHasFinished = true
+                    if finishedURL == nil { try? FileManager.default.removeItem(at: url) }
+                    self.deliverFinishedMovie()
+                }
+            }
+            self.movieFileOutput.startRecording(to: url, recordingDelegate: self.recordingDelegate)
+        }
     }
 
     /// Stop the active recording. `completion` is called on the main queue with the
     /// temporary file URL, or `nil` if no recording was running or it failed.
     func stopRecording(completion: @escaping (URL?) -> Void) {
-        recordingCompletion = completion
-        recordingDelegate.onComplete = { [weak self] url in
-            self?.recordingCompletion = nil
-            DispatchQueue.main.async { completion(url) }
+        videoQueue.async {
+            guard self.recordingURL != nil else {
+                DispatchQueue.main.async { completion(nil) }
+                return
+            }
+            self.recordingCompletions.append(completion)
+            self.movieStopRequested = true
+            if self.movieFileOutput.isRecording { self.movieFileOutput.stopRecording() }
+            self.deliverFinishedMovie()
         }
-        if movieFileOutput.isRecording {
-            movieFileOutput.stopRecording()
-        } else {
-            DispatchQueue.main.async { completion(nil) }
-        }
+    }
+
+    private func deliverFinishedMovie() {
+        guard movieHasFinished, !recordingCompletions.isEmpty else { return }
+        let completions = recordingCompletions
+        let url = finishedRecordingURL
+        recordingCompletions.removeAll()
+        recordingURL = nil
+        finishedRecordingURL = nil
+        movieHasFinished = false
+        movieStopRequested = false
+        recordingDelegate.onStart = nil
+        recordingDelegate.onComplete = nil
+        DispatchQueue.main.async { completions.forEach { $0(url) } }
     }
 
     // MARK: - Session setup
@@ -199,7 +246,7 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
             }
         }
 
-        // Movie output records the actual measurement video to the Photo Library.
+        // Movie output writes a temporary file; acceptance decides whether to keep it.
         if session.canAddOutput(movieFileOutput) {
             session.addOutput(movieFileOutput)
             if let connection = movieFileOutput.connection(with: .video) {
@@ -234,16 +281,20 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
 // MARK: - Movie file recording delegate
 
 private final class MovieFileOutputDelegate: NSObject, AVCaptureFileOutputRecordingDelegate {
+    var onStart: (() -> Void)?
     var onComplete: ((URL?) -> Void)?
+
+    func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL,
+                    from connections: [AVCaptureConnection]) {
+        onStart?()
+    }
 
     func fileOutput(_ output: AVCaptureFileOutput,
                     didFinishRecordingTo outputFileURL: URL,
                     from connections: [AVCaptureConnection],
                     error: Error?) {
-        DispatchQueue.main.async { [weak self] in
-            self?.onComplete?(error == nil ? outputFileURL : nil)
-            self?.onComplete = nil
-        }
+        let completed = error == nil || (error as NSError?)?.userInfo[AVErrorRecordingSuccessfullyFinishedKey] as? Bool == true
+        onComplete?(completed ? outputFileURL : nil)
     }
 }
 

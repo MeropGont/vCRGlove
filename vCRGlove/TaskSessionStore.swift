@@ -12,6 +12,120 @@
 
 import Foundation
 
+/// Only accepted videos live here. The directory is neither temporary nor exposed by Files sharing.
+final class MovementVideoStore {
+    static let shared = MovementVideoStore()
+    private let directory: URL?
+
+    enum VideoError: LocalizedError {
+        case unavailable
+        case invalidReference
+        var errorDescription: String? { "The video could not be saved. Your measurement is still here." }
+    }
+
+    init(directory: URL? = nil) { self.directory = directory }
+
+    private func root() throws -> URL {
+        if let directory { return directory }
+        return try FileManager.default.url(for: .applicationSupportDirectory,
+            in: .userDomainMask, appropriateFor: nil, create: true)
+            .appendingPathComponent("vcr/tasks/videos", isDirectory: true)
+    }
+
+    func url(for trial: Trial) throws -> URL {
+        guard let video = trial.video, video.fileName == "\(trial.id.uuidString).mov" else {
+            throw VideoError.invalidReference
+        }
+        return try root().appendingPathComponent(video.fileName)
+    }
+
+    func save(_ temporaryURL: URL, for trial: Trial) throws -> MovementVideoReference {
+        guard trial.source == .camera, trial.taskType.preferredSource == .camera else {
+            throw VideoError.invalidReference
+        }
+        let attributes = try FileManager.default.attributesOfItem(atPath: temporaryURL.path)
+        guard attributes[.type] as? FileAttributeType == .typeRegular,
+              let size = attributes[.size] as? NSNumber, size.int64Value > 0 else {
+            throw VideoError.unavailable
+        }
+        var directory = try root()
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        // A study-approved independent backup is a separate feature, not implicit iCloud storage.
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try directory.setResourceValues(values)
+        let reference = MovementVideoReference(fileName: "\(trial.id.uuidString).mov", byteCount: size.int64Value)
+        var destination = directory.appendingPathComponent(reference.fileName)
+        try FileManager.default.copyItem(at: temporaryURL, to: destination)
+        do {
+            try destination.setResourceValues(values)
+            try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete],
+                                                  ofItemAtPath: destination.path)
+            return reference
+        } catch {
+            try? FileManager.default.removeItem(at: destination)
+            throw error
+        }
+    }
+
+    func remove(_ trial: Trial) {
+        guard let url = try? url(for: trial) else { return }
+        try? FileManager.default.removeItem(at: url)
+    }
+
+    func delete(_ trial: Trial) throws {
+        let file = try url(for: trial)
+        do { try FileManager.default.removeItem(at: file) }
+        catch CocoaError.fileNoSuchFile { /* A previously removed file needs only metadata cleanup. */ }
+    }
+
+    /// Share only existing, validated app-owned files. No extra export copies are created.
+    func shareURLs(for trials: [Trial]) throws -> [URL] {
+        var seen = Set<UUID>()
+        return try trials.filter { seen.insert($0.id).inserted }.map { trial in
+            let file = try url(for: trial)
+            let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
+            guard attributes[.type] as? FileAttributeType == .typeRegular,
+                  (attributes[.size] as? NSNumber)?.int64Value ?? 0 > 0 else {
+                throw VideoError.unavailable
+            }
+            return file
+        }
+    }
+}
+
+/// Owns an unaccepted movie, including cleanup if its view is destroyed.
+final class MovementVideoDraft: ObservableObject {
+    @Published private(set) var url: URL?
+    @Published private(set) var unavailable = false
+
+    var messageKey: String? {
+        if url != nil { return "Video stays in the app when you save." }
+        if unavailable { return "Video unavailable. Your measurement can still be saved." }
+        return nil
+    }
+
+    func receive(_ url: URL?) {
+        if self.url == url {
+            unavailable = url == nil
+            return
+        }
+        discard()
+        self.url = url
+        unavailable = url == nil
+    }
+
+    func discard() {
+        if let url { try? FileManager.default.removeItem(at: url) }
+        url = nil
+        unavailable = false
+    }
+
+    deinit {
+        if let url { try? FileManager.default.removeItem(at: url) }
+    }
+}
+
 final class TaskSessionStore: ObservableObject {
     static let shared: TaskSessionStore = {
         #if DEBUG && targetEnvironment(simulator)
@@ -24,7 +138,9 @@ final class TaskSessionStore: ObservableObject {
             if arguments.contains("--ui-test-session-save-failure") {
                 directory = directory.appendingPathComponent("missing-\(id.uuidString)")
             }
-            return TaskSessionStore(storageURL: directory.appendingPathComponent("save-\(id.uuidString).jsonl"))
+            return TaskSessionStore(storageURL: directory.appendingPathComponent("save-\(id.uuidString).jsonl"),
+                videoStore: MovementVideoStore(directory: FileManager.default.temporaryDirectory
+                    .appendingPathComponent("videos-\(id.uuidString)", isDirectory: true)))
         }
         #endif
         return TaskSessionStore()
@@ -47,9 +163,11 @@ final class TaskSessionStore: ObservableObject {
     private let ioQueue = DispatchQueue(label: "vcr.tasksessions.io", qos: .utility)
 
     private let storageURL: URL?
+    let videoStore: MovementVideoStore
 
-    init(storageURL: URL? = nil) {
+    init(storageURL: URL? = nil, videoStore: MovementVideoStore = .shared) {
         self.storageURL = storageURL
+        self.videoStore = videoStore
         load()
     }
 
@@ -67,6 +185,71 @@ final class TaskSessionStore: ObservableObject {
 
     // MARK: - Write
 
+    /// Commit the movie before the JSONL reference. Roll back a new movie on failure,
+    /// but keep the temporary source so the patient can retry without re-recording.
+    func saveAcceptedTrial(_ trial: Trial, in session: MovementSession, temporaryVideoURL: URL?,
+                           completion: @escaping (Result<MovementSession, Error>) -> Void) {
+        ioQueue.async {
+            var accepted = trial
+            var copiedVideo = false
+            do {
+                if let temporaryVideoURL {
+                    let file = try self.fileURL()
+                    if FileManager.default.fileExists(atPath: file.path),
+                       Self.deletedVideoIDs(in: try Data(contentsOf: file)).contains(trial.id) {
+                        throw MovementVideoStore.VideoError.invalidReference
+                    }
+                    accepted = trial.withVideo(try self.videoStore.save(temporaryVideoURL, for: trial))
+                    copiedVideo = true
+                }
+                var updated = session
+                updated.accept(accepted)
+                updated = try self.writeSession(updated)
+                if let temporaryVideoURL { try? FileManager.default.removeItem(at: temporaryVideoURL) }
+                for previous in session.trials where previous.taskType == trial.taskType
+                    && previous.side == trial.side && previous.id != trial.id {
+                    self.videoStore.remove(previous)
+                }
+                if self.storageURL == nil {
+                    EventStore.shared.append(type: "TASK", tag: "recording_saved",
+                        message: "Accepted movement recording saved locally",
+                        details: ["session_id": session.id.uuidString,
+                                  "video": accepted.video == nil ? "none" : "private"])
+                }
+                DispatchQueue.main.async {
+                    self.publish(updated)
+                    completion(.success(updated))
+                }
+            } catch {
+                if copiedVideo { self.videoStore.remove(accepted) }
+                DispatchQueue.main.async { completion(.failure(error)) }
+            }
+        }
+    }
+
+    private func writeSession(_ session: MovementSession) throws -> MovementSession {
+        let url = try fileURL()
+        let existing = FileManager.default.fileExists(atPath: url.path) ? try Data(contentsOf: url) : Data()
+        let updated = try Self.replacingSession(session, in: existing)
+        try updated.write(to: url, options: .atomic)
+        let lines: [Data.SubSequence] = updated.split(separator: 0x0A)
+        for line in lines {
+            let object = try? JSONSerialization.jsonObject(with: Data(line)) as? [String: Any]
+            if (object?["id"] as? String).flatMap(UUID.init(uuidString:)) == session.id {
+                return try decoder.decode(MovementSession.self, from: Data(line))
+            }
+        }
+        throw MovementVideoStore.VideoError.invalidReference
+    }
+
+    private func publish(_ session: MovementSession) {
+        if let index = sessions.firstIndex(where: { $0.id == session.id }) {
+            sessions[index] = session
+        } else {
+            sessions.append(session)
+        }
+    }
+
     /// Keep an accepted, possibly partial session under one ID. Do not advance
     /// the flow or publish a success until the atomic disk write has succeeded.
     /// Upload remains the responsibility of the final session action, not every trial.
@@ -74,22 +257,14 @@ final class TaskSessionStore: ObservableObject {
                              completion: @escaping (Result<Void, Error>) -> Void) {
         ioQueue.async {
             do {
-                let url = try self.fileURL()
-                let existing = FileManager.default.fileExists(atPath: url.path)
-                    ? try Data(contentsOf: url) : Data()
-                let updated = try Self.replacingSession(session, in: existing)
-                try updated.write(to: url, options: .atomic)
+                let updated = try self.writeSession(session)
                 if self.storageURL == nil {
                     EventStore.shared.append(type: "TASK", tag: "recording_saved",
                         message: "Accepted movement recordings saved locally",
                         details: ["session_id": session.id.uuidString, "trials": "\(session.trials.count)"])
                 }
                 DispatchQueue.main.async {
-                    if let index = self.sessions.firstIndex(where: { $0.id == session.id }) {
-                        self.sessions[index] = session
-                    } else {
-                        self.sessions.append(session)
-                    }
+                    self.publish(updated)
                     completion(.success(()))
                 }
             } catch {
@@ -110,7 +285,12 @@ final class TaskSessionStore: ObservableObject {
                 message: "Finished saved movement session",
                 details: ["session_id": session.id.uuidString, "trials": "\(session.trials.count)",
                           "context": session.stimulationContext.rawValue])
-            SessionUploader.shared.upload(session)
+            if let data = try? Data(contentsOf: self.fileURL()),
+               let saved = data.split(separator: 0x0A).compactMap({
+                   try? self.decoder.decode(MovementSession.self, from: Data($0))
+               }).first(where: { $0.id == session.id }) {
+                SessionUploader.shared.upload(saved)
+            }
         }
     }
 
@@ -120,7 +300,7 @@ final class TaskSessionStore: ObservableObject {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.sortedKeys]
-        let encoded = try encoder.encode(session)
+        var encodedObject = try JSONSerialization.jsonObject(with: encoder.encode(session)) as! [String: Any]
         let lines = existing.split(separator: 0x0A, omittingEmptySubsequences: false)
         var result = Data()
         var replaced = false
@@ -129,7 +309,21 @@ final class TaskSessionStore: ObservableObject {
             let id = (object?["id"] as? String).flatMap(UUID.init(uuidString:))
             if id == session.id {
                 if replaced { continue }
-                result.append(encoded)
+                // A stale recording-flow checkpoint must not restore a patient-deleted video.
+                let oldTrials = object?["trials"] as? [[String: Any]] ?? []
+                var newTrials = encodedObject["trials"] as? [[String: Any]] ?? []
+                for index in newTrials.indices {
+                    if let old = oldTrials.first(where: {
+                        ($0["id"] as? String).flatMap(UUID.init(uuidString:)) ==
+                            (newTrials[index]["id"] as? String).flatMap(UUID.init(uuidString:))
+                    }),
+                       let deletedAt = old["videoDeletedAt"] as? String {
+                        newTrials[index].removeValue(forKey: "video")
+                        newTrials[index]["videoDeletedAt"] = deletedAt
+                    }
+                }
+                encodedObject["trials"] = newTrials
+                result.append(try JSONSerialization.data(withJSONObject: encodedObject, options: [.sortedKeys]))
                 replaced = true
             } else {
                 result.append(contentsOf: line)
@@ -138,8 +332,76 @@ final class TaskSessionStore: ObservableObject {
         }
         if !replaced {
             if !result.isEmpty, result.last != 0x0A { result.append(0x0A) }
-            result.append(encoded)
+            result.append(try encoder.encode(session))
             result.append(0x0A)
+        }
+        return result
+    }
+
+    struct VideoDeletionResult {
+        let deletedCount: Int
+        let failedCount: Int
+    }
+
+    private static func deletedVideoIDs(in data: Data) -> Set<UUID> {
+        Set(data.split(separator: 0x0A).flatMap { line -> [UUID] in
+            let object = try? JSONSerialization.jsonObject(with: Data(line)) as? [String: Any]
+            return (object?["trials"] as? [[String: Any]] ?? []).compactMap {
+                guard $0["videoDeletedAt"] is String else { return nil }
+                return ($0["id"] as? String).flatMap(UUID.init(uuidString:))
+            }
+        })
+    }
+
+    /// Remove only selected private movies. Measurements and other JSON fields stay intact.
+    func deleteVideos(ids: Set<UUID>, completion: @escaping (Result<VideoDeletionResult, Error>) -> Void) {
+        ioQueue.async {
+            do {
+                let url = try self.fileURL()
+                let existing = try Data(contentsOf: url)
+                let sessions = existing.split(separator: 0x0A).compactMap {
+                    try? self.decoder.decode(MovementSession.self, from: Data($0))
+                }
+                let selected = sessions.flatMap(\.trials).filter { ids.contains($0.id) && $0.video != nil }
+                var deleted = Set<UUID>()
+                var failed = Set<UUID>()
+                for trial in selected where !deleted.contains(trial.id) && !failed.contains(trial.id) {
+                    do { try self.videoStore.delete(trial); deleted.insert(trial.id) }
+                    catch { failed.insert(trial.id) }
+                }
+                let updated = try Self.removingVideoReferences(ids: deleted, in: existing)
+                try updated.write(to: url, options: .atomic)
+                let restored = updated.split(separator: 0x0A).compactMap {
+                    try? self.decoder.decode(MovementSession.self, from: Data($0))
+                }
+                DispatchQueue.main.async {
+                    self.sessions = restored
+                    completion(.success(VideoDeletionResult(deletedCount: deleted.count, failedCount: failed.count)))
+                }
+            } catch {
+                // Files already removed stay removed; retry can clear their stale references.
+                DispatchQueue.main.async { completion(.failure(error)) }
+            }
+        }
+    }
+
+    static func removingVideoReferences(ids: Set<UUID>, in existing: Data, deletedAt: Date = Date()) throws -> Data {
+        var result = Data()
+        let lines = existing.split(separator: 0x0A, omittingEmptySubsequences: false)
+        for (index, line) in lines.enumerated() {
+            if var object = try? JSONSerialization.jsonObject(with: Data(line)) as? [String: Any],
+               var trials = object["trials"] as? [[String: Any]],
+               trials.contains(where: { ($0["id"] as? String).flatMap(UUID.init(uuidString:)).map(ids.contains) == true }) {
+                for index in trials.indices {
+                    if let id = (trials[index]["id"] as? String).flatMap(UUID.init(uuidString:)), ids.contains(id) {
+                        trials[index].removeValue(forKey: "video")
+                        trials[index]["videoDeletedAt"] = ISO8601DateFormatter().string(from: deletedAt)
+                    }
+                }
+                object["trials"] = trials
+                result.append(try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys]))
+            } else { result.append(contentsOf: line) }
+            if index < lines.count - 1 { result.append(0x0A) }
         }
         return result
     }

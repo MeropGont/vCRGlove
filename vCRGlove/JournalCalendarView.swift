@@ -10,6 +10,8 @@ import SwiftUI
 struct JournalCalendarPanel: View {
     @ObservedObject private var store = JournalStore.shared
     @ObservedObject private var taskStore = TaskSessionStore.shared
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.locale) private var locale
 
     @State private var displayedMonth = Calendar.current.startOfMonth(for: Date())
     @State private var selectedDate = Date()
@@ -25,7 +27,7 @@ struct JournalCalendarPanel: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
 
-                    Text(displayedMonth.formatted(.dateTime.month(.wide).year()))
+                    Text(displayedMonth.formatted(.dateTime.month(.wide).year().locale(locale)))
                         .font(.title2.bold())
                 }
 
@@ -47,11 +49,13 @@ struct JournalCalendarPanel: View {
             }
 
             LazyVGrid(columns: columns, spacing: 8) {
-                ForEach(weekdaySymbols, id: \.self) { day in
+                ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, day in
                     Text(day)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .frame(height: 24)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
                 }
 
                 ForEach(calendarDays, id: \.self) { date in
@@ -63,6 +67,8 @@ struct JournalCalendarPanel: View {
                                 Text("\(calendar.component(.day, from: date))")
                                     .font(.subheadline.weight(isSelected(date) ? .bold : .regular))
                                     .foregroundStyle(isSelected(date) ? .white : .primary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.5)
 
                                 Circle()
                                     .fill(markerColor(for: date))
@@ -82,12 +88,18 @@ struct JournalCalendarPanel: View {
 
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel(date.formatted(Date.FormatStyle(date: .complete, time: .omitted).locale(locale)))
+                        .accessibilityValue(dayAccessibilityValue(for: date))
+                        .accessibilityAddTraits(isSelected(date) ? .isSelected : [])
+                        .accessibilityIdentifier("journalCalendarDay-\(calendar.component(.day, from: date))")
                     } else {
                         Color.clear
                             .frame(height: 42)
                     }
                 }
             }
+
+            calendarLegend
 
             Divider()
 
@@ -98,9 +110,48 @@ struct JournalCalendarPanel: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
+    private var calendarLegend: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), alignment: .leading),
+                                count: dynamicTypeSize.isAccessibilitySize ? 1 : 2),
+                  alignment: .leading, spacing: 8) {
+            legendItem("vCR log") {
+                Circle().fill(Color.green.opacity(0.25))
+                    .overlay(Circle().fill(.green).frame(width: 5, height: 5).offset(y: 5))
+            }
+            legendItem("Journal entry") {
+                Circle().fill(.blue).frame(width: 5, height: 5)
+            }
+            legendItem("Movement session") {
+                Circle().stroke(.purple, lineWidth: 3).padding(2)
+            }
+            legendItem("Selected day") {
+                Circle().fill(.blue)
+            }
+        }
+        .accessibilityIdentifier("journalCalendarLegend")
+    }
+
+    private func legendItem<Marker: View>(_ key: String, @ViewBuilder marker: () -> Marker) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            marker().frame(width: 20, height: 20).accessibilityHidden(true)
+            Text(L10n(key))
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func dayAccessibilityValue(for date: Date) -> String {
+        var markers: [String] = []
+        if hasStimulation(on: date) { markers.append(L10n("vCR log")) }
+        if hasEntry(on: date) { markers.append(L10n("Journal entry")) }
+        if hasMovementMeasurement(on: date) { markers.append(L10n("Movement session")) }
+        return markers.joined(separator: ", ")
+    }
+
     private var selectedDaySummary: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
+            Text(selectedDate.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(locale)))
                 .font(.headline)
 
             let selectedEntries = entries(on: selectedDate)
@@ -117,7 +168,7 @@ struct JournalCalendarPanel: View {
                             .foregroundStyle(.green)
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(entry.date.formatted(date: .omitted, time: .shortened))
+                            Text(entry.date.formatted(Date.FormatStyle(date: .omitted, time: .shortened).locale(locale)))
                                 .font(.subheadline.weight(.semibold))
 
                             Text(summary(for: entry))
@@ -135,7 +186,7 @@ struct JournalCalendarPanel: View {
                             .foregroundStyle(.purple)
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(session.date.formatted(date: .omitted, time: .shortened))
+                            Text(session.date.formatted(Date.FormatStyle(date: .omitted, time: .shortened).locale(locale)))
                                 .font(.subheadline.weight(.semibold))
 
                             Text(String(format: L10n("Movement session: %d trial(s)"), session.trials.count))
@@ -165,7 +216,10 @@ struct JournalCalendarPanel: View {
     }
 
     private var weekdaySymbols: [String] {
-        let symbols = calendar.shortStandaloneWeekdaySymbols
+        var localizedCalendar = calendar
+        localizedCalendar.locale = locale
+        let symbols = dynamicTypeSize.isAccessibilitySize
+            ? localizedCalendar.veryShortStandaloneWeekdaySymbols : localizedCalendar.shortStandaloneWeekdaySymbols
         let start = calendar.firstWeekday - 1
         return Array(symbols[start...] + symbols[..<start])
     }

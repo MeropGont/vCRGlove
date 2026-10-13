@@ -42,6 +42,24 @@ struct TaskSessionExporterTests {
         #expect(decoded[0].trials[0].startUptime != nil)
     }
 
+    @Test func jsonExportPreservesVideoLinkAndActualRecordingDuration() throws {
+        var sessions = makeSessions()
+        let original = sessions[0].trials[0]
+        let video = MovementVideoReference(fileName: original.id.uuidString + ".mov", byteCount: 1234)
+        sessions[0].trials = [Trial(id: original.id, taskType: original.taskType, side: original.side,
+            source: .camera, stopCondition: .thirtySec, startedAt: original.startedAt,
+            samples: original.samples, metrics: original.metrics, recordedDurationSeconds: 30,
+            video: video).withMedicationTiming(nil)]
+        let url = try TaskSessionExporter.exportJSON(sessions)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode([MovementSession].self, from: Data(contentsOf: url))
+        #expect(decoded[0].trials[0].video == video)
+        #expect(decoded[0].trials[0].recordedDurationSeconds == 30)
+        #expect(decoded[0].trials[0].id == original.id)
+    }
+
     @Test func metricsCSVHasHeaderAndOneRowPerTrial() throws {
         let sessions = makeSessions()
         let url = try TaskSessionExporter.exportMetricsCSV(sessions)

@@ -10,7 +10,331 @@ import Foundation
 import SwiftUI
 import UIKit
 import XCTest
+import AVFoundation
 @testable import vCRGlove
+
+struct JournalNoteExampleTests {
+    @Test @MainActor func allExamplesHaveDistinctGermanTranslations() throws {
+        let keys = NoteLogView.noteExamples
+        #expect(keys.count == 6 && Set(keys).count == keys.count)
+        let path = try #require(Bundle.main.path(forResource: "de", ofType: "lproj"))
+        let german = try #require(Bundle(path: path))
+        let translations = keys.map { german.localizedString(forKey: $0, value: $0, table: nil) }
+        #expect(Set(translations).count == keys.count)
+        for (key, translation) in zip(keys, translations) {
+            #expect(translation != key)
+            #expect(translation.hasPrefix("Zum Beispiel:"))
+        }
+    }
+}
+
+struct MovementVideoStorageTests {
+    @Test @MainActor func batchSharingValidatesEveryFileWithoutCreatingExportCopies() async throws {
+        let directory = try directory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = TaskSessionStore(storageURL: directory.appendingPathComponent("sessions.jsonl"),
+                                     videoStore: MovementVideoStore(directory: directory.appendingPathComponent("videos")))
+        let first = try await save(trial(), session: MovementSession(patientId: "TEST", trials: []),
+                                   temporary: temporaryVideo(in: directory), store: store)
+        let second = try await save(trial(), session: MovementSession(patientId: "TEST", trials: []),
+                                    temporary: temporaryVideo(in: directory), store: store)
+        let trials = [first.trials[0], second.trials[0]]
+        let urls = try store.videoStore.shareURLs(for: trials + trials)
+        #expect(urls.count == 2 && Set(urls).count == 2)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.appendingPathComponent("videos").path).count == 2)
+        try store.videoStore.delete(trials[1])
+        #expect(throws: (any Error).self) { try store.videoStore.shareURLs(for: trials) }
+        #expect(FileManager.default.fileExists(atPath: urls[0].path))
+    }
+    @MainActor private func delete(_ ids: Set<UUID>, store: TaskSessionStore) async throws -> TaskSessionStore.VideoDeletionResult {
+        try await withCheckedThrowingContinuation { continuation in
+            store.deleteVideos(ids: ids) { continuation.resume(with: $0) }
+        }
+    }
+
+    @Test @MainActor func deletingSelectedVideosKeepsMeasurementsAndDoesNotRestoreStaleLinks() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let videos = MovementVideoStore(directory: dir.appendingPathComponent("private"))
+        let json = dir.appendingPathComponent("sessions.jsonl")
+        let store = TaskSessionStore(storageURL: json, videoStore: videos)
+        var saved: [MovementSession] = []
+        for _ in 0..<4 {
+            saved.append(try await save(trial(), session: .init(patientId: "TEST"),
+                                       temporary: temporaryVideo(in: dir), store: store))
+        }
+        let selected = Set(saved.suffix(3).flatMap(\.trials).map(\.id))
+        let outcome = try await delete(selected, store: store)
+        #expect(outcome.deletedCount == 3 && outcome.failedCount == 0)
+        for original in saved {
+            let restored = try #require(store.sessions.first { $0.id == original.id })
+            #expect(restored.trials[0].metrics == original.trials[0].metrics)
+            #expect(restored.trials[0].samples == original.trials[0].samples)
+            #expect(restored.trials[0].startedAt == original.trials[0].startedAt)
+            #expect(FileManager.default.fileExists(atPath: try videos.url(for: original.trials[0]).path)
+                    == !selected.contains(original.trials[0].id))
+            if selected.contains(original.trials[0].id) { #expect(restored.trials[0].video == nil) }
+        }
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            store.saveAcceptedSession(saved[3]) { continuation.resume(with: $0) }
+        }
+        #expect(store.sessions.first { $0.id == saved[3].id }?.trials.first?.video == nil)
+        let decoded = JSONDecoder(); decoded.dateDecodingStrategy = .iso8601
+        let persisted = try Data(contentsOf: json).split(separator: 10).map {
+            try decoded.decode(MovementSession.self, from: Data($0))
+        }
+        #expect(persisted.count == 4 && persisted.flatMap(\.trials).filter { $0.video != nil }.count == 1)
+        #expect(try await delete(selected, store: store).deletedCount == 0)
+        let staleDraft = try temporaryVideo(in: dir)
+        do {
+            _ = try await save(saved[3].trials[0], session: saved[3], temporary: staleDraft, store: store)
+            Issue.record("A deleted trial UUID must not acquire a movie through a stale retry")
+        } catch {
+            #expect(FileManager.default.fileExists(atPath: staleDraft.path))
+            #expect(try FileManager.default.contentsOfDirectory(atPath: dir.appendingPathComponent("private").path).count == 1)
+        }
+        let retake = try await save(trial(), session: store.sessions.first { $0.id == saved[3].id }!,
+                                   temporary: temporaryVideo(in: dir), store: store)
+        #expect(retake.trials.first?.video != nil && retake.trials.first?.id != saved[3].trials[0].id)
+    }
+
+    @Test @MainActor func missingFileCanBeDeletedAndUnsafeReferenceFailsWithoutTouchingOtherFiles() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let videos = MovementVideoStore(directory: dir.appendingPathComponent("private"))
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"), videoStore: videos)
+        let saved = try await save(trial(), session: .init(patientId: "TEST"), temporary: temporaryVideo(in: dir), store: store)
+        try videos.delete(saved.trials[0])
+        #expect(try await delete([saved.trials[0].id], store: store).deletedCount == 1)
+        #expect(store.sessions[0].trials[0].video == nil)
+        let unsafe = trial().withVideo(.init(fileName: "../protected.mov", byteCount: 4))
+        let protected = dir.appendingPathComponent("protected.mov")
+        try Data([9]).write(to: protected)
+        let failed = try await save(unsafe, session: .init(patientId: "TEST"), temporary: nil, store: store)
+        let result = try await delete([unsafe.id], store: store)
+        #expect(result.failedCount == 1 && result.deletedCount == 0)
+        #expect(try Data(contentsOf: protected) == Data([9]))
+        #expect(store.sessions.first { $0.id == failed.id }?.trials.first?.video == unsafe.video)
+    }
+
+    @Test func deletingVideoMetadataPreservesUnknownFieldsAndUnrelatedLines() throws {
+        let id = UUID()
+        let input = Data("{\"custom\":42,\"trials\":[{\"id\":\"\(id)\",\"video\":{\"fileName\":\"x.mov\"},\"futureField\":true}]}\nlegacy invalid line\n".utf8)
+        let result = try TaskSessionStore.removingVideoReferences(ids: [id], in: input)
+        #expect(String(decoding: result, as: UTF8.self).hasSuffix("\nlegacy invalid line\n"))
+        let object = try #require(try JSONSerialization.jsonObject(with: Data(result.split(separator: 10)[0])) as? [String: Any])
+        let record = try #require((object["trials"] as? [[String: Any]])?.first)
+        #expect(object["custom"] as? Int == 42 && record["futureField"] as? Bool == true)
+        #expect(record["video"] == nil && record["videoDeletedAt"] is String)
+    }
+    private func trial(side: BodySide = .right, source: SignalSource = .camera,
+                       invalid: Bool = false) -> Trial {
+        Trial(taskType: .fingerTap, side: side, source: source, stopCondition: .thirtySec,
+            samples: [.init(t: 0, value: invalid ? .nan : 0.2)], metrics: .empty,
+            recordedDurationSeconds: 30)
+    }
+
+    private func directory() throws -> URL {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    private func temporaryVideo(in directory: URL) throws -> URL {
+        let url = directory.appendingPathComponent(UUID().uuidString + ".mov")
+        try Data([1, 2, 3, 4]).write(to: url)
+        return url
+    }
+
+    @MainActor private func save(_ trial: Trial, session: MovementSession, temporary: URL?,
+                                 store: TaskSessionStore) async throws -> MovementSession {
+        try await withCheckedThrowingContinuation { continuation in
+            store.saveAcceptedTrial(trial, in: session, temporaryVideoURL: temporary) {
+                continuation.resume(with: $0)
+            }
+        }
+    }
+
+    @Test func legacyTrialAndMedicationCopyKeepCompatibility() throws {
+        let original = trial()
+        let bytes = try JSONEncoder().encode(original)
+        #expect(try JSONDecoder().decode(Trial.self, from: bytes).video == nil)
+        let linked = original.withVideo(.init(fileName: "\(original.id.uuidString).mov", byteCount: 4))
+        #expect(linked.withMedicationTiming(.init(status: .noneToday)).video == linked.video)
+        #expect(linked.samples == original.samples && linked.metrics == original.metrics)
+        #expect(linked.recordedDurationSeconds == 30)
+        #expect(try JSONDecoder().decode(Trial.self, from: JSONEncoder().encode(linked)) == linked)
+    }
+
+    @Test @MainActor func acceptedVideoPersistsWithPrivateReferenceAndProtection() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let json = dir.appendingPathComponent("sessions.jsonl")
+        let videos = MovementVideoStore(directory: dir.appendingPathComponent("private"))
+        let store = TaskSessionStore(storageURL: json, videoStore: videos)
+        let source = try temporaryVideo(in: dir)
+        let recording = trial()
+        let saved = try await save(recording, session: .init(patientId: "TEST"), temporary: source, store: store)
+        let accepted = try #require(saved.trials.first)
+        #expect(accepted.video?.fileName == "\(recording.id.uuidString).mov")
+        #expect(accepted.video?.byteCount == 4)
+        #expect(!FileManager.default.fileExists(atPath: source.path))
+        let privateURL = try videos.url(for: accepted)
+        #expect(try Data(contentsOf: privateURL) == Data([1, 2, 3, 4]))
+        #expect(try privateURL.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup == true)
+        #if !targetEnvironment(simulator)
+        // Simulator files use the Mac filesystem, not iOS hardware Data Protection.
+        #expect(try FileManager.default.attributesOfItem(atPath: privateURL.path)[.protectionKey]
+                as? String == FileProtectionType.complete.rawValue)
+        #endif
+        let line = try Data(contentsOf: json).split(separator: 10)[0]
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+        let reloaded = try decoder.decode(MovementSession.self, from: Data(line))
+        #expect(reloaded.trials[0].video == accepted.video)
+        #expect(FileManager.default.fileExists(atPath: try videos.url(for: reloaded.trials[0]).path))
+        #expect(store.sessions.count == 1)
+    }
+
+    @Test @MainActor func encodingFailureRollsBackVideoAndRetryKeepsSameMeasurement() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let videos = MovementVideoStore(directory: dir.appendingPathComponent("private"))
+        let json = dir.appendingPathComponent("sessions.jsonl")
+        let store = TaskSessionStore(storageURL: json, videoStore: videos)
+        let source = try temporaryVideo(in: dir)
+        do {
+            _ = try await save(trial(invalid: true), session: .init(patientId: "TEST"), temporary: source, store: store)
+            Issue.record("Expected encoding failure")
+        } catch {
+            #expect(FileManager.default.fileExists(atPath: source.path))
+            #expect(store.sessions.isEmpty)
+            #expect(try FileManager.default.contentsOfDirectory(atPath: dir.appendingPathComponent("private").path).isEmpty)
+        }
+        let saved = try await save(trial(), session: .init(patientId: "TEST"), temporary: source, store: store)
+        #expect(saved.trials.count == 1 && store.sessions.count == 1)
+    }
+
+    @Test @MainActor func diskFailurePreservesDraftAndPreviouslySavedVideo() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let videos = MovementVideoStore(directory: dir.appendingPathComponent("private"))
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"), videoStore: videos)
+        let original = try await save(trial(), session: .init(patientId: "TEST"),
+                                     temporary: temporaryVideo(in: dir), store: store)
+        let oldURL = try videos.url(for: original.trials[0])
+        let failing = TaskSessionStore(storageURL: dir.appendingPathComponent("missing/sessions.jsonl"), videoStore: videos)
+        let draft = try temporaryVideo(in: dir)
+        do {
+            _ = try await save(trial(), session: original, temporary: draft, store: failing)
+            Issue.record("Expected disk failure")
+        } catch {
+            #expect(FileManager.default.fileExists(atPath: oldURL.path))
+            #expect(FileManager.default.fileExists(atPath: draft.path))
+            #expect(try FileManager.default.contentsOfDirectory(atPath: oldURL.deletingLastPathComponent().path).count == 1)
+            #expect(failing.sessions.isEmpty)
+        }
+    }
+
+    @Test @MainActor func replacingAcceptedTaskRemovesOnlyItsPreviousVideo() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let videos = MovementVideoStore(directory: dir.appendingPathComponent("private"))
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"), videoStore: videos)
+        let first = try await save(trial(), session: .init(patientId: "TEST"), temporary: temporaryVideo(in: dir), store: store)
+        let both = try await save(trial(side: .left), session: first, temporary: temporaryVideo(in: dir), store: store)
+        let oldRight = try videos.url(for: both.trials[0])
+        let left = try videos.url(for: both.trials[1])
+        let replaced = try await save(trial(), session: both, temporary: temporaryVideo(in: dir), store: store)
+        #expect(replaced.id == first.id && replaced.trials.count == 2)
+        #expect(!FileManager.default.fileExists(atPath: oldRight.path))
+        #expect(FileManager.default.fileExists(atPath: left.path))
+        #expect(store.sessions.count == 1)
+    }
+
+    @Test @MainActor func failedVideoCanBeSavedExplicitlyAsMeasurementOnly() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: dir.appendingPathComponent("private")))
+        let recording = trial()
+        let session = MovementSession(patientId: "TEST")
+        do {
+            _ = try await save(recording, session: session, temporary: dir.appendingPathComponent("missing.mov"), store: store)
+            Issue.record("Expected missing video error")
+        } catch { #expect(store.sessions.isEmpty) }
+        let saved = try await save(recording, session: session, temporary: nil, store: store)
+        #expect(saved.trials[0].id == recording.id && saved.trials[0].video == nil)
+        #expect(saved.trials[0].samples == recording.samples)
+    }
+
+    @Test func emptyVideoAndUnsafeReferencesAreRejected() throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let videos = MovementVideoStore(directory: dir)
+        let recording = trial()
+        #expect(throws: (any Error).self) {
+            try videos.url(for: recording.withVideo(.init(fileName: "../other.mov", byteCount: 4)))
+        }
+        let empty = dir.appendingPathComponent("empty.mov")
+        try Data().write(to: empty)
+        #expect(throws: (any Error).self) { try videos.save(empty, for: recording) }
+        #expect(throws: (any Error).self) { try videos.save(dir, for: recording) }
+        #expect(throws: (any Error).self) { try videos.save(temporaryVideo(in: dir), for: trial(source: .synthetic)) }
+    }
+
+    @Test @MainActor func duplicateSaveDoesNotDeleteExistingCommittedVideo() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let videos = MovementVideoStore(directory: dir.appendingPathComponent("private"))
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"), videoStore: videos)
+        let saved = try await save(trial(), session: .init(patientId: "TEST"), temporary: temporaryVideo(in: dir), store: store)
+        let accepted = saved.trials[0]
+        let draft = try temporaryVideo(in: dir)
+        do {
+            _ = try await save(accepted, session: saved, temporary: draft, store: store)
+            Issue.record("Expected duplicate destination error")
+        } catch {
+            #expect(FileManager.default.fileExists(atPath: try videos.url(for: accepted).path))
+            #expect(FileManager.default.fileExists(atPath: draft.path))
+            #expect(store.sessions[0].trials == saved.trials)
+        }
+    }
+
+    @Test func unacceptedDraftIsDeletedOnDiscardOrRelease() throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let first = try temporaryVideo(in: dir)
+        let second = try temporaryVideo(in: dir)
+        var draft: MovementVideoDraft? = MovementVideoDraft()
+        draft?.receive(first)
+        draft?.receive(second)
+        #expect(!FileManager.default.fileExists(atPath: first.path))
+        draft = nil
+        #expect(!FileManager.default.fileExists(atPath: second.path))
+        let missing = MovementVideoDraft()
+        missing.receive(nil)
+        #expect(missing.unavailable && missing.messageKey != nil)
+        missing.discard()
+        #expect(!missing.unavailable && missing.messageKey == nil)
+    }
+
+    #if DEBUG && targetEnvironment(simulator)
+    @Test @MainActor func savedMovieRemainsPlayableWithoutAnAudioTrack() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let source = try await makeMovementVideoTestFixture()
+        defer { try? FileManager.default.removeItem(at: source) }
+        let videos = MovementVideoStore(directory: dir)
+        let recording = trial()
+        let linked = recording.withVideo(try videos.save(source, for: recording))
+        let asset = AVURLAsset(url: try videos.url(for: linked))
+        #expect(try await asset.load(.isPlayable))
+        #expect(try await asset.loadTracks(withMediaType: .video).count == 1)
+        #expect(try await asset.loadTracks(withMediaType: .audio).isEmpty)
+        #expect(try await asset.load(.duration).seconds > 0)
+    }
+    #endif
+}
 
 struct MovementContextMedicationTests {
     private let intake = Date(timeIntervalSince1970: 1700000000)
@@ -381,7 +705,355 @@ struct MovementTrendAvailabilityTests {
     }
 }
 
+struct MovementTrendFilterTests {
+    private var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar
+    }
+    private let now = Date(timeIntervalSince1970: 1_797_000_000)
+
+    private func trial(date: Date? = nil, medication: MedicationTiming? = nil,
+                       source: SignalSource = .camera, rhythm: Double = 0.1,
+                       duration: Double = 6) -> Trial {
+        Trial(taskType: .fingerTap, side: .right, source: source, stopCondition: .thirtySec,
+              startedAt: date ?? now,
+              samples: (0..<60).map { .init(t: Double($0) / 10, value: sin(Double($0))) },
+              metrics: MovementMetrics(cycleCount: 10, frequencyHz: 2, meanAmplitude: 0.2,
+                                       amplitudeDecrementSlope: 0, rhythmCV: rhythm,
+                                       pauseCount: 0, onsetLatencySec: 0, qualityIndex: 0.8),
+              medicationTiming: medication, recordedDurationSeconds: duration)
+    }
+    private func includes(_ recording: Trial, filters: MovementTrendFilters,
+                          context: StimulationContext = .preStim) -> Bool {
+        filters.includes(recording, context: context, now: now, calendar: calendar)
+    }
+
+    @Test func plotOffersRateAndRhythmWithoutRemovingOtherStoredMetrics() {
+        #expect(TrendMetric.plotCases == [.frequency, .rhythm])
+        #expect(TrendMetric.patientCases.count == 6)
+        #expect(TrendMetric.rhythm.plotValue(0.1) == 10)
+        #expect(TrendMetric.frequency.plotValue(2) == 2)
+    }
+
+    @Test(arguments: StimulationContext.allCases)
+    func contextsAreExactAndLegacyIsNotReinterpreted(context: StimulationContext) {
+        var filters = MovementTrendFilters()
+        #expect(includes(trial(), filters: filters, context: context))
+        filters.context = context
+        for candidate in StimulationContext.allCases {
+            #expect(includes(trial(), filters: filters, context: candidate) == (candidate == context))
+        }
+    }
+
+    @Test func doseWindowUsesRecordingTimeAndInclusiveBoundaries() {
+        var filters = MovementTrendFilters()
+        filters.medication = .sinceDose
+        filters.minimumDoseHours = 1
+        filters.maximumDoseHours = 3
+        for (seconds, expected) in [(3599.0, false), (3600.0, true), (7200.0, true), (10800.0, true), (10801.0, false)] {
+            let medication = MedicationTiming(status: .takenAt, takenAt: now.addingTimeInterval(-seconds))
+            #expect(includes(trial(medication: medication), filters: filters) == expected)
+        }
+        #expect(!includes(trial(), filters: filters))
+        filters.minimumDoseHours = 4
+        #expect(!includes(trial(medication: .init(status: .takenAt, takenAt: now)), filters: filters))
+    }
+
+    @Test func unknownDoesNotMeanNoMedicationAndFutureOrStaleReportsAreUnknown() {
+        var filters = MovementTrendFilters()
+        filters.medication = .unknown
+        for timing in [nil, MedicationTiming(status: .unsure),
+                       MedicationTiming(status: .takenAt, takenAt: now.addingTimeInterval(1)),
+                       MedicationTiming(status: .noneToday, confirmedAt: now.addingTimeInterval(-86400))] {
+            #expect(includes(trial(medication: timing), filters: filters))
+        }
+        let none = trial(medication: .init(status: .noneToday, confirmedAt: now))
+        #expect(!includes(none, filters: filters))
+        filters.medication = .noneToday
+        #expect(includes(none, filters: filters))
+        #expect(!includes(trial(), filters: filters))
+    }
+
+    @Test(arguments: [TrendPeriod.week, .month])
+    func dateWindowIncludesFirstDayMidnightButNotFutureRecordings(period: TrendPeriod) {
+        var filters = MovementTrendFilters()
+        filters.period = period
+        let days = period == .week ? 7 : 30
+        let first = calendar.date(byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: now))!
+        #expect(includes(trial(date: first), filters: filters))
+        #expect(!includes(trial(date: first.addingTimeInterval(-1)), filters: filters))
+        #expect(includes(trial(date: now), filters: filters))
+        #expect(!includes(trial(date: now.addingTimeInterval(1)), filters: filters))
+    }
+
+    @Test func summaryPreservesEveryShortRecordingAndSourceIsolationWithoutMutatingData() throws {
+        let first = trial(date: now.addingTimeInterval(-10))
+        let last = trial(duration: 30)
+        let session = MovementSession(patientId: "TEST", trials: [last, trial(source: .synthetic), first])
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        let before = try encoder.encode(session)
+        let summary = MovementTrendSummary(sessions: [session], task: .fingerTap, side: .right,
+                                           metric: .frequency, source: .camera)
+        #expect(summary.points.count == 2)
+        #expect(summary.recordings.map(\.duration) == [6, 30])
+        #expect(summary.recordings.last?.hasSignalGaps == true)
+        #expect(summary.nearest(to: now.addingTimeInterval(-9))?.date == first.startedAt)
+        #expect(try encoder.encode(session) == before)
+        var filters = MovementTrendFilters()
+        filters.context = .preStim
+        let excluded = MovementTrendSummary(sessions: [session], task: .fingerTap, side: .right,
+                                            metric: .frequency, filters: filters, source: .camera)
+        #expect(excluded.unfilteredCount == 2)
+        #expect(excluded.recordings.isEmpty)
+    }
+
+    @Test func zeroRhythmIsRealButPercentageOverflowIsUnavailable() {
+        let session = MovementSession(patientId: "TEST", trials: [trial(rhythm: 0), trial(rhythm: .greatestFiniteMagnitude)])
+        let summary = MovementTrendSummary(sessions: [session], task: .fingerTap, side: .right, metric: .rhythm)
+        #expect(summary.points.count == 1)
+        #expect(summary.points.first?.availability == .available(0))
+        #expect(summary.unavailableCount == 1)
+    }
+}
+
+struct MovementRecordingFeedbackTests {
+    private func trial(samples: [TimestampedSample]? = nil, cycles: Int = 5,
+                       quality: Double = 0.8, frequency: Double = 2,
+                       recordedDurationSeconds: Double? = nil) -> Trial {
+        Trial(taskType: .fingerTap, side: .right, source: .camera, stopCondition: .thirtySec,
+              samples: samples ?? (0...300).map { .init(t: Double($0) / 10, value: sin(Double($0) / 3)) },
+              metrics: MovementMetrics(cycleCount: cycles, frequencyHz: frequency, meanAmplitude: 0.001,
+                                       amplitudeDecrementSlope: -0.4, rhythmCV: 2, pauseCount: 4,
+                                       onsetLatencySec: 4, qualityIndex: quality),
+              recordedDurationSeconds: recordedDurationSeconds)
+    }
+
+    @Test func absentAndMalformedSignalNeverClaimsCaptureOrDisplaysMadeUpMetrics() {
+        let invalid: [[TimestampedSample]] = [[], [.init(t: 0, value: 1)],
+            Array(repeating: .init(t: 0, value: 1), count: 5),
+            [.init(t: 0, value: 1), .init(t: 1, value: .nan), .init(t: 2, value: 1), .init(t: 3, value: 1)],
+            [.init(t: 0, value: 1), .init(t: 2, value: 1), .init(t: 1, value: 1), .init(t: 3, value: 1)],
+            [.init(t: -1, value: 1), .init(t: 0, value: 1), .init(t: 1, value: 1), .init(t: 2, value: 1)]]
+        for samples in invalid {
+            #expect(MovementRecordingFeedback(trial: trial(samples: samples)) == .missingSignal)
+            #expect(!MovementSignalAssessment(samples: samples).hasPlottableSignal)
+            #expect(TrendMetric.allCases.allSatisfy { $0.availability(for: trial(samples: samples)).value == nil })
+        }
+    }
+
+    @Test func fewSamplesCanHaveARawPlotWithoutClaimingCalculatedValues() {
+        let samples: [TimestampedSample] = [.init(t: 0, value: 0), .init(t: 0.1, value: 1)]
+        let signal = MovementSignalAssessment(samples: samples)
+        #expect(signal.hasPlottableSignal)
+        #expect(!signal.hasAnalysisInput)
+        #expect(MovementRecordingFeedback(trial: trial(samples: samples)) == .missingSignal)
+    }
+
+    @Test func flatSignalAndSlowMovementDoNotBecomeCaptureFailures() {
+        let flat = trial(samples: (0...300).map { .init(t: Double($0) / 10, value: 0.1) }, cycles: 0)
+        #expect(MovementRecordingFeedback(trial: flat) == .noDetectedCycles)
+        #expect(MovementSignalAssessment(samples: flat.samples).hasAnalysisInput)
+        let slow = trial(quality: 0, frequency: 0.01)
+        #expect(MovementRecordingFeedback(trial: slow) == .captured)
+        #expect(TrendMetric.frequency.availability(for: slow) == .available(0.01))
+        #expect(TrendMetric.quality.availability(for: slow) == .available(0))
+    }
+
+    @Test func oneOrTwoCyclesHaveCalculationSpecificAvailability() {
+        for cycles in [1, 2] {
+            #expect(MovementRecordingFeedback(trial: trial(cycles: cycles)) == .someValuesUnavailable)
+            #expect(TrendMetric.onset.availability(for: trial(cycles: cycles)).value != nil)
+        }
+        #expect(TrendMetric.frequency.availability(for: trial(cycles: 2)).value != nil)
+        #expect(TrendMetric.rhythm.availability(for: trial(cycles: 2)) == .insufficientCycles)
+    }
+
+    @Test func hiddenExperimentalIndexDoesNotAffectPatientFeedback() {
+        #expect(MovementRecordingFeedback(trial: trial(quality: .nan)) == .captured)
+        #expect(MovementRecordingFeedback.captured.detailKey == "Movement values are available.")
+    }
+
+    @Test func gapsAreAdvisoryAndDoNotDiscardAvailableValues() {
+        for gap in [1.99, 2.0, 8.0] {
+            let samples: [TimestampedSample] = [0.0, 0.1, 0.2, 0.2 + gap, 0.3 + gap]
+                .map { .init(t: $0, value: sin($0)) }
+            let recording = trial(samples: samples)
+            #expect(MovementSignalAssessment(samples: samples).hasGaps == (gap >= 2))
+            #expect(MovementRecordingFeedback(trial: recording) == (gap >= 2 ? .signalGaps : .captured))
+            #expect(TrendMetric.frequency.availability(for: recording) == .available(2))
+        }
+    }
+
+    @Test func lateCaptureWarnsWithoutInferringWhyTrackingWasMissing() {
+        let samples = (0..<10).map { TimestampedSample(t: 20 + Double($0) / 10, value: sin(Double($0))) }
+        let recording = trial(samples: samples)
+        #expect(MovementRecordingFeedback(trial: recording) == .signalGaps)
+        #expect(TrendMetric.frequency.availability(for: recording) == .available(2))
+    }
+
+    @Test(arguments: [1.99, 2.0, 20.0])
+    func trailingTrackingLossWarnsWithoutRejectingAvailableMetrics(gap: Double) {
+        let end = 30 - gap
+        let samples = (0...100).map { TimestampedSample(t: Double($0) * end / 100, value: sin(Double($0))) }
+        let recording = trial(samples: samples, recordedDurationSeconds: 30)
+        let signal = MovementSignalAssessment(samples: samples, recordedDurationSeconds: 30)
+        #expect(signal.hasGaps == (gap >= 2))
+        #expect(MovementRecordingFeedback(trial: recording) == (gap >= 2 ? .signalGaps : .captured))
+        #expect(TrendMetric.frequency.availability(for: recording) == .available(2))
+        #expect(signal.hasAnalysisInput)
+    }
+
+    @Test func manualStopAndUnknownHistoricalDurationDoNotInventTrailingLoss() {
+        let samples = (0...100).map { TimestampedSample(t: Double($0) / 10, value: sin(Double($0))) }
+        #expect(MovementRecordingFeedback(trial: trial(samples: samples, recordedDurationSeconds: 10)) == .captured)
+        #expect(MovementRecordingFeedback(trial: trial(samples: samples)) == .captured)
+    }
+
+    @Test func recordingDurationSurvivesMedicationCopyAndJSONRoundTrip() throws {
+        let recording = trial(recordedDurationSeconds: 30)
+        let copy = recording.withMedicationTiming(.init(status: .unsure, confirmedAt: recording.startedAt))
+        #expect(copy.recordedDurationSeconds == 30)
+        let data = try JSONEncoder().encode(copy)
+        #expect(try JSONDecoder().decode(Trial.self, from: data) == copy)
+        var legacy = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        legacy.removeValue(forKey: "recordedDurationSeconds")
+        let oldRecording = try JSONDecoder().decode(Trial.self, from: JSONSerialization.data(withJSONObject: legacy))
+        #expect(oldRecording.recordedDurationSeconds == nil)
+        #expect(oldRecording.samples == recording.samples)
+        #expect(oldRecording.metrics == recording.metrics)
+    }
+
+    @Test func feedbackDoesNotChangeSamplesMetricsOrSessionData() throws {
+        let session = MovementSession(patientId: "TEST", stimulationContext: .postStim, trials: [trial()])
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        let before = try encoder.encode(session)
+        _ = MovementRecordingFeedback(trial: session.trials[0])
+        _ = MovementSignalAssessment(samples: session.trials[0].samples)
+        #expect(try encoder.encode(session) == before)
+    }
+}
+
+struct MovementDemonstrationTests {
+    @Test(arguments: [MovementTaskType.fingerTap, .handOpenClose], BodySide.allCases)
+    func eachTaskHandUsesItsOwnBundledPlayableVideo(task: MovementTaskType, side: BodySide) async throws {
+        let clip = try #require(MovementDemonstrationClip.clip(task: task, side: side))
+        let videoSide = task == .handOpenClose ? (side == .left ? BodySide.right : .left) : side
+        let expected = "\(task == .fingerTap ? "finger_tapping" : "fist")_\(videoSide.rawValue)"
+        #expect(clip.fileName == expected)
+        let url = try #require(clip.url)
+        let asset = AVURLAsset(url: url)
+        #expect(try await asset.load(.isPlayable))
+        #expect(try await asset.load(.duration).seconds >= 33)
+        #expect(try await asset.loadTracks(withMediaType: .audio).isEmpty)
+        let track = try #require(try await asset.loadTracks(withMediaType: .video).first)
+        #expect(try await track.load(.naturalSize) == CGSize(width: 854, height: 480))
+        let transform = try await track.load(.preferredTransform)
+        if task == .handOpenClose {
+            let expectedTransform = videoSide == .left
+                ? CGAffineTransform(a: 0, b: -1, c: 1, d: 0, tx: 0, ty: 854)
+                : CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: 480, ty: 0)
+            #expect(transform == expectedTransform)
+            #expect(abs(clip.presentationAspectRatio - 480.0 / 560.0) < 0.000001)
+            #expect(clip.maximumWidth == 170 && clip.cropsVerticalMargins)
+        } else {
+            #expect(transform == .identity)
+            #expect(!clip.cropsVerticalMargins)
+            #expect(clip.presentationAspectRatio == MovementDemonstrationClip.aspectRatio)
+        }
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        let frame = try await generator.image(at: CMTime(seconds: 5, preferredTimescale: 600))
+        #expect(frame.image.width == (task == .handOpenClose ? 480 : 854))
+        #expect(frame.image.height == (task == .handOpenClose ? 854 : 480))
+        #expect(abs(Double(MovementDemonstrationClip.aspectRatio) - 854.0 / 480.0) < 0.000001)
+    }
+
+    @Test func watchTaskDoesNotUseAnUnrelatedCameraDemo() {
+        #expect(MovementDemonstrationClip.clip(task: .pronationSupination, side: .left) == nil)
+        #expect(MovementDemonstrationClip.clip(task: .pronationSupination, side: .right) == nil)
+    }
+
+    @Test @MainActor func playbackIsSilentManualAndStopsCleanly() async throws {
+        let playback = MovementDemonstrationPlayer()
+        let clip = try #require(MovementDemonstrationClip.clip(task: .fingerTap, side: .left))
+        await playback.load(url: clip.url, automaticallyPlays: false)
+        defer { playback.stop() }
+        let player = try #require(playback.player)
+        #expect(player.isMuted && !playback.isPlaying && !playback.hasFailed)
+        playback.play()
+        #expect(playback.isPlaying)
+        playback.suspend()
+        playback.suspend()
+        #expect(!playback.isPlaying)
+        playback.resume()
+        #expect(playback.isPlaying)
+        playback.pause()
+        playback.suspend()
+        playback.resume()
+        #expect(!playback.isPlaying)
+        playback.stop()
+        #expect(playback.player == nil && player.items().isEmpty && playback.elapsed == 0)
+    }
+
+    @Test @MainActor func automaticPlaybackLoopsAndCanBePaused() async throws {
+        let playback = MovementDemonstrationPlayer()
+        let clip = try #require(MovementDemonstrationClip.clip(task: .handOpenClose, side: .right))
+        await playback.load(url: clip.url, automaticallyPlays: true)
+        defer { playback.stop() }
+        let player = try #require(playback.player)
+        let item = try #require(player.currentItem)
+        for _ in 0..<100 where item.status != .readyToPlay {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        #expect(item.status == .readyToPlay)
+        let duration = try await item.asset.load(.duration).seconds
+        await player.seek(to: CMTime(seconds: duration - 0.5, preferredTimescale: 600),
+                          toleranceBefore: .zero, toleranceAfter: .zero)
+        try await Task.sleep(for: .seconds(2))
+        #expect(playback.isPlaying && !playback.hasFailed)
+        #expect(player.currentTime().seconds < 5)
+        playback.pause()
+        #expect(player.rate == 0 && !playback.isPlaying)
+    }
+
+    @Test @MainActor func missingVideoFailsWithoutBlockingTheTask() async {
+        let playback = MovementDemonstrationPlayer()
+        await playback.load(url: nil, automaticallyPlays: true)
+        #expect(playback.hasFailed && !playback.isLoading && playback.player == nil)
+    }
+}
+
 struct MovementRecordingGuidanceTests {
+    @Test
+    func experimentalIndexIsNotAPatientMetric() {
+        #expect(!TrendMetric.patientCases.contains(.quality))
+        #expect(TrendMetric.patientCases.count == 6)
+        #expect(TrendMetric.allCases.contains(.quality))
+    }
+
+    @Test(arguments: [MovementTaskType.fingerTap, .handOpenClose])
+    func cameraGuideSwapsOnlyOpenCloseAndPreservesFingerTapping(task: MovementTaskType) {
+        let left = MovementRecordingGuidance(taskType: task, side: .left)
+        let right = MovementRecordingGuidance(taskType: task, side: .right)
+        #expect(left.cameraGuideHorizontalScale == (task == .handOpenClose ? 1 : -1))
+        #expect(right.cameraGuideHorizontalScale == (task == .handOpenClose ? -1 : 1))
+        #expect(left.handKey == "Left hand")
+        #expect(right.handKey == "Right hand")
+    }
+
+    @Test(arguments: MovementTaskType.allCases)
+    func instructionSymbolsFaceTheReaderAndDoNotChangeCameraGuides(task: MovementTaskType) {
+        let left = MovementRecordingGuidance(taskType: task, side: .left)
+        let right = MovementRecordingGuidance(taskType: task, side: .right)
+        #expect(right.taskIconHorizontalScale == (task == .handOpenClose ? -1 : 1))
+        #expect(left.taskIconHorizontalScale == (task == .fingerTap ? -1 : 1))
+        #expect(right.handIconHorizontalScale == -1)
+        #expect(left.handIconHorizontalScale == 1)
+    }
+
     @Test(arguments: [BodySide.left, BodySide.right])
     func handLabelUsesACompleteTranslationKey(side: BodySide) {
         let guidance = MovementRecordingGuidance(taskType: .fingerTap, side: side)

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D01200000000000000000001 /* MovementDemonstrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01200000000000000000002 /* MovementDemonstrationView.swift */; };
+		D01200000000000000000003 /* hand_videos in Resources */ = {isa = PBXBuildFile; fileRef = D01200000000000000000004 /* hand_videos */; };
 		A92985732FBB473200B0F0FB /* DailyCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929855F2FBB473200B0F0FB /* DailyCheckInView.swift */; };
 		A92985742FBB473200B0F0FB /* DailyLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985602FBB473200B0F0FB /* DailyLogView.swift */; };
 		A92985752FBB473200B0F0FB /* EventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985612FBB473200B0F0FB /* EventStore.swift */; };
@@ -114,6 +116,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D01200000000000000000002 /* MovementDemonstrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementDemonstrationView.swift; sourceTree = "<group>"; };
+		D01200000000000000000004 /* hand_videos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources/hand_videos; sourceTree = "<group>"; };
 		A929855D2FBB473200B0F0FB /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		A929855E2FBB473200B0F0FB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A929855F2FBB473200B0F0FB /* DailyCheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyCheckInView.swift; sourceTree = "<group>"; };
@@ -243,6 +247,8 @@
 				A92985682FBB473200B0F0FB /* MainTabView.swift */,
 				A92985692FBB473200B0F0FB /* MedicationLogView.swift */,
 				A9A51D22303C656B00E69380 /* MovementAnalyzer.swift */,
+				D01200000000000000000002 /* MovementDemonstrationView.swift */,
+				D01200000000000000000004 /* hand_videos */,
 				A9A51D23303C656B00E69380 /* MovementExportView.swift */,
 				A9A51D24303C656B00E69380 /* MovementModels.swift */,
 				A9A51D25303C656B00E69380 /* MovementTaskView.swift */,
@@ -566,6 +572,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D01200000000000000000003 /* hand_videos in Resources */,
 				A92985842FBB473200B0F0FB /* .gitignore in Resources */,
 				A92985852FBB473200B0F0FB /* Assets.xcassets in Resources */,
 				A94255342FD805BE008B8F73 /* Localizable.xcstrings in Resources */,
@@ -631,6 +638,7 @@
 				A9A51D31303C656B00E69380 /* VisionHandPoseCapture.swift in Sources */,
 				A9A51D32303C656B00E69380 /* TaskSessionExporter.swift in Sources */,
 				A9A51D33303C656B00E69380 /* MovementTaskView.swift in Sources */,
+				D01200000000000000000001 /* MovementDemonstrationView.swift in Sources */,
 				A9A51D34303C656B00E69380 /* TaskSessionStore.swift in Sources */,
 				A9A51D35303C656B00E69380 /* MovementExportView.swift in Sources */,
 				A9A51D36303C656B00E69380 /* SessionUploader.swift in Sources */,
@@ -991,7 +999,7 @@
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "vCRGlove uses Bluetooth to connect to and control the vibration gloves during vCR sessions.";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "vCRGlove uses Bluetooth to connect to and control the vibration gloves during vCR sessions.";
-				INFOPLIST_KEY_NSCameraUsageDescription = "The camera records a short video of your hand movement during movement tests. The video is saved to your Photo Library so you can review it later.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "The camera measures your hand movements and records a short video. Videos you save stay inside the app.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads health data such as movement and activity for symptom tracking.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes health-related events such as glove stimulation sessions to HealthKit.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "This app uses motion data from your device and Apple Watch to analyze symptoms.";
@@ -1044,7 +1052,7 @@
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "vCRGlove uses Bluetooth to connect to and control the vibration gloves during vCR sessions.";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "vCRGlove uses Bluetooth to connect to and control the vibration gloves during vCR sessions.";
-				INFOPLIST_KEY_NSCameraUsageDescription = "The camera records a short video of your hand movement during movement tests. The video is saved to your Photo Library so you can review it later.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "The camera measures your hand movements and records a short video. Videos you save stay inside the app.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads health data such as movement and activity for symptom tracking.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes health-related events such as glove stimulation sessions to HealthKit.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "This app uses motion data from your device and Apple Watch to analyze symptoms.";
