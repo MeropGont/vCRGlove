@@ -13,6 +13,681 @@ import XCTest
 import AVFoundation
 @testable import vCRGlove
 
+@Suite(.serialized)
+@MainActor
+struct StimulationProfileTests {
+    private func defaults() -> UserDefaults {
+        UserDefaults(suiteName: "stimulation-test-\(UUID().uuidString)")!
+    }
+
+    private func vm(_ defaults: UserDefaults) -> GloveVM {
+        GloveVM(defaults: defaults, motorOutput: { _, _ in }, stopOutput: {}, recordEvent: { _, _ in })
+    }
+
+    @Test func freshInstallKeepsExistingPresetAndStartsLocked() throws {
+        let model = vm(defaults())
+        #expect(model.stimulationProfile == StimulationProfile())
+        #expect(!model.researchUnlocked && !model.configurationNeedsReview)
+        #expect(model.stimulationProfile.leftAmplitude == 70 && model.stimulationProfile.frequency == 1.5)
+        #expect(StimulationProfile.pulseMs == 100 && StimulationProfile.slotsPerCycle == 4)
+    }
+
+    @Test func unlockingIsRequiredAndDoesNotPersist() {
+        let storage = defaults()
+        let model = vm(storage)
+        var edited = StimulationProfile()
+        edited.leftAmplitude = 35
+        #expect(!model.saveStimulationProfile(edited))
+        #expect(!model.unlockResearch(password: "incorrect"))
+        #expect(model.unlockResearch(password: "vcr2026"))
+        #expect(model.saveStimulationProfile(edited))
+        model.lockResearch()
+        #expect(!model.saveStimulationProfile(StimulationProfile()))
+        let relaunched = vm(storage)
+        #expect(!relaunched.researchUnlocked)
+        #expect(relaunched.stimulationProfile == edited)
+    }
+
+    @Test func bothAmplitudesAndPatternSurviveRelaunch() throws {
+        let storage = defaults()
+        let profile = StimulationProfile(leftAmplitude: 31, rightAmplitude: 62,
+                                         frequency: 2, pattern: .simultaneous)
+        try StimulationProfileStore(defaults: storage).save(profile)
+        let model = vm(storage)
+        #expect(model.stimulationProfile == profile)
+        #expect(profile.amplitude(for: "GloveL") == 31)
+        #expect(profile.amplitude(for: "GloveR") == 62)
+        #expect(profile.amplitude(for: "Glove Left") == 31)
+        #expect(profile.amplitude(for: "Glove Right") == 62)
+        #expect(profile.amplitude(for: "unknown") == nil)
+    }
+
+    @Test(arguments: [Double.nan, .infinity, -.infinity, -1, 101, 0.5, 34.9])
+    func invalidAmplitudesAreRejected(_ value: Double) throws {
+        let storage = defaults()
+        var profile = StimulationProfile()
+        profile.leftAmplitude = value
+        #expect(!profile.isValid)
+        #expect(throws: (any Error).self) { try StimulationProfileStore(defaults: storage).save(profile) }
+        profile = StimulationProfile()
+        profile.rightAmplitude = value
+        #expect(!profile.isValid)
+    }
+
+    @Test(arguments: [Double.nan, .infinity, 0, 0.4, 2.6, 5])
+    func overlappingOrInvalidFrequencyIsRejected(_ value: Double) {
+        var profile = StimulationProfile()
+        profile.frequency = value
+        #expect(!profile.isValid)
+    }
+
+    @Test func maximumFrequencyFitsExistingPulseLength() {
+        var profile = StimulationProfile()
+        profile.frequency = StimulationProfile.frequencyRange.upperBound
+        #expect(profile.isValid)
+        #expect(profile.slotSpacing >= Double(StimulationProfile.pulseMs) / 1000)
+        #expect(StimulationProfile(leftAmplitude: 0, rightAmplitude: 100).isValid)
+    }
+
+    @Test func invalidStoredProfileBlocksStimulationUntilStaffResaves() {
+        let storage = defaults()
+        storage.set(Data("broken".utf8), forKey: StimulationProfileStore.key)
+        var commands = 0
+        let model = GloveVM(defaults: storage, motorOutput: { _, _ in commands += 1 },
+                            stopOutput: {}, recordEvent: { _, _ in })
+        #expect(model.configurationNeedsReview)
+        model.startVibration(position: "GloveL", durationSeconds: 10)
+        model.startVibrationWithFingerCheck(positions: ["GloveL"])
+        #expect(!model.hasStimulationSession && commands == 0)
+        #expect(model.unlockResearch(password: "vcr2026"))
+        #expect(model.saveStimulationProfile(StimulationProfile()))
+        #expect(!model.configurationNeedsReview)
+    }
+
+    @Test func unknownSchemaCannotSilentlyRestoreDefaultDose() throws {
+        let storage = defaults()
+        var profile = StimulationProfile()
+        profile.version = 2
+        storage.set(try JSONEncoder().encode(profile), forKey: StimulationProfileStore.key)
+        #expect(vm(storage).configurationNeedsReview)
+        storage.set("not data", forKey: StimulationProfileStore.key)
+        #expect(vm(storage).configurationNeedsReview)
+    }
+
+    @Test func legacyPatternsPreserveMotorOrderAndAllMotorMode() {
+        var profile = StimulationProfile()
+        #expect(profile.motorIndices(order: [3, 1, 0, 2]) == [[3], [1], [0], [2]])
+        profile.pattern = .simultaneous
+        let commands = profile.motorIndices(order: [3, 1, 0, 2])
+        #expect(commands.count == 4 && commands.allSatisfy { $0 == Array(0..<20) })
+    }
+
+    @Test func sessionProfileStaysFixedAcrossPauseResumeAndJoiningGlove() throws {
+        let storage = defaults()
+        let original = StimulationProfile(leftAmplitude: 34, rightAmplitude: 58, pattern: .simultaneous)
+        try StimulationProfileStore(defaults: storage).save(original)
+        let model = vm(storage)
+        #expect(model.unlockResearch(password: "vcr2026"))
+        model.startVibration(position: "GloveL", durationSeconds: 50)
+        #expect(!model.saveStimulationProfile(StimulationProfile()))
+        model.pauseVibration(position: "GloveL")
+        #expect(!model.saveStimulationProfile(StimulationProfile()))
+        model.resumeVibration(position: "GloveL")
+        model.startVibration(position: "GloveR", durationSeconds: 40)
+        #expect(model.sessionProfile == original)
+        #expect(model.countdowns["GloveR"] == 40)
+        model.lockResearch()
+        #expect(model.hasStimulationSession && model.sessionProfile == original)
+        model.stopVibration(position: "GloveL")
+        #expect(model.sessionProfile == original)
+        model.stopVibration(position: "GloveR")
+        #expect(model.sessionProfile == nil && !model.hasStimulationSession)
+    }
+
+    @Test func effectiveSettingsAreLoggedAtSaveAndStart() {
+        var events: [(String, [String: String])] = []
+        let model = GloveVM(defaults: defaults(), motorOutput: { _, _ in }, stopOutput: {},
+                            recordEvent: { events.append(($0, $1)) })
+        #expect(model.unlockResearch(password: "vcr2026"))
+        let profile = StimulationProfile(leftAmplitude: 25, rightAmplitude: 45, pattern: .simultaneous)
+        #expect(model.saveStimulationProfile(profile))
+        model.startVibration(position: "GloveR", durationSeconds: 20)
+        model.stopVibration(position: "GloveR")
+        #expect(events.first { $0.0 == "stimulation_profile_saved" }?.1["previous_leftAmplitude"] == "70.0")
+        let start = events.first { $0.0 == "stimulation_started" }?.1
+        #expect(start?["effectiveAmplitude"] == "45.0" && start?["pattern"] == "simultaneous")
+        #expect(start?["durationSeconds"] == "20" && start?["pulseMs"] == "100")
+    }
+
+    @Test func unknownGloveCannotReceiveStimulation() {
+        var commands = 0
+        let model = GloveVM(defaults: defaults(), motorOutput: { _, _ in commands += 1 },
+                            stopOutput: {}, recordEvent: { _, _ in })
+        model.startVibration(position: "OtherDevice", durationSeconds: 20)
+        model.startVibrationWithFingerCheck(positions: ["OtherDevice"], durationSeconds: 20)
+        #expect(commands == 0 && !model.hasStimulationSession)
+    }
+
+    @Test func testBuzzUsesSavedHandAmplitudeAndIsBlockedWhilePaused() throws {
+        let storage = defaults()
+        try StimulationProfileStore(defaults: storage).save(StimulationProfile(leftAmplitude: 24, rightAmplitude: 52))
+        var commands: [[UInt8]] = []
+        let model = GloveVM(defaults: storage, motorOutput: { _, motors in commands.append(motors) },
+                            stopOutput: {}, recordEvent: { _, _ in })
+        let glove = try JSONDecoder().decode(HDevice.self, from: Data("""
+            {"id":"left","position":"GloveL","isConnected":true}
+            """.utf8))
+        model.testBuzz(device: glove)
+        #expect(commands.last == Array(repeating: UInt8(24), count: 20))
+        model.startVibration(position: "GloveL", durationSeconds: 50)
+        model.pauseVibration(position: "GloveL")
+        let count = commands.count
+        model.testBuzz(device: glove)
+        #expect(commands.count == count)
+        model.stopVibration(position: "GloveL")
+    }
+
+    @Test func simultaneousMotorCommandsUseRightHandAmplitude() async throws {
+        let storage = defaults()
+        try StimulationProfileStore(defaults: storage).save(
+            StimulationProfile(leftAmplitude: 23, rightAmplitude: 51, frequency: 2, pattern: .simultaneous))
+        var commands: [(String, [UInt8])] = []
+        let model = GloveVM(defaults: storage, motorOutput: { commands.append(($0, $1)) },
+                            stopOutput: {}, recordEvent: { _, _ in })
+        model.startVibration(position: "GloveR", durationSeconds: 20)
+        for _ in 0..<40 {
+            if commands.contains(where: { $0.1.contains(51) }) { break }
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        model.stopVibration(position: "GloveR")
+        let on = commands.filter { $0.1.contains { $0 > 0 } }
+        #expect(!on.isEmpty)
+        #expect(on.allSatisfy { $0.0 == "GloveR" && $0.1 == Array(repeating: UInt8(51), count: 20) })
+    }
+
+    @Test func stoppingFingerCheckPreventsDelayedRestartAndUsesSavedAmplitude() async throws {
+        let storage = defaults()
+        try StimulationProfileStore(defaults: storage).save(StimulationProfile(leftAmplitude: 22, rightAmplitude: 49))
+        var commands: [(String, [UInt8])] = []
+        let model = GloveVM(defaults: storage, motorOutput: { commands.append(($0, $1)) },
+                            stopOutput: {}, recordEvent: { _, _ in })
+        model.startVibrationWithFingerCheck(positions: ["GloveL", "GloveR"], durationSeconds: 20)
+        try await Task.sleep(for: .milliseconds(100))
+        #expect(model.isCheckingFingers)
+        #expect(commands.contains { $0.1.contains(22) })
+        model.stopVibration(position: "GloveL")
+        model.stopVibration(position: "GloveR")
+        let count = commands.count
+        try await Task.sleep(for: .milliseconds(800))
+        #expect(commands.count == count)
+        #expect(!model.isCheckingFingers && !model.hasStimulationSession)
+    }
+
+    @Test func queuedPulsesCannotFireAfterPauseOrStop() async throws {
+        var commands: [[UInt8]] = []
+        let model = GloveVM(defaults: defaults(), motorOutput: { _, motors in commands.append(motors) },
+                            stopOutput: {}, recordEvent: { _, _ in })
+        model.startVibration(position: "GloveL", durationSeconds: 20)
+        for _ in 0..<40 {
+            if commands.contains(where: { $0.contains(70) }) { break }
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        #expect(commands.contains { $0.contains(70) })
+        model.pauseVibration(position: "GloveL")
+        let pausedCount = commands.count
+        try await Task.sleep(for: .milliseconds(700))
+        #expect(commands.count == pausedCount)
+        model.resumeVibration(position: "GloveL")
+        model.stopVibration(position: "GloveL")
+        let stoppedCount = commands.count
+        try await Task.sleep(for: .milliseconds(750))
+        #expect(commands.count == stoppedCount)
+    }
+}
+
+@MainActor
+struct StudyInformationTests {
+    @Test func informationTopicsHaveStableOrderAndEndWithContact() {
+        #expect(StudyInformationTopic.allCases.map(\.rawValue) == [
+            "study", "participation", "devices", "safety", "privacy", "contact"])
+    }
+
+    @Test func everySectionAndParagraphHasAUniqueIdentifier() {
+        for topic in StudyInformationTopic.allCases {
+            let sections = topic.sections
+            if topic == .contact {
+                #expect(sections.isEmpty)
+                continue
+            }
+            #expect(!sections.isEmpty)
+            #expect(Set(sections.map(\.id)).count == sections.count)
+            let paragraphs = sections.flatMap(\.paragraphKeys)
+            #expect(!paragraphs.isEmpty && Set(paragraphs).count == paragraphs.count)
+            #expect(paragraphs.allSatisfy {
+                $0.hasPrefix("study.\(topic.rawValue).") || (topic == .devices && $0.hasPrefix("privacy.app."))
+            })
+        }
+    }
+
+    @Test func privacyIncludesEveryRightsSectionAndNoConsentAction() {
+        let sections = StudyInformationTopic.privacy.sections
+        #expect(sections.map(\.id) == ["intro", "basis", "responsible", "access", "rectification",
+            "erasure", "restriction", "portability", "objection", "withdrawal", "contacts", "definitions", "ethics"])
+        let paragraphs = sections.flatMap(\.paragraphKeys)
+        #expect(paragraphs.contains("study.privacy.withdrawal.body"))
+        #expect(paragraphs.contains("study.privacy.complaint"))
+        #expect(paragraphs.last == "study.privacy.ethics")
+        #expect(!paragraphs.contains { $0.contains("video") || $0.contains("accept") })
+    }
+
+    @Test func devicesRetainsEveryAppDataAndVideoExplanationOutsideTheLegalNotice() {
+        let sections = StudyInformationTopic.devices.sections
+        #expect(sections.map(\.id) == ["devices", "storage", "videos"])
+        #expect(sections.dropFirst().flatMap(\.paragraphKeys) == [
+            "privacy.app.localData", "privacy.app.videoCapture", "privacy.app.videoStorage",
+            "privacy.app.videoSharing", "privacy.app.videoDeletion"])
+    }
+}
+
+@MainActor
+struct JournalPersistenceTests {
+    private func location() throws -> URL {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory.appendingPathComponent("journal_entries.json")
+    }
+
+    @Test func oldEntriesDecodeWithoutInventingSaveTimes() throws {
+        let json = """
+        {"id":"11111111-1111-1111-1111-111111111111","date":12345,"type":"symptm","note":"Legacy"}
+        """
+        let entry = try JSONDecoder().decode(JournalEntry.self, from: Data(json.utf8))
+        #expect(entry.type == .symptom && entry.note == "Legacy")
+        #expect(entry.symptoms.isEmpty && entry.medicationFactors.isEmpty)
+        #expect(entry.createdAt == nil && entry.updatedAt == nil)
+        #expect(entry.checkInVersion == nil && entry.activityImpact == nil && entry.medicationSummary == nil)
+        #expect(entry.medicationChanges.isEmpty)
+        #expect(entry.date == Date(timeIntervalSinceReferenceDate: 12345))
+    }
+
+    @Test func twoQuestionCheckInCreatesNoMedicationOrSymptomEvents() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let store = JournalStore(storageURL: url)
+        #expect(!store.saveMoodAndImpactCheckIn(date: Date(), mood: nil, impact: nil))
+        #expect(!store.saveMoodAndImpactCheckIn(date: Date(), mood: 0, impact: nil))
+        #expect(store.entries.isEmpty)
+        #expect(store.saveMoodAndImpactCheckIn(date: Date(), mood: 3, impact: .little))
+        let result = try #require(JournalStore(storageURL: url).entries.first)
+        #expect(result.checkInVersion == 3 && result.mood == 3 && result.activityImpact == .little)
+        #expect(result.medicationSummary == nil && result.medicationChanges.isEmpty)
+        #expect(result.medicationEvent == nil && result.symptomSeverity == nil && result.symptoms.isEmpty)
+        #expect(result.checkInSummary.contains(MoodRating.neutral.checkInLabel))
+        #expect(store.entries.count == 1)
+        #expect(MedicationTiming.latestIntake(in: [result], before: Date()) == nil)
+    }
+
+    @Test func simplifiedEditPreservesHiddenLegacyAnswersAndUnknownMetadata() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        var old = JournalEntry(type: .dailyCheckIn, mood: 2, symptomSeverity: .severe,
+            symptoms: ["Tremor"], medicationName: "A", medicationDose: "100 mg", note: "Preserve")
+        old.activityImpact = .skipped
+        old.medicationSummary = .changed
+        old.medicationChanges = [.late, .extra]
+        old.checkInVersion = 2
+        old.createdAt = Date(timeIntervalSince1970: 1_700_000_000)
+        var records = try JSONSerialization.jsonObject(with: JSONEncoder().encode([old])) as! [[String: Any]]
+        records[0]["researchMetadata"] = ["preserve": true]
+        try JSONSerialization.data(withJSONObject: records).write(to: url)
+        let store = JournalStore(storageURL: url)
+        #expect(store.saveMoodAndImpactCheckIn(date: old.date, mood: 4, impact: .moderate))
+        let restored = JournalStore(storageURL: url)
+        let result = try #require(restored.entries.first)
+        #expect(result.id == old.id && result.createdAt == old.createdAt && result.date == old.date)
+        #expect(result.checkInVersion == 2 && result.mood == 4 && result.activityImpact == .moderate)
+        #expect(result.medicationSummary == old.medicationSummary && result.medicationChanges == old.medicationChanges)
+        #expect(result.symptomSeverity == old.symptomSeverity && result.symptoms == old.symptoms)
+        #expect(result.medicationName == old.medicationName && result.medicationDose == old.medicationDose)
+        #expect(result.note == old.note && result.updatedAt != nil)
+        #expect(!result.checkInSummary.contains(DailyMedicationChange.late.label))
+        #expect(result.detailSummary.contains(DailyMedicationChange.late.label))
+        let saved = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [[String: Any]]
+        #expect((saved[0]["researchMetadata"] as? [String: Bool])?["preserve"] == true)
+        #expect(restored.entries.count == 1 && MedicationTiming.latestIntake(in: restored.entries, before: Date()) == nil)
+    }
+
+    @Test func simplifiedFailedSaveLeavesOriginalAnswersIntactAndCanRetry() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        var fail = false
+        let store = JournalStore(storageURL: url, writeData: { data, destination in
+            if fail { throw CocoaError(.fileWriteOutOfSpace) }
+            try data.write(to: destination, options: .atomic)
+        })
+        let date = Date()
+        #expect(store.saveMoodAndImpactCheckIn(date: date, mood: 2, impact: .large))
+        let old = try #require(store.entries.first)
+        let bytes = try Data(contentsOf: url)
+        fail = true
+        #expect(!store.saveMoodAndImpactCheckIn(date: date, mood: 4, impact: .little))
+        #expect(store.entries[0].mood == old.mood && store.entries[0].updatedAt == old.updatedAt)
+        #expect(try Data(contentsOf: url) == bytes)
+        fail = false
+        #expect(store.saveMoodAndImpactCheckIn(date: date, mood: 4, impact: .little))
+        #expect(store.entries.count == 1 && store.entries[0].id == old.id && store.entries[0].mood == 4)
+    }
+
+    @Test func simplifiedEditDoesNotAssignVersionToUnknownLegacyFormat() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let old = JournalEntry(type: .dailyCheckIn, symptomSeverity: .mild, symptoms: ["Slowness"])
+        try JSONEncoder().encode([old]).write(to: url)
+        let store = JournalStore(storageURL: url)
+        #expect(store.saveMoodAndImpactCheckIn(date: old.date, mood: nil, impact: .unsure))
+        let result = try #require(JournalStore(storageURL: url).entries.first)
+        #expect(result.checkInVersion == nil && result.symptomSeverity == .mild && result.symptoms == old.symptoms)
+        #expect(result.mood == nil && result.activityImpact == .unsure)
+    }
+
+    @Test func savedCheckInSurvivesRelaunchAndEditKeepsItsIdentity() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let day = Date(timeIntervalSinceReferenceDate: 800_000_000)
+        let savedAt = day.addingTimeInterval(86400)
+        var clock = savedAt
+        let store = JournalStore(storageURL: url, now: { clock })
+        #expect(store.saveDailyCheckIn(date: day, mood: 4, severity: .mild, symptoms: ["Tremor"]))
+        let original = try #require(store.entries.first)
+        #expect(original.date == day && original.createdAt == savedAt && original.updatedAt == savedAt)
+        clock = savedAt.addingTimeInterval(120)
+        #expect(store.saveDailyCheckIn(date: day, mood: 3, severity: .moderate, symptoms: ["Slowness"]))
+        let restored = JournalStore(storageURL: url)
+        let edited = try #require(restored.dailyCheckIn(on: day))
+        #expect(restored.entries.count == 1 && edited.id == original.id)
+        #expect(edited.date == day && edited.createdAt == savedAt && edited.updatedAt == clock)
+        #expect(edited.mood == 3 && edited.symptomSeverity == .moderate && edited.symptoms == ["Slowness"])
+    }
+
+    @Test func editingLegacyCheckInKeepsOtherEntriesAndUnknownMetadata() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let day = Date(timeIntervalSinceReferenceDate: 800_000_000)
+        let first = JournalEntry(date: day, type: .dailyCheckIn, mood: 2, note: "Keep earlier check-in")
+        let latest = JournalEntry(date: day, type: .dailyCheckIn, mood: 3, note: "Keep note")
+        let medication = JournalEntry(date: day, type: .medication, medicationName: "Medicine",
+                                       medicationDose: "100 mg", medicationEvent: .usual)
+        var records = try JSONSerialization.jsonObject(with: JSONEncoder().encode([first, latest, medication])) as! [[String: Any]]
+        records[1]["futureResearchContext"] = ["keep": true]
+        try JSONSerialization.data(withJSONObject: records).write(to: url)
+        let store = JournalStore(storageURL: url)
+        #expect(store.latestDailyCheckIn?.id == latest.id)
+        #expect(store.saveDailyCheckIn(date: day, mood: 5, severity: .mild, symptoms: []))
+        #expect(store.entries.map(\.id) == [first.id, latest.id, medication.id])
+        #expect(store.entries[0].mood == 2 && store.entries[1].note == "Keep note")
+        #expect(store.entries[1].createdAt == nil && store.entries[1].updatedAt != nil)
+        #expect(store.entries[2].medicationName == "Medicine" && store.entries[2].medicationDose == "100 mg")
+        let saved = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [[String: Any]]
+        #expect((saved[1]["futureResearchContext"] as? [String: Bool])?["keep"] == true)
+    }
+
+    @Test func failedWritesKeepLastSavedDataAndAllowRetry() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        var fail = false
+        let store = JournalStore(storageURL: url, writeData: { data, destination in
+            if fail { throw CocoaError(.fileWriteOutOfSpace) }
+            try data.write(to: destination, options: .atomic)
+        })
+        let day = Date()
+        #expect(store.saveDailyCheckIn(date: day, mood: 2, severity: .mild, symptoms: []))
+        let bytes = try Data(contentsOf: url)
+        let original = try #require(store.entries.first)
+        fail = true
+        #expect(!store.saveDailyCheckIn(date: day, mood: 5, severity: .severe, symptoms: ["Tremor"]))
+        #expect(!store.add(JournalEntry(type: .note, note: "Unwritten draft")))
+        #expect(store.entries.count == 1 && store.entries[0].mood == 2)
+        #expect(store.entries[0].updatedAt == original.updatedAt)
+        #expect(try Data(contentsOf: url) == bytes && store.saveErrorMessage != nil)
+        fail = false
+        #expect(store.saveDailyCheckIn(date: day, mood: 5, severity: .severe, symptoms: ["Tremor"]))
+        #expect(store.entries.count == 1 && store.entries[0].id == original.id)
+        #expect(store.saveErrorMessage == nil && JournalStore(storageURL: url).entries[0].mood == 5)
+    }
+
+    @Test func corruptFileIsNeverOverwrittenByANewEntry() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let corrupt = Data("[{incomplete journal".utf8)
+        try corrupt.write(to: url)
+        let store = JournalStore(storageURL: url)
+        #expect(store.isLoadBlocked && store.entries.isEmpty)
+        #expect(!store.add(JournalEntry(type: .note, note: "Do not replace old data")))
+        #expect(!store.saveDailyCheckIn(date: Date(), mood: 3, severity: .mild, symptoms: []))
+        #expect(try Data(contentsOf: url) == corrupt && store.saveErrorMessage != nil)
+    }
+
+    @Test func duplicateRecordIDsBlockUnsafeRewrites() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let entry = JournalEntry(type: .note, note: "Keep")
+        let data = try JSONEncoder().encode([entry, entry])
+        try data.write(to: url)
+        let store = JournalStore(storageURL: url)
+        #expect(store.isLoadBlocked && !store.add(JournalEntry(type: .note)))
+        #expect(try Data(contentsOf: url) == data)
+    }
+
+    @Test func medicationEventKeepsEventTimeAndCheckInSummaryIgnoresOtherTypes() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let eventAt = Date(timeIntervalSinceReferenceDate: 800_000_000)
+        let savedAt = eventAt.addingTimeInterval(3600)
+        let store = JournalStore(storageURL: url, now: { savedAt })
+        #expect(store.latestDailyCheckIn == nil)
+        #expect(store.saveDailyCheckIn(date: eventAt, mood: 4, severity: .mild, symptoms: []))
+        let checkIn = try #require(store.latestDailyCheckIn)
+        let medication = JournalEntry(date: savedAt, type: .medication, medicationEvent: .late)
+        #expect(store.add(medication))
+        #expect(store.entries.last?.date == savedAt && store.entries.last?.createdAt == savedAt)
+        #expect(store.latestDailyCheckIn?.id == checkIn.id)
+        #expect(!store.add(medication) && store.entries.count == 2)
+    }
+
+    @Test func differentCalendarDaysKeepSeparateCheckIns() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let first = Calendar.current.startOfDay(for: Date())
+        let second = try #require(Calendar.current.date(byAdding: .day, value: 1, to: first))
+        let store = JournalStore(storageURL: url)
+        #expect(store.saveDailyCheckIn(date: first, mood: 2, severity: .moderate, symptoms: []))
+        #expect(store.saveDailyCheckIn(date: second, mood: 4, severity: .mild, symptoms: []))
+        #expect(store.entries.count == 2 && store.latestDailyCheckIn?.date == second)
+    }
+
+    @Test func eventEditsPreserveIdentityIntakeLinksAndUnownedFields() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let oldTime = Date(timeIntervalSinceReferenceDate: 800_000_000)
+        let newTime = oldTime.addingTimeInterval(3600)
+        let medication = JournalEntry(date: oldTime, type: .medication, medicationName: "A",
+            medicationDose: "100 mg", note: "Old", medicationEvent: .usual, createdAt: oldTime)
+        let symptom = JournalEntry(date: oldTime, type: .symptom, mood: 2, symptomSeverity: .mild,
+            symptoms: ["Legacy symptom"], symptomEpisodeType: .off)
+        var records = try JSONSerialization.jsonObject(with: JSONEncoder().encode([medication, symptom])) as! [[String: Any]]
+        records[0]["studyContext"] = ["preserve": true]
+        try JSONSerialization.data(withJSONObject: records).write(to: url)
+        let store = JournalStore(storageURL: url, now: { newTime })
+        #expect(store.updateMedication(id: medication.id, date: newTime, event: .late,
+            motorState: .off, factors: [.food], note: "Corrected"))
+        #expect(store.updateSymptom(id: symptom.id, date: newTime, severity: .moderate,
+            symptoms: ["Legacy symptom", "Tremor"], motorState: .on, note: nil))
+        let restored = JournalStore(storageURL: url)
+        #expect(restored.entries.map(\.id) == [medication.id, symptom.id])
+        let edited = restored.entries[0]
+        #expect(edited.date == newTime && edited.createdAt == oldTime && edited.updatedAt == newTime)
+        #expect(edited.medicationName == "A" && edited.medicationDose == "100 mg")
+        #expect(edited.medicationEvent == .late && edited.medicationFactors == [.food] && edited.note == "Corrected")
+        #expect(restored.entries[1].mood == 2 && restored.entries[1].symptomEpisodeType == .off)
+        #expect(restored.entries[1].symptoms == ["Legacy symptom", "Tremor"])
+        let saved = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [[String: Any]]
+        #expect((saved[0]["studyContext"] as? [String: Bool])?["preserve"] == true)
+    }
+
+    @Test func failedOrMismatchedEventEditsLeaveSavedDataUntouched() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        var fail = false
+        let store = JournalStore(storageURL: url, writeData: { data, destination in
+            if fail { throw CocoaError(.fileWriteOutOfSpace) }
+            try data.write(to: destination, options: .atomic)
+        })
+        let medication = JournalEntry(type: .medication, medicationEvent: .usual)
+        #expect(store.add(medication))
+        let bytes = try Data(contentsOf: url)
+        fail = true
+        #expect(!store.updateMedication(id: medication.id, date: Date(), event: .missed,
+            motorState: nil, factors: [], note: "Not saved"))
+        #expect(!store.updateSymptom(id: medication.id, date: Date(), severity: .severe,
+            symptoms: ["Tremor"], motorState: nil, note: nil))
+        #expect(!store.updateMedication(id: UUID(), date: Date(), event: .late,
+            motorState: nil, factors: [], note: nil))
+        #expect(store.entries.count == 1 && store.entries[0].medicationEvent == .usual)
+        #expect(try Data(contentsOf: url) == bytes)
+    }
+
+    @Test func quickCheckInAddsNewMeasuresWithoutRecodingLegacySeverity() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let old = JournalEntry(type: .dailyCheckIn, mood: 2, symptomSeverity: .severe,
+            symptoms: ["Legacy symptom"], note: "Preserve note")
+        try JSONEncoder().encode([old]).write(to: url)
+        let store = JournalStore(storageURL: url)
+        #expect(store.entries[0].activityImpact == nil && store.entries[0].medicationSummary == nil)
+        #expect(store.saveQuickCheckIn(date: old.date, mood: 3, impact: .little, medication: .changed,
+            changes: [.late, .other], severity: old.symptomSeverity, symptoms: old.symptoms))
+        let restored = JournalStore(storageURL: url)
+        let result = try #require(restored.entries.first)
+        #expect(restored.entries.count == 1 && result.id == old.id && result.note == old.note)
+        #expect(result.symptomSeverity == .severe && result.symptoms == old.symptoms)
+        #expect(result.activityImpact == .little && result.medicationSummary == .changed)
+        #expect(result.checkInVersion == 2 && result.medicationChanges == [.late, .other])
+        #expect(result.detailSummary.contains(String(format: L10n("Medication: %@"), DailyMedicationSummary.changed.label)))
+        #expect(MedicationTiming.latestIntake(in: restored.entries, before: Date()) == nil)
+    }
+
+    @Test func partialUnsureAndSkippedAnswersNeverBecomeNormalAnswers() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let store = JournalStore(storageURL: url)
+        let day = Date()
+        #expect(!store.saveQuickCheckIn(date: day, mood: nil, impact: nil, medication: nil,
+            changes: [], severity: nil, symptoms: []))
+        #expect(store.entries.isEmpty)
+        #expect(store.saveQuickCheckIn(date: day, mood: 4, impact: nil, medication: nil,
+            changes: [], severity: nil, symptoms: []))
+        #expect(store.entries[0].activityImpact == nil && store.entries[0].medicationSummary == nil)
+        #expect(store.saveQuickCheckIn(date: day, mood: nil, impact: .unsure, medication: .skipped,
+            changes: [.missed], severity: nil, symptoms: []))
+        #expect(store.entries[0].activityImpact == .unsure && store.entries[0].medicationSummary == .skipped)
+        #expect(store.entries[0].medicationChanges.isEmpty)
+        #expect(store.saveQuickCheckIn(date: day, mood: nil, impact: .skipped, medication: .nonePlanned,
+            changes: [], severity: nil, symptoms: []))
+        #expect(store.entries[0].activityImpact == .skipped && store.entries[0].medicationSummary == .nonePlanned)
+        #expect(store.saveQuickCheckIn(date: day, mood: nil, impact: .notAtAll, medication: .asPlanned,
+            changes: [.late], severity: nil, symptoms: []))
+        let result = try #require(JournalStore(storageURL: url).entries.first)
+        #expect(result.activityImpact == .notAtAll && result.medicationSummary == .asPlanned)
+        #expect(result.mood == nil && result.symptomSeverity == nil && result.medicationChanges.isEmpty)
+    }
+
+    @Test func failedQuickCheckInEditRetainsOriginalMeasures() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        var fail = false
+        let store = JournalStore(storageURL: url, writeData: { data, destination in
+            if fail { throw CocoaError(.fileWriteOutOfSpace) }
+            try data.write(to: destination, options: .atomic)
+        })
+        let day = Date()
+        #expect(store.saveQuickCheckIn(date: day, mood: 4, impact: .moderate, medication: .changed,
+            changes: [.late], severity: nil, symptoms: []))
+        let bytes = try Data(contentsOf: url)
+        fail = true
+        #expect(!store.saveQuickCheckIn(date: day, mood: 1, impact: .large, medication: .asPlanned,
+            changes: [], severity: nil, symptoms: []))
+        #expect(store.entries[0].activityImpact == .moderate && store.entries[0].medicationChanges == [.late])
+        #expect(try Data(contentsOf: url) == bytes)
+    }
+
+    @Test func activityRatingsHaveOneIncreasingOrderWithoutUnknownOrSkipped() throws {
+        #expect(DailyActivityImpact.ratingChoices == [.notAtAll, .little, .moderate, .large, .unable])
+        #expect(!DailyActivityImpact.ratingChoices.contains(.unsure))
+        #expect(!DailyActivityImpact.ratingChoices.contains(.skipped))
+        for value in DailyActivityImpact.allCases {
+            #expect(try JSONDecoder().decode(DailyActivityImpact.self, from: JSONEncoder().encode(value)) == value)
+        }
+    }
+
+    @Test func directMedicationChangesSurviveAndExclusiveAnswersClearThem() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let store = JournalStore(storageURL: url)
+        let day = Date()
+        #expect(store.saveQuickCheckIn(date: day, mood: nil, impact: nil, medication: .changed,
+            changes: [.late, .missed, .extra], severity: nil, symptoms: []))
+        let original = try #require(JournalStore(storageURL: url).entries.first)
+        #expect(original.medicationChanges == [.late, .missed, .extra])
+        for answer in [DailyMedicationSummary.asPlanned, .nonePlanned, .unsure] {
+            #expect(store.saveQuickCheckIn(date: day, mood: nil, impact: nil, medication: answer,
+                changes: [.late, .missed], severity: nil, symptoms: []))
+            let result = try #require(JournalStore(storageURL: url).entries.first)
+            #expect(result.id == original.id && result.medicationSummary == answer)
+            #expect(result.medicationChanges.isEmpty)
+            #expect(MedicationTiming.latestIntake(in: [result], before: Date()) == nil)
+        }
+    }
+
+    @Test func changingMoodPreservesLegacySkippedAndUnspecifiedChangeAnswers() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        for medication in [DailyMedicationSummary.skipped, .changed] {
+            var old = JournalEntry(type: .dailyCheckIn, mood: 2, note: "Keep legacy context")
+            old.activityImpact = .skipped
+            old.medicationSummary = medication
+            old.checkInVersion = 2
+            try JSONEncoder().encode([old]).write(to: url)
+            let store = JournalStore(storageURL: url)
+            #expect(store.saveQuickCheckIn(date: old.date, mood: 4, impact: old.activityImpact,
+                medication: old.medicationSummary, changes: old.medicationChanges,
+                severity: old.symptomSeverity, symptoms: old.symptoms))
+            let result = try #require(JournalStore(storageURL: url).entries.first)
+            #expect(result.id == old.id && result.note == old.note)
+            #expect(result.mood == 4 && result.activityImpact == .skipped)
+            #expect(result.medicationSummary == medication && result.medicationChanges.isEmpty)
+        }
+    }
+
+    @Test func legacyEventCorrectionsKeepMissingAnswersMissing() throws {
+        let url = try location()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let medication = JournalEntry(type: .medication, medicationName: "A", medicationDose: "100 mg")
+        let symptom = JournalEntry(type: .symptom, note: "Legacy")
+        try JSONEncoder().encode([medication, symptom]).write(to: url)
+        let store = JournalStore(storageURL: url)
+        #expect(store.updateMedication(id: medication.id, date: medication.date, event: nil,
+            motorState: nil, factors: [], note: "Corrected"))
+        #expect(store.updateSymptom(id: symptom.id, date: symptom.date, severity: nil,
+            symptoms: [], motorState: nil, note: "Corrected"))
+        let restored = JournalStore(storageURL: url)
+        #expect(restored.entries.count == 2 && restored.entries[0].medicationEvent == nil)
+        #expect(restored.entries[0].motorState == nil && restored.entries[0].medicationName == "A")
+        #expect(restored.entries[1].symptomSeverity == nil && restored.entries[1].symptoms.isEmpty)
+        #expect(restored.entries.allSatisfy { $0.note == "Corrected" && $0.createdAt == nil })
+        #expect(MedicationTiming.latestIntake(in: restored.entries, before: Date()) == nil)
+    }
+}
+
 struct JournalNoteExampleTests {
     @Test @MainActor func allExamplesHaveDistinctGermanTranslations() throws {
         let keys = NoteLogView.noteExamples
@@ -686,7 +1361,7 @@ struct MovementTrendAvailabilityTests {
         #expect(summary.points.map(\.date) == [first.startedAt, last.startedAt])
         #expect(summary.points.allSatisfy { $0.context == .preStim })
         #expect(summary.points.first?.segment != summary.points.last?.segment)
-        #expect(summary.canShowTrend)
+        #expect(!summary.canShowTrend) // Same-day historical recordings have no comparable multi-day line.
         #expect(try encoder.encode(session) == before)
     }
 
@@ -702,6 +1377,329 @@ struct MovementTrendAvailabilityTests {
                                           task: .fingerTap, side: .right, metric: .frequency)
         #expect(single.points.count == 1)
         #expect(!single.canShowTrend)
+    }
+}
+
+struct MovementDailyTrendTests {
+    private var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar
+    }
+    private let base = Date(timeIntervalSince1970: 1_790_000_000)
+
+    private func trial(day: Int = 0, offset: Double = 0, rate: Double = 2,
+                       duration: Double? = 30, stop: StopCondition = .thirtySec,
+                       version: String? = MovementMeasurementVersion.camera,
+                       source: SignalSource = .camera, samples: [TimestampedSample]? = nil,
+                       medication: MedicationTiming? = nil) -> Trial {
+        Trial(taskType: .fingerTap, side: .right, source: source, stopCondition: stop,
+              startedAt: base.addingTimeInterval(Double(day) * 86400 + offset),
+              samples: samples ?? (0..<60).map { .init(t: Double($0) / 2, value: sin(Double($0))) },
+              metrics: MovementMetrics(cycleCount: 12, frequencyHz: rate, meanAmplitude: 0.2,
+                                       amplitudeDecrementSlope: -0.01, rhythmCV: 0,
+                                       pauseCount: 0, onsetLatencySec: 0, qualityIndex: 0),
+              medicationTiming: medication, recordedDurationSeconds: duration, measurementVersion: version)
+    }
+
+    private func session(_ trial: Trial, context: StimulationContext = .preStim) -> MovementSession {
+        MovementSession(patientId: "TEST", date: base.addingTimeInterval(10000000),
+                        stimulationContext: context, trials: [trial])
+    }
+
+    private func summary(_ sessions: [MovementSession], metric: TrendMetric = .frequency,
+                         filters: MovementTrendFilters = .init()) -> MovementTrendSummary {
+        MovementTrendSummary(sessions: sessions, task: .fingerTap, side: .right, metric: metric,
+                             filters: filters, now: base.addingTimeInterval(10 * 86400), calendar: calendar)
+    }
+
+    @Test func dailyMediansRangesAndCountsUseTrialDatesWithoutMutatingSessions() throws {
+        let sessions = [session(trial(rate: 2)), session(trial(offset: 100, rate: 4)),
+                        session(trial(offset: 200, rate: 20)), session(trial(day: 1, rate: 2)),
+                        session(trial(day: 1, offset: 100, rate: 3))]
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let before = try encoder.encode(sessions)
+        let result = summary(sessions)
+        #expect(result.days.map(\.median) == [4, 2.5])
+        #expect(result.days.map { $0.recordings.count } == [3, 2])
+        #expect(result.days.first?.minimum == 2)
+        #expect(result.days.first?.maximum == 20)
+        #expect(result.days.first?.date == calendar.startOfDay(for: base))
+        #expect(result.canShowTrend)
+        #expect(Set(result.days.map(\.seriesID)).count == 1)
+        #expect(try encoder.encode(sessions) == before)
+    }
+
+    @Test func filteringPrecedesAggregationAndMedicationUnknownIsNotNone() {
+        let a = trial(rate: 2, medication: .init(status: .takenAt, takenAt: base.addingTimeInterval(-3600)))
+        let b = trial(offset: 100, rate: 10, medication: .init(status: .takenAt, takenAt: base.addingTimeInterval(-7200)))
+        var filters = MovementTrendFilters()
+        filters.medication = .sinceDose
+        filters.minimumDoseHours = 1
+        filters.maximumDoseHours = 1
+        let result = summary([session(a), session(b), session(trial(rate: 8))], filters: filters)
+        #expect(result.days.count == 1)
+        #expect(result.days.first?.median == 2)
+        #expect(result.recordings.count == 1)
+        #expect(result.unfilteredCount == 3)
+    }
+
+    @Test func fourMonthsOfRetakesProduceOneMedianPerMeasuredDay() {
+        let sessions = (0..<120).flatMap { day in
+            [session(trial(day: day, rate: 1)), session(trial(day: day, offset: 100, rate: 3))]
+        }
+        let result = summary(sessions)
+        #expect(result.recordings.count == 240)
+        #expect(result.days.count == 120)
+        #expect(result.days.allSatisfy { $0.median == 2 && $0.recordings.count == 2 })
+        #expect(result.canShowTrend)
+        #expect(!result.hasStandalonePoints)
+    }
+
+    @Test func eachContextHasItsOwnLineAndLegacyContextsNeverConnect() {
+        let contexts = StimulationContext.allCases
+        let result = summary(contexts.flatMap { context in
+            [session(trial(), context: context), session(trial(day: 1), context: context)]
+        })
+        #expect(result.days.count == 10)
+        #expect(result.days.filter(\.connects).count == 6)
+        #expect(Set(result.days.filter(\.connects).map(\.seriesID)).count == 3)
+        #expect(result.days.filter { [.baseline, .unspecified].contains($0.context) }.allSatisfy { !$0.connects })
+    }
+
+    @Test func protocolVersionAndSourceAreNeverMixed() {
+        let result = summary([session(trial()), session(trial(day: 1, version: nil)),
+                              session(trial(day: 2, duration: 15, stop: .fifteenSec,
+                                            samples: (0..<30).map { .init(t: Double($0) / 2, value: sin(Double($0))) })),
+                              session(trial(day: 3, source: .watchMotion))])
+        #expect(result.days.count == 4)
+        #expect(Set(result.days.map(\.seriesID)).count == 4)
+        #expect(!result.canShowTrend)
+    }
+
+    @Test func differentParticipantIDsAreNeverAggregatedOrJoined() {
+        let first = session(trial())
+        let other = MovementSession(patientId: "OTHER", stimulationContext: .preStim, trials: [trial(day: 1)])
+        let result = summary([first, other])
+        #expect(result.days.count == 2)
+        #expect(Set(result.days.map(\.seriesID)).count == 2)
+        #expect(!result.canShowTrend)
+    }
+
+    @Test func legacyRateCanTrendButLegacyAmplitudeIsNotRelabelledAsPalmLengths() {
+        let sessions = [session(trial(version: nil)), session(trial(day: 1, version: nil))]
+        #expect(summary(sessions).canShowTrend)
+        let size = summary(sessions, metric: .amplitude)
+        #expect(size.days.isEmpty)
+        #expect(size.recordings.count == 2)
+        #expect(size.points.count == 2) // Stored values stay accessible in history.
+        #expect(summary([session(trial()), session(trial(day: 1))], metric: .amplitude).canShowTrend)
+    }
+
+    private func legacySamples(start: Double = 0.02, end: Double = 30.02) -> [TimestampedSample] {
+        (0...900).map { index in
+            .init(t: start + (end - start) * Double(index) / 900, value: sin(Double(index)))
+        }
+    }
+
+    @Test(arguments: [TrendMetric.frequency, .rhythm])
+    func legacyTimestampEvidenceRestoresHistoricalLinesWithoutChangingData(metric: TrendMetric) throws {
+        // Synthetic counterparts of the reviewed export's before/after-stimulation dates.
+        let sessions = [session(trial(day: 0, duration: nil, version: nil, samples: legacySamples()), context: .postStim),
+                        session(trial(day: 1, duration: nil, version: nil, samples: legacySamples()), context: .postStim),
+                        session(trial(day: 6, version: nil), context: .postStim),
+                        session(trial(day: 2, duration: nil, version: nil, samples: legacySamples())),
+                        session(trial(day: 6, version: nil)),
+                        MovementSession(patientId: "ASSIGNED-TEST", stimulationContext: .preStim,
+                                        trials: [trial(day: 10)])]
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let before = try encoder.encode(sessions)
+        let result = summary(sessions, metric: metric)
+        let lines = Dictionary(grouping: result.days.filter(\.connects), by: \.seriesID).values.filter { $0.count >= 2 }
+        #expect(lines.map(\.count).sorted() == [2, 3])
+        #expect(result.canShowTrend)
+        #expect(result.noTrendExplanationKey == nil)
+        #expect(result.recordings.filter { $0.inferredDuration != nil }.count == 3)
+        #expect(result.recordings.filter { $0.inferredDuration != nil }.allSatisfy { $0.duration == nil && $0.cautionKey == nil })
+        #expect(try encoder.encode(sessions) == before)
+        #expect(summary(sessions, metric: .amplitude).days.count == 1)
+    }
+
+    @Test func inferredAndMeasuredLegacyDurationsCanShareADailyMedian() {
+        let result = summary([session(trial(rate: 2, duration: nil, version: nil, samples: legacySamples())),
+                              session(trial(offset: 100, rate: 4, version: nil)),
+                              session(trial(day: 1, version: nil))])
+        #expect(result.days.count == 2)
+        #expect(result.days.first?.median == 3)
+        #expect(result.days.first?.recordings.count == 2)
+        #expect(result.canShowTrend)
+    }
+
+    @Test func incompleteDelayedGappedAndInvalidLegacySignalsCannotSupplyDuration() {
+        let full = legacySamples()
+        let signals: [[TimestampedSample]] = [[], Array(full.prefix(3)), legacySamples(end: 29.4),
+            legacySamples(start: 0.8, end: 30.02), legacySamples(start: 2.1, end: 30.02),
+            full.filter { !((10...13).contains($0.t)) },
+            Array(full.reversed()), [.init(t: -1, value: 1)] + full,
+            full + [.init(t: .nan, value: 1)], full + [.init(t: 30.03, value: .infinity)],
+            legacySamples(end: 30.51)]
+        for samples in signals {
+            let result = summary([session(trial(duration: nil, version: nil, samples: samples))])
+            #expect(result.recordings[0].inferredDuration == nil)
+            #expect(result.recordings[0].cautionKey != nil)
+            #expect(!result.canShowTrend)
+        }
+    }
+
+    @Test(arguments: [0.0, -1.0, 5.0, Double.nan, Double.infinity])
+    func timestampInferenceNeverOverridesAnExplicitDuration(duration: Double) {
+        let result = summary([session(trial(duration: duration, version: nil, samples: legacySamples()))])
+        #expect(result.recordings[0].inferredDuration == nil)
+        #expect(result.recordings[0].cautionKey != nil)
+    }
+
+    @Test func inferenceIsLimitedToLegacyCameraDurationTests() {
+        let trials = [trial(duration: nil, samples: legacySamples()),
+                      trial(duration: nil, version: "future-version", samples: legacySamples()),
+                      trial(duration: nil, version: nil, source: .watchMotion, samples: legacySamples()),
+                      trial(duration: nil, version: nil, source: .synthetic, samples: legacySamples()),
+                      trial(duration: nil, stop: .tenReps, version: nil, samples: legacySamples())]
+        for trial in trials {
+            let result = summary([session(trial)])
+            #expect(result.recordings[0].inferredDuration == nil)
+            #expect(result.recordings[0].cautionKey != nil)
+        }
+    }
+
+    @Test func inferredDurationUsesTheRequestedProtocolAndPreservesGroupingBoundaries() {
+        let a = trial(duration: nil, version: nil, samples: legacySamples())
+        let b = trial(day: 1, duration: nil, stop: .fifteenSec, version: nil,
+                      samples: legacySamples(end: 15.02))
+        let result = summary([session(a), session(b), session(trial(day: 2)),
+                              MovementSession(patientId: "OTHER", stimulationContext: .preStim,
+                                              trials: [trial(day: 3, duration: nil, version: nil, samples: legacySamples())])])
+        #expect(result.recordings.filter { $0.inferredDuration != nil }.count == 3)
+        #expect(result.days.filter(\.connects).count == 4)
+        #expect(Set(result.days.map(\.seriesID)).count == 4)
+        #expect(!result.canShowTrend)
+        let unknown = summary([session(a, context: .unspecified), session(b, context: .baseline)])
+        #expect(unknown.days.allSatisfy { !$0.connects })
+    }
+
+    @Test func noLineMessagesExplainTheActualComparisonBoundary() {
+        #expect(summary([]).noTrendExplanationKey == nil)
+        #expect(summary([session(trial())]).noTrendExplanationKey == "A line needs matching recordings on at least two different days.")
+        #expect(summary([session(trial(duration: nil))]).noTrendExplanationKey == "Incomplete capture or unknown duration keeps these points separate.")
+        #expect(summary([session(trial(), context: .unspecified)]).noTrendExplanationKey == "Recordings with unspecified or historical stimulation timing stay separate.")
+        #expect(summary([session(trial()), session(trial(day: 1, duration: nil))]).noTrendExplanationKey == "Only one day has comparable complete recordings. Other points remain separate.")
+        #expect(summary([session(trial()), session(trial(day: 1, version: nil))]).noTrendExplanationKey == "Earlier and current measurement methods are kept separate.")
+        #expect(summary([session(trial()), MovementSession(patientId: "OTHER", stimulationContext: .preStim, trials: [trial(day: 1)])]).noTrendExplanationKey == "Recordings with different study IDs are kept separate.")
+        #expect(summary([session(trial()), session(trial(day: 1), context: .postStim)]).noTrendExplanationKey == "Each stimulation timing needs matching recordings on at least two days.")
+        #expect(summary([session(trial()), session(trial(day: 1, source: .watchMotion))]).noTrendExplanationKey == "Different test protocols or recording sources are kept separate.")
+        #expect(summary([session(trial()), session(trial(day: 1, samples: [])), session(trial(day: 2))]).noTrendExplanationKey == "An intervening day with incomplete capture separates these trend segments.")
+    }
+
+    @Test func partialUnknownAndGappedRecordingsDoNotBiasCompleteDailyMedian() {
+        let partialSamples = (0..<10).map { TimestampedSample(t: Double($0) / 2, value: sin(Double($0))) }
+        let gapSamples = (0..<60).filter { !(10...20).contains($0) }.map {
+            TimestampedSample(t: Double($0) / 2, value: sin(Double($0)))
+        }
+        let result = summary([session(trial(rate: 2)), session(trial(rate: 9, duration: 5, samples: partialSamples)),
+                              session(trial(rate: 9, duration: nil)), session(trial(rate: 9, samples: gapSamples))])
+        #expect(result.days.count == 4)
+        #expect(result.days.filter(\.connects).map(\.median) == [2])
+        #expect(result.recordings.filter { $0.cautionKey != nil }.count == 3)
+    }
+
+    @Test func unavailableInterveningRecordingBreaksLineWithoutInventingZero() {
+        let result = summary([session(trial()), session(trial(day: 1, samples: [])), session(trial(day: 2))])
+        #expect(result.days.count == 2)
+        #expect(result.unavailableCount == 1)
+        #expect(Set(result.days.map(\.seriesID)).count == 2)
+        #expect(!result.canShowTrend)
+    }
+
+    @Test func validZeroRhythmAndNegativeDecrementSurviveAggregation() {
+        let sessions = [session(trial()), session(trial(day: 1))]
+        #expect(summary(sessions, metric: .rhythm).days.map(\.median) == [0, 0])
+        #expect(summary(sessions, metric: .decrement).days.map(\.median) == [-0.01, -0.01])
+        #expect(TrendMetric.pauses.plotFormatted(2.5, task: .fingerTap).contains("5"))
+    }
+
+    @Test func localCalendarDaysRespectMidnightAndDaylightSaving() throws {
+        var berlin = calendar
+        berlin.timeZone = TimeZone(identifier: "Europe/Berlin")!
+        let formatter = ISO8601DateFormatter()
+        let dates = ["2026-10-24T22:30:00Z", "2026-10-25T22:30:00Z", "2026-10-25T23:30:00Z"]
+            .map { formatter.date(from: $0)! }
+        let sessions = dates.map { date -> MovementSession in
+            let recording = trial(offset: date.timeIntervalSince(base))
+            return session(recording)
+        }
+        let result = MovementTrendSummary(sessions: sessions, task: .fingerTap, side: .right,
+                                          metric: .frequency, calendar: berlin)
+        #expect(result.days.count == 2)
+        #expect(result.days.map { $0.recordings.count } == [2, 1])
+        #expect(result.days[1].date.timeIntervalSince(result.days[0].date) == 25 * 3600)
+    }
+
+    @Test func measurementVersionSurvivesCopiesExportsAndMissingLegacyField() throws {
+        let original = trial()
+        let copied = original.withVideo(.init(fileName: "example.mov", byteCount: 1))
+            .withMedicationTiming(.init(status: .unsure))
+        #expect(copied.measurementVersion == MovementMeasurementVersion.camera)
+        let data = try JSONEncoder().encode(copied)
+        #expect(try JSONDecoder().decode(Trial.self, from: data) == copied)
+        var json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        json.removeValue(forKey: "measurementVersion")
+        let legacy = try JSONDecoder().decode(Trial.self, from: JSONSerialization.data(withJSONObject: json))
+        #expect(legacy.measurementVersion == nil)
+        #expect(legacy.samples == original.samples)
+        #expect(legacy.metrics == original.metrics)
+    }
+}
+
+struct CameraMovementNormalizationTests {
+    private let wrist = CGPoint(x: 0.4, y: 0.2)
+    private let mcp = CGPoint(x: 0.4, y: 0.4)
+    private let tips = [CGPoint(x: 0.3, y: 0.5), CGPoint(x: 0.5, y: 0.6),
+                        CGPoint(x: 0.4, y: 0.7), CGPoint(x: 0.6, y: 0.6), CGPoint(x: 0.7, y: 0.5)]
+
+    @Test(arguments: [MovementTaskType.fingerTap, .handOpenClose])
+    func imageScaleTranslationAspectRotationAndMirroringDoNotChangeRatio(task: MovementTaskType) throws {
+        let tips = task == .fingerTap ? Array(tips.prefix(2)) : tips
+        let reference = try #require(CameraMovementSignal.value(task: task, wrist: wrist, middleMCP: mcp,
+                                                                fingertips: tips, imageAspectRatio: 1))
+        for aspect in [0.5625, 1.0, 1.777777] {
+            for scale in [0.5, 1.0] {
+                for mirrored in [false, true] {
+                    for rotated in [false, true] {
+                        func transform(_ p: CGPoint) -> CGPoint {
+                            let x = (mirrored ? -p.x : p.x) * scale
+                            let y = p.y * scale
+                            return CGPoint(x: ((rotated ? -y : x) + 0.8) / aspect,
+                                           y: (rotated ? x : y) + 0.8)
+                        }
+                        let value = try #require(CameraMovementSignal.value(task: task, wrist: transform(wrist),
+                            middleMCP: transform(mcp), fingertips: tips.map(transform), imageAspectRatio: aspect))
+                        #expect(abs(value - reference) < 1e-10)
+                    }
+                }
+            }
+        }
+    }
+
+    @Test func invalidGeometryIsMissingNotZeroAndClosedTapIsRealZero() {
+        #expect(CameraMovementSignal.value(task: .fingerTap, wrist: wrist, middleMCP: wrist,
+                                           fingertips: Array(tips.prefix(2)), imageAspectRatio: 1) == nil)
+        #expect(CameraMovementSignal.value(task: .fingerTap, wrist: wrist, middleMCP: mcp,
+                                           fingertips: [tips[0], tips[0]], imageAspectRatio: 1) == 0)
+        #expect(CameraMovementSignal.value(task: .handOpenClose, wrist: wrist, middleMCP: mcp,
+                                           fingertips: [tips[0]], imageAspectRatio: 1) == nil)
+        #expect(CameraMovementSignal.value(task: .fingerTap, wrist: wrist, middleMCP: mcp,
+                                           fingertips: Array(tips.prefix(2)), imageAspectRatio: .nan) == nil)
     }
 }
 
@@ -730,7 +1728,7 @@ struct MovementTrendFilterTests {
     }
 
     @Test func plotOffersRateAndRhythmWithoutRemovingOtherStoredMetrics() {
-        #expect(TrendMetric.plotCases == [.frequency, .rhythm])
+        #expect(TrendMetric.plotCases == [.frequency, .amplitude, .rhythm])
         #expect(TrendMetric.patientCases.count == 6)
         #expect(TrendMetric.rhythm.plotValue(0.1) == 10)
         #expect(TrendMetric.frequency.plotValue(2) == 2)
@@ -775,11 +1773,11 @@ struct MovementTrendFilterTests {
         #expect(!includes(trial(), filters: filters))
     }
 
-    @Test(arguments: [TrendPeriod.week, .month])
+    @Test(arguments: [TrendPeriod.week, .month, .quarter])
     func dateWindowIncludesFirstDayMidnightButNotFutureRecordings(period: TrendPeriod) {
         var filters = MovementTrendFilters()
         filters.period = period
-        let days = period == .week ? 7 : 30
+        let days = period == .week ? 7 : (period == .month ? 30 : 90)
         let first = calendar.date(byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: now))!
         #expect(includes(trial(date: first), filters: filters))
         #expect(!includes(trial(date: first.addingTimeInterval(-1)), filters: filters))

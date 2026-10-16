@@ -1,3 +1,5 @@
+> **Historical changelog.** This July snapshot is design history, not current hardware verification. Use the [documentation index](README.md) and physical test records for current status.
+
 ## 2026-07-09 · Movement Task Module: Watch-Integration für 3.6 (Task C) + Positionierungs-Schablone
 
 Branch: main (lokal, uncommitted — kein Git-Commit gewünscht)  ·  Status: iOS-Build kompiliert & Tests grün; **Watch-Build und End-to-End-Test am echten Gerätepaar ausstehend** (watchOS-SDK auf dem Mac nicht installiert — Build via Xcode)

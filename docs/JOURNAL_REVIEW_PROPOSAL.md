@@ -2,6 +2,8 @@
 
 Reviewed 13 October 2026. This is a discussion proposal, not an implemented redesign or an approved study protocol. Only the varied Notes examples have been implemented in this change.
 
+This document is the baseline review. Approved stages and current implementation progress are tracked in [Journal Redesign](JOURNAL_REDESIGN.md).
+
 ## Recommendation
 
 Keep the calendar. Give the Journal one primary action: **Today's check-in**. Separate a brief daily reflection, optional event logging, a slightly fuller reflection on selected weekdays, and the licensed PDQ-8 assessment.

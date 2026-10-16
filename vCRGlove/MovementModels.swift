@@ -181,16 +181,14 @@ struct MovementSignalAssessment: Equatable {
 
 // MARK: - Computed metrics
 
-/// Continuous metrics mapped 1:1 to the five UPDRS scoring criteria,
-/// plus rhythm variability. These are the numbers shown to the patient
-/// as trends and exported for the clinic.
+/// Descriptive signal metrics, not validated clinical scores or UPDRS mappings.
 struct MovementMetrics: Codable, Equatable {
     var cycleCount: Int              // number of completed movement cycles
     var frequencyHz: Double          // speed: cycles per second
     var meanAmplitude: Double        // amplitude: mean peak-to-peak (normalized units)
-    var amplitudeDecrementSlope: Double // decrement: slope of amplitude over cycle index (neg = fatiguing)
+    var amplitudeDecrementSlope: Double // mean-normalized amplitude slope per cycle
     var rhythmCV: Double             // rhythm: coefficient of variation of cycle durations
-    var pauseCount: Int              // interruptions / "freezing": abnormally long gaps
+    var pauseCount: Int              // intervals longer than twice the median; not diagnosed freezing
     var onsetLatencySec: Double      // delay before movement starts
 
     /// A convenience "quality index" in 0...1 (higher = smoother/faster/steadier).
@@ -210,6 +208,39 @@ struct MovementMetrics: Codable, Equatable {
 struct MovementVideoReference: Codable, Equatable {
     let fileName: String
     let byteCount: Int64
+}
+
+/// Versions describe the signal and analyzer used, not clinical validity.
+enum MovementMeasurementVersion {
+    static let camera = "camera-live-palm-aspect-v2-analysis-v1"
+    static let watch = "watch-rotation-rate-v1-analysis-v1"
+}
+
+/// Vision points have independently normalized x/y coordinates. Ratios use
+/// image-height units and the live palm length, never a saved image-space scale.
+enum CameraMovementSignal {
+    static func value(task: MovementTaskType, wrist: CGPoint, middleMCP: CGPoint,
+                      fingertips: [CGPoint], imageAspectRatio: Double) -> Double? {
+        guard imageAspectRatio.isFinite, imageAspectRatio > 0,
+              ([wrist, middleMCP] + fingertips).allSatisfy({ $0.x.isFinite && $0.y.isFinite }) else { return nil }
+        func distance(_ a: CGPoint, _ b: CGPoint) -> Double {
+            hypot(Double(a.x - b.x) * imageAspectRatio, Double(a.y - b.y))
+        }
+        let scale = distance(wrist, middleMCP)
+        guard scale > 0.005 else { return nil }
+        let result: Double
+        switch task {
+        case .fingerTap:
+            guard fingertips.count == 2 else { return nil }
+            result = distance(fingertips[0], fingertips[1]) / scale
+        case .handOpenClose:
+            guard fingertips.count >= 3 else { return nil }
+            let center = CGPoint(x: (wrist.x + middleMCP.x) / 2, y: (wrist.y + middleMCP.y) / 2)
+            result = fingertips.reduce(0) { $0 + distance($1, center) } / Double(fingertips.count) / scale
+        case .pronationSupination: return nil
+        }
+        return result.isFinite ? result : nil
+    }
 }
 
 /// A single recording of one task on one hand.
@@ -233,6 +264,8 @@ struct Trial: Identifiable, Codable, Equatable {
     let recordedDurationSeconds: Double?
     /// Relative private-file reference. No video bytes or absolute device paths in JSONL.
     let video: MovementVideoReference?
+    /// Nil on historical recordings. Never infer a version or rewrite their values.
+    let measurementVersion: String?
 
     init(id: UUID = UUID(),
          taskType: MovementTaskType,
@@ -245,7 +278,8 @@ struct Trial: Identifiable, Codable, Equatable {
          metrics: MovementMetrics,
          medicationTiming: MedicationTiming? = nil,
          recordedDurationSeconds: Double? = nil,
-         video: MovementVideoReference? = nil) {
+         video: MovementVideoReference? = nil,
+         measurementVersion: String? = nil) {
         self.id = id
         self.taskType = taskType
         self.side = side
@@ -258,6 +292,7 @@ struct Trial: Identifiable, Codable, Equatable {
         self.medicationTiming = medicationTiming
         self.recordedDurationSeconds = recordedDurationSeconds
         self.video = video
+        self.measurementVersion = measurementVersion
     }
 
     func withMedicationTiming(_ timing: MedicationTiming?) -> Self {
@@ -265,14 +300,16 @@ struct Trial: Identifiable, Codable, Equatable {
              stopCondition: stopCondition, startedAt: startedAt, startUptime: startUptime,
              samples: samples, metrics: metrics,
              medicationTiming: timing?.forRecording(at: startedAt),
-             recordedDurationSeconds: recordedDurationSeconds, video: video)
+             recordedDurationSeconds: recordedDurationSeconds, video: video,
+             measurementVersion: measurementVersion)
     }
 
     func withVideo(_ video: MovementVideoReference?) -> Self {
         Self(id: id, taskType: taskType, side: side, source: source,
              stopCondition: stopCondition, startedAt: startedAt, startUptime: startUptime,
              samples: samples, metrics: metrics, medicationTiming: medicationTiming,
-             recordedDurationSeconds: recordedDurationSeconds, video: video)
+             recordedDurationSeconds: recordedDurationSeconds, video: video,
+             measurementVersion: measurementVersion)
     }
 }
 

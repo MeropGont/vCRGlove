@@ -1,5 +1,7 @@
 # Movement Task Module — Task A: Unit-Tests der Analyse-Pipeline
 
+> **Historical report: 7 July 2026.** Test counts and follow-up tasks below describe that snapshot. Synthetic profiles do not validate clinical populations, normal ranges or MDS-UPDRS ratings. Use the [current development guide](DEVELOPMENT_GUIDE.md) for testing and limitations.
+
 > **Status:** ✅ Abgeschlossen — alle Tests bestanden (7. Juli 2026)
 > **Datei:** `vCRGloveTests/MovementAnalyzerTests.swift`
 > **Framework:** Swift Testing (`import Testing`, `#expect`) — konsistent mit dem bestehenden Test-Target

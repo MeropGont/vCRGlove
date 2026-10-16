@@ -16,7 +16,7 @@ struct TrialRecorderTests {
     @Test(arguments: [false, true])
     @MainActor func manualStopCompletesExactlyOnceIncludingEmptyRecording(withSample: Bool) async throws {
         let recorder = TrialRecorder(taskType: .fingerTap, side: .right, source: .camera,
-                                     stopCondition: .thirtySec)
+                                     stopCondition: .thirtySec, measurementVersion: MovementMeasurementVersion.camera)
         var completed: [Trial] = []
         recorder.onComplete = { completed.append($0) }
         recorder.start()
@@ -29,6 +29,7 @@ struct TrialRecorderTests {
         let trial = try #require(completed.first)
         #expect(trial.samples.isEmpty == !withSample)
         #expect(trial.recordedDurationSeconds != nil)
+        #expect(trial.measurementVersion == MovementMeasurementVersion.camera)
         #expect(trial.recordedDurationSeconds! < 30)
         #expect(!recorder.isRecording)
     }

@@ -1,38 +1,196 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "vCR log" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "vCR-Eintrag" } } } },
-    "Journal entry" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Journaleintrag" } } } },
-    "Movement session" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Bewegungssitzung" } } } },
-    "Selected day" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewählter Tag" } } } },
-    "Select" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Auswählen" } } } },
-    "Select videos" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Videos auswählen" } } } },
-    "Share videos" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Videos teilen" } } } },
-    "Delete video" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Video löschen" } } } },
-    "Permanently delete this video?" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Dieses Video endgültig löschen?" } } } },
-    "This saved copy will be permanently deleted from this phone. This cannot be undone." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese gespeicherte Kopie wird endgültig von diesem iPhone gelöscht. Dies lässt sich nicht rückgängig machen." } } } },
-    "Video deletion failed" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Video konnte nicht gelöscht werden" } } } },
-    "Movement measurements and videos" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Bewegungsmessungen und Videos" } } } },
-    "View or delete videos" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Videos ansehen oder löschen" } } } },
-    "Select video" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Video auswählen" } } } },
-    "Selected" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewählt" } } } },
-    "Not selected" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Nicht ausgewählt" } } } },
-    "Deleting videos keeps your movement measurements. Copies you already shared are not deleted." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ihre Bewegungsmessungen bleiben erhalten. Bereits geteilte Kopien werden nicht gelöscht." } } } },
-    "Delete selected videos (%d)" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewählte Videos löschen (%d)" } } } },
-    "Permanently delete selected videos?" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ausgewählte Videos endgültig löschen?" } } } },
-    "Delete videos" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Videos löschen" } } } },
-    "These saved copies will be permanently deleted from this phone. This cannot be undone." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese gespeicherten Kopien werden endgültig von diesem iPhone gelöscht. Dies lässt sich nicht rückgängig machen." } } } },
-    "For example: Today I feel strong." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Heute fühle ich mich stark." } } } },
-    "For example: My mood is low today." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Heute bin ich niedergeschlagen." } } } },
-    "For example: I slept well last night." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Ich habe letzte Nacht gut geschlafen." } } } },
-    "For example: Walking felt easier today." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Das Gehen fiel mir heute leichter." } } } },
-    "For example: I needed more breaks today." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Heute brauchte ich mehr Pausen." } } } },
-    "For example: Today was a quiet day." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Zum Beispiel: Heute war ein ruhiger Tag." } } } },
-    "Videos deleted: %d. Measurements kept." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Videos gelöscht: %d. Messungen bleiben erhalten." } } } },
-    "Some videos could not be deleted. Please try again." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Einige Videos konnten nicht gelöscht werden. Bitte versuchen Sie es erneut." } } } },
-    "Deletion could not be completed. Please try again to finish removing the video references." : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Das Löschen konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut, um die Videoliste zu aktualisieren." } } } },
-    "Recording history" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Bisherige Aufnahmen" } } } },
-    "Show older recordings" : { "extractionState" : "manual", "localizations" : { "de" : { "stringUnit" : { "state" : "translated", "value" : "Ältere Aufnahmen anzeigen" } } } },
+    "A line needs matching recordings on at least two different days." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für eine Linie sind vergleichbare Aufnahmen an mindestens zwei verschiedenen Tagen nötig."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A line needs matching recordings on at least two different days."
+          }
+        }
+      }
+    },
+    "An intervening day with incomplete capture separates these trend segments." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Tag mit unvollständigen Aufnahmen dazwischen trennt diese Verlaufsabschnitte."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An intervening day with incomplete capture separates these trend segments."
+          }
+        }
+      }
+    },
+    "Approx. %.1f seconds (estimated from signal)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ca. %.1f Sekunden (aus dem Signal geschätzt)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approx. %.1f seconds (estimated from signal)"
+          }
+        }
+      }
+    },
+    "Different test protocols or recording sources are kept separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterschiedliche Testprotokolle oder Aufnahmequellen bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different test protocols or recording sources are kept separate."
+          }
+        }
+      }
+    },
+    "Each stimulation timing needs matching recordings on at least two days." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für jeden Stimulationszeitpunkt sind vergleichbare Aufnahmen an mindestens zwei Tagen nötig."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each stimulation timing needs matching recordings on at least two days."
+          }
+        }
+      }
+    },
+    "Earlier and current measurement methods are kept separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frühere und aktuelle Messverfahren bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier and current measurement methods are kept separate."
+          }
+        }
+      }
+    },
+    "Earlier durations estimated from signal timestamps." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dauer älterer Aufnahmen aus Signalzeitstempeln geschätzt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier durations estimated from signal timestamps."
+          }
+        }
+      }
+    },
+    "Incomplete capture or unknown duration keeps these points separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unvollständige Aufnahmen oder eine unbekannte Dauer verhindern die Verbindung dieser Punkte."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incomplete capture or unknown duration keeps these points separate."
+          }
+        }
+      }
+    },
+    "Only one day has comparable complete recordings. Other points remain separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur an einem Tag liegen vergleichbare vollständige Aufnahmen vor. Andere Punkte bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only one day has comparable complete recordings. Other points remain separate."
+          }
+        }
+      }
+    },
+    "Recordings with different study IDs are kept separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahmen mit unterschiedlichen Studien-IDs bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordings with different study IDs are kept separate."
+          }
+        }
+      }
+    },
+    "Recordings with unspecified or historical stimulation timing stay separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahmen mit nicht angegebenem oder früherem Stimulationszeitpunkt bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordings with unspecified or historical stimulation timing stay separate."
+          }
+        }
+      }
+    },
+    " Hz" : {
+
+    },
     "/cycle" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -40,6 +198,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "/Zyklus"
+          }
+        }
+      }
+    },
+    "%.0f-second test" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.0f-Sekunden-Test"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.0f-second test"
           }
         }
       }
@@ -117,6 +292,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%.2f Hz"
+          }
+        }
+      }
+    },
+    "%.2f palm lengths" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.2f Handflächenlängen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.2f palm lengths"
           }
         }
       }
@@ -212,6 +404,16 @@
         }
       }
     },
+    "%@, %@, %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, %3$@, %4$@"
+          }
+        }
+      }
+    },
     "%@: %@, %@" : {
       "localizations" : {
         "en" : {
@@ -229,6 +431,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%d / %d Wiederholungen"
+          }
+        }
+      }
+    },
+    "%d entries" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Einträge"
+          }
+        }
+      }
+    },
+    "%d entry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Eintrag"
           }
         }
       }
@@ -266,6 +490,23 @@
         }
       }
     },
+    "%d-repetition test" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test mit %d Wiederholungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d-repetition test"
+          }
+        }
+      }
+    },
     "%lld" : {
       "localizations" : {
         "de" : {
@@ -275,6 +516,9 @@
           }
         }
       }
+    },
+    "%lld %%" : {
+
     },
     "%lld glove(s) ready" : {
       "extractionState" : "stale",
@@ -312,6 +556,7 @@
       }
     },
     "😄" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -322,6 +567,7 @@
       }
     },
     "😐" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -332,6 +578,7 @@
       }
     },
     "😣" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -342,6 +589,7 @@
       }
     },
     "🙁" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -352,6 +600,7 @@
       }
     },
     "🙂" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -567,6 +816,23 @@
         }
       }
     },
+    "90 days" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "90 Tage"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "90 days"
+          }
+        }
+      }
+    },
     "015221500869" : {
       "localizations" : {
         "de" : {
@@ -584,6 +850,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ein Handschuh wird nicht erkannt"
+          }
+        }
+      }
+    },
+    "A little" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein wenig"
+          }
+        }
+      }
+    },
+    "A lot" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stark"
           }
         }
       }
@@ -632,6 +920,34 @@
         }
       }
     },
+    "About this metric" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zu diesem Messwert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About this metric"
+          }
+        }
+      }
+    },
+    "Activity impact: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auswirkung auf den Alltag: %@"
+          }
+        }
+      }
+    },
     "Add a note" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -650,6 +966,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Details hinzufügen"
+          }
+        }
+      }
+    },
+    "Add entry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eintrag hinzufügen"
+          }
+        }
+      }
+    },
+    "Add note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notiz hinzufügen"
           }
         }
       }
@@ -839,6 +1177,17 @@
         }
       }
     },
+    "Another change" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Andere Änderung"
+          }
+        }
+      }
+    },
     "Anxiety" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -920,6 +1269,17 @@
         }
       }
     },
+    "As planned" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie geplant"
+          }
+        }
+      }
+    },
     "At a specific time" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -938,6 +1298,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Avatar-Auswahl folgt."
+          }
+        }
+      }
+    },
+    "Average movement excursion relative to your palm length, not centimetres. Keep the same hand position and camera angle." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mittlere Bewegungsweite im Verhältnis zur Handflächenlänge, nicht in Zentimetern. Handhaltung und Kamerawinkel möglichst gleich halten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Average movement excursion relative to your palm length, not centimetres. Keep the same hand position and camera angle."
           }
         }
       }
@@ -1216,6 +1593,34 @@
         }
       }
     },
+    "Change in movement size per repetition, relative to its average. Negative values mean size decreased during the recording." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderung der Bewegungsgröße je Wiederholung, bezogen auf den Mittelwert. Negative Werte bedeuten, dass die Bewegungsgröße während der Aufnahme abnahm."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change in movement size per repetition, relative to its average. Negative values mean size decreased during the recording."
+          }
+        }
+      }
+    },
+    "Check in" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesrückblick ausfüllen"
+          }
+        }
+      }
+    },
     "CHECK IN" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1260,6 +1665,39 @@
         }
       }
     },
+    "Check-in completed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesrückblick erledigt"
+          }
+        }
+      }
+    },
+    "Check-in saved" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesrückblick gespeichert"
+          }
+        }
+      }
+    },
+    "Checked in today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für heute ausgefüllt"
+          }
+        }
+      }
+    },
     "Checking camera setup…" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1267,6 +1705,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kamera wird geprüft…"
+          }
+        }
+      }
+    },
+    "Choose at least one answer to save." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wählen Sie mindestens eine Antwort zum Speichern."
           }
         }
       }
@@ -1303,6 +1752,7 @@
       }
     },
     "Clear History & Fresh Scan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1453,6 +1903,17 @@
         }
       }
     },
+    "Could not do my usual activities" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ich konnte meinen üblichen Aktivitäten nicht nachgehen"
+          }
+        }
+      }
+    },
     "count" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1497,6 +1958,23 @@
         }
       }
     },
+    "Current measurement method" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuelle Messmethode"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current measurement method"
+          }
+        }
+      }
+    },
     "Cycles" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1508,13 +1986,24 @@
         }
       }
     },
+    "Daily check-in" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesrückblick"
+          }
+        }
+      }
+    },
     "Daily Check-In" : {
       "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Täglicher Check-in"
+            "value" : "Tagesrückblick"
           }
         }
       }
@@ -1541,6 +2030,74 @@
         }
       }
     },
+    "Daily median" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesmedian"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily median"
+          }
+        }
+      }
+    },
+    "Daily median · %d recording(s)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesmedian · %d Aufnahme(n)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily median · %d recording(s)"
+          }
+        }
+      }
+    },
+    "Daily medians of matching recordings." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesmediane vergleichbarer Aufnahmen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily medians of matching recordings."
+          }
+        }
+      }
+    },
+    "Daily medians. Lines join matching recordings on measured days, not changes between them." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesmediane. Linien verbinden vergleichbare Messungen, zeigen aber keine gemessenen Veränderungen dazwischen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily medians. Lines join matching recordings on measured days, not changes between them."
+          }
+        }
+      }
+    },
     "Daily vCR reminder" : {
       "localizations" : {
         "de" : {
@@ -1552,6 +2109,7 @@
       }
     },
     "Data" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1601,6 +2159,61 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Standard-vCR-Plan"
+          }
+        }
+      }
+    },
+    "Delete selected videos (%d)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählte Videos löschen (%d)"
+          }
+        }
+      }
+    },
+    "Delete video" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video löschen"
+          }
+        }
+      }
+    },
+    "Delete videos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos löschen"
+          }
+        }
+      }
+    },
+    "Deleting videos keeps your movement measurements. Copies you already shared are not deleted." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre Bewegungsmessungen bleiben erhalten. Bereits geteilte Kopien werden nicht gelöscht."
+          }
+        }
+      }
+    },
+    "Deletion could not be completed. Please try again to finish removing the video references." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Löschen konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut, um die Videoliste zu aktualisieren."
           }
         }
       }
@@ -1719,6 +2332,7 @@
       }
     },
     "Disconnected" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1811,6 +2425,45 @@
         }
       }
     },
+    "Earlier measurement method" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frühere Messmethode"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier measurement method"
+          }
+        }
+      }
+    },
+    "Edit check-in" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesrückblick bearbeiten"
+          }
+        }
+      }
+    },
+    "Edit entry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eintrag bearbeiten"
+          }
+        }
+      }
+    },
     "Either hand is fine" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1828,6 +2481,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ende: %lld:00"
+          }
+        }
+      }
+    },
+    "Entries" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einträge"
           }
         }
       }
@@ -1897,6 +2561,7 @@
       }
     },
     "Export logs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1913,6 +2578,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sitzungen mit Bewegungsaufgaben exportieren"
+          }
+        }
+      }
+    },
+    "Extra dose" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zusätzliche Dosis"
+          }
+        }
+      }
+    },
+    "Extra Large" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extra groß"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extra Large"
           }
         }
       }
@@ -2071,6 +2764,72 @@
         }
       }
     },
+    "For example: I needed more breaks today." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Beispiel: Heute brauchte ich mehr Pausen."
+          }
+        }
+      }
+    },
+    "For example: I slept well last night." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Beispiel: Ich habe letzte Nacht gut geschlafen."
+          }
+        }
+      }
+    },
+    "For example: My mood is low today." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Beispiel: Heute bin ich niedergeschlagen."
+          }
+        }
+      }
+    },
+    "For example: Today I feel strong." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Beispiel: Heute fühle ich mich stark."
+          }
+        }
+      }
+    },
+    "For example: Today was a quiet day." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Beispiel: Heute war ein ruhiger Tag."
+          }
+        }
+      }
+    },
+    "For example: Walking felt easier today." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Beispiel: Das Gehen fiel mir heute leichter."
+          }
+        }
+      }
+    },
     "For now, add a note explaining the correction. Editing entries can be added later." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2181,6 +2940,7 @@
       }
     },
     "Gloves disconnected. Stimulation paused. Turn gloves on and scan again to continue." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2202,6 +2962,7 @@
       }
     },
     "Gloves reconnected. Press Resume to continue." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2495,6 +3256,39 @@
         }
       }
     },
+    "How did taking your Parkinson's medication go that day?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie lief die Einnahme Ihrer Parkinson-Medikamente an diesem Tag?"
+          }
+        }
+      }
+    },
+    "How did taking your Parkinson's medication go today?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie lief die Einnahme Ihrer Parkinson-Medikamente heute?"
+          }
+        }
+      }
+    },
+    "How did you feel at that time?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie ging es Ihnen zu diesem Zeitpunkt?"
+          }
+        }
+      }
+    },
     "How intense was it?" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2506,6 +3300,28 @@
         }
       }
     },
+    "How much did Parkinson's affect your usual activities that day?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie sehr hat Parkinson an diesem Tag Ihren Alltag beeinträchtigt?"
+          }
+        }
+      }
+    },
+    "How much did Parkinson's affect your usual activities today?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie sehr hat Parkinson heute Ihren Alltag beeinträchtigt?"
+          }
+        }
+      }
+    },
     "How quickly you repeated the movement." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2513,6 +3329,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wie schnell Sie die Bewegung wiederholt haben."
+          }
+        }
+      }
+    },
+    "How were you feeling that day?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie ging es Ihnen an diesem Tag?"
           }
         }
       }
@@ -2639,6 +3466,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In the calendar you can see at a glance on which days you wrote a journal or did a movement test. A dark green circle means: There is measurement data on this day."
+          }
+        }
+      }
+    },
+    "Incomplete repetition test: shown separately." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederholungstest nicht vollständig: separat dargestellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incomplete repetition test: shown separately."
           }
         }
       }
@@ -2903,13 +3747,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erfassen Sie bei Bedarf Medikamente, eine Symptomepisode oder eine Notiz."
+            "value" : "Wählen Sie bei Bedarf unter „Eintrag hinzufügen“ Medikamente, eine Symptomepisode oder eine Notiz."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add medication, a symptom episode, or a note whenever needed."
+            "value" : "Use Add entry for medication, a symptom episode, or a note whenever needed."
           }
         }
       }
@@ -2937,13 +3781,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prüfen Sie, ob der gespeicherte Eintrag unter dem ausgewählten Datum erscheint."
+            "value" : "Unter „Einträge ansehen“ können Sie gespeicherte Einträge prüfen und Medikamente oder Symptomepisoden bearbeiten."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Confirm that the saved entry appears under the selected date."
+            "value" : "Use View entries to review saved records and edit medication or symptom episodes."
           }
         }
       }
@@ -3339,6 +4183,23 @@
         }
       }
     },
+    "Intervals longer than twice your typical interval in this recording. This does not diagnose freezing." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abstände, die mehr als doppelt so lang sind wie der typische Abstand in dieser Aufnahme. Daraus lässt sich kein Freezing ableiten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervals longer than twice your typical interval in this recording. This does not diagnose freezing."
+          }
+        }
+      }
+    },
     "iOS version" : {
       "localizations" : {
         "de" : {
@@ -3404,6 +4265,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Journal-Check-in"
+          }
+        }
+      }
+    },
+    "Journal entry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journaleintrag"
+          }
+        }
+      }
+    },
+    "Journal not saved" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journal nicht gespeichert"
           }
         }
       }
@@ -3604,6 +4487,23 @@
         }
       }
     },
+    "Large" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groß"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Large"
+          }
+        }
+      }
+    },
     "Last check-in" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3611,6 +4511,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Letzter Check-in"
+          }
+        }
+      }
+    },
+    "Last check-in: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzter Tagesrückblick: %@"
           }
         }
       }
@@ -3680,12 +4591,41 @@
         }
       }
     },
+    "Late dose" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosis verspätet"
+          }
+        }
+      }
+    },
     "Latest backup" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Letztes Backup"
+          }
+        }
+      }
+    },
+    "Latest day" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzter Messtag"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latest day"
           }
         }
       }
@@ -3799,6 +4739,17 @@
         }
       }
     },
+    "Log symptoms" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Symptome erfassen"
+          }
+        }
+      }
+    },
     "Log usual, late, missed, or extra medication events." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3887,6 +4838,17 @@
         }
       }
     },
+    "Medication change recorded" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderung bei der Medikamenteneinnahme vermerkt"
+          }
+        }
+      }
+    },
     "Medication state" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3916,6 +4878,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Medikamentenzeitpunkt unbekannt"
+          }
+        }
+      }
+    },
+    "Medication: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medikamente: %@"
           }
         }
       }
@@ -3953,6 +4926,17 @@
         }
       }
     },
+    "Missed dose" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosis ausgelassen"
+          }
+        }
+      }
+    },
     "Missed medication" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3965,6 +4949,17 @@
       }
     },
     "Moderate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mäßig"
+          }
+        }
+      }
+    },
+    "Moderately" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -3992,6 +4987,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stimmung, Gesamtsymptome und Symptomliste für diesen Tag."
+          }
+        }
+      }
+    },
+    "More details" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weitere Messwerte"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More details"
           }
         }
       }
@@ -4062,6 +5074,17 @@
         }
       }
     },
+    "Movement measurements and videos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegungsmessungen und Videos"
+          }
+        }
+      }
+    },
     "Movement quality (heuristic)" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4073,6 +5096,17 @@
         }
       }
     },
+    "Movement session" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegungssitzung"
+          }
+        }
+      }
+    },
     "Movement Session" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4080,6 +5114,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bewegungssitzung"
+          }
+        }
+      }
+    },
+    "Movement session: %d trial(s)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegungssitzung: %d Messung(en)"
+          }
+        }
+      }
+    },
+    "Movement size" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegungsgröße"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movement size"
           }
         }
       }
@@ -4160,6 +5222,17 @@
         }
       }
     },
+    "Next month" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nächster Monat"
+          }
+        }
+      }
+    },
     "No check-in for this day" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4182,6 +5255,17 @@
         }
       }
     },
+    "No check-in yet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noch kein Tagesrückblick"
+          }
+        }
+      }
+    },
     "No complete repetitions detected" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4189,6 +5273,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keine vollständigen Wiederholungen erkannt"
+          }
+        }
+      }
+    },
+    "No details" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Angaben"
           }
         }
       }
@@ -4204,6 +5299,17 @@
         }
       }
     },
+    "No entries yet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noch keine Einträge"
+          }
+        }
+      }
+    },
     "No matching recordings" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4211,6 +5317,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keine passenden Aufnahmen"
+          }
+        }
+      }
+    },
+    "No medication planned" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Medikamente geplant"
           }
         }
       }
@@ -4314,6 +5431,17 @@
         }
       }
     },
+    "None recorded" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noch nichts erfasst"
+          }
+        }
+      }
+    },
     "None taken today" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4321,6 +5449,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Heute keine eingenommen"
+          }
+        }
+      }
+    },
+    "Not a clinical score." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein klinischer Score."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not a clinical score."
+          }
+        }
+      }
+    },
+    "Not at all" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gar nicht"
           }
         }
       }
@@ -4401,6 +5557,17 @@
         }
       }
     },
+    "Not selected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht ausgewählt"
+          }
+        }
+      }
+    },
     "Not specified" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4441,6 +5608,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notiz"
+          }
+        }
+      }
+    },
+    "Notes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notizen"
           }
         }
       }
@@ -4488,6 +5666,34 @@
         }
       }
     },
+    "Okay" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Okay"
+          }
+        }
+      }
+    },
+    "Older size measurement: different scale, not used in the size trend." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ältere Größenmessung: anderer Maßstab, nicht im Größenverlauf enthalten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Older size measurement: different scale, not used in the size trend."
+          }
+        }
+      }
+    },
     "ON / medication working" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4511,6 +5717,7 @@
       }
     },
     "One glove disconnected. Stimulation continues with the connected glove." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4891,6 +6098,28 @@
         }
       }
     },
+    "Permanently delete selected videos?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählte Videos endgültig löschen?"
+          }
+        }
+      }
+    },
+    "Permanently delete this video?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Video endgültig löschen?"
+          }
+        }
+      }
+    },
     "Permissions" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4990,6 +6219,17 @@
         }
       }
     },
+    "Previous month" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorheriger Monat"
+          }
+        }
+      }
+    },
     "Privacy & Data" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4997,6 +6237,108 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Datenschutz & Daten"
+          }
+        }
+      }
+    },
+    "privacy.app.localData" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App speichert Tagebucheinträge, Stimulationsereignisse und Bewegungsmessungen lokal auf diesem iPhone."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app stores journal entries, stimulation events and movement measurements locally on this iPhone."
+          }
+        }
+      }
+    },
+    "privacy.app.videoCapture" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei Aufnahmen von Finger-Tapping und Handöffnen/-schließen wird auch ein Video ohne Ton gespeichert. Bei der Kalibrierung und bei Watch-Aufgaben wird kein Video gespeichert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finger-tapping and hand opening/closing recordings also save a silent video. Calibration and Watch tasks do not save video."
+          }
+        }
+      }
+    },
+    "privacy.app.videoDeletion" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn Sie ein Video löschen, bleiben die Bewegungsmessungen erhalten. Bereits an anderer Stelle geteilte Kopien werden nicht gelöscht."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleting a video keeps its movement measurements. Copies you have already shared elsewhere are not deleted."
+          }
+        }
+      }
+    },
+    "privacy.app.videoSharing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unter Einstellungen > Daten können Sie Videos ansehen, teilen oder löschen. Eine Weitergabe erfolgt nur, wenn Sie diese selbst auswählen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can review, share or delete videos in Settings > Data. Sharing happens only when you choose it."
+          }
+        }
+      }
+    },
+    "privacy.app.videoStorage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos werden im privaten Speicher der App abgelegt. Sie werden nicht automatisch in Fotos gespeichert oder hochgeladen. Sie sind von der automatischen Gerätesicherung ausgeschlossen. Wenn Sie die App löschen oder das Telefon verlieren, können Videos daher verloren gehen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos are stored privately inside the app. They are not automatically saved to Photos or uploaded. They are excluded from automatic device backup. Deleting the app or losing the phone can therefore cause video loss."
+          }
+        }
+      }
+    },
+    "privacy.app.videoTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos der Kameraaufgaben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera-task videos"
           }
         }
       }
@@ -5108,7 +6450,25 @@
         }
       }
     },
+    "Range: %@ to %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spanne: %@ bis %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Range: %@ to %@"
+          }
+        }
+      }
+    },
     "Ready" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5206,6 +6566,34 @@
         }
       }
     },
+    "Recording duration unknown: shown separately." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahmedauer unbekannt: separat dargestellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recording duration unknown: shown separately."
+          }
+        }
+      }
+    },
+    "Recording history" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bisherige Aufnahmen"
+          }
+        }
+      }
+    },
     "Recording not saved" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5250,6 +6638,23 @@
         }
       }
     },
+    "Recordings on this day" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahmen an diesem Tag"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordings on this day"
+          }
+        }
+      }
+    },
     "Recordings saved" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5267,6 +6672,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diagnostik aktualisieren"
+          }
+        }
+      }
+    },
+    "Relative size" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relative Größe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relative size"
           }
         }
       }
@@ -5373,6 +6795,465 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Forschungsmodus"
+          }
+        }
+      }
+    },
+    "research.amplitude.left" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amplitude links"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Left amplitude"
+          }
+        }
+      }
+    },
+    "research.amplitude.right" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amplitude rechts"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right amplitude"
+          }
+        }
+      }
+    },
+    "research.configurationReview" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Stimulationseinstellungen müssen geprüft werden. Bitte kontaktieren Sie das Studienteam."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulation settings need review. Please contact the study team."
+          }
+        }
+      }
+    },
+    "research.export.explanation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIP mit Tagebuch, Stimulationsprotokollen, Messungen, Videos und Studieneinstellungen. Sensible Daten: nur mit dem berechtigten Studienteam teilen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIP with journal, stimulation logs, measurements, videos and study settings. Sensitive data: share only with the authorized study team."
+          }
+        }
+      }
+    },
+    "research.export.failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export konnte nicht vorbereitet werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export could not be prepared"
+          }
+        }
+      }
+    },
+    "research.export.missing.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die ZIP-Datei enthält alle gespeicherten Daten. Ältere Videoverweise ohne zugehörige Datei sind in manifest.json aufgeführt. Diesen Export trotzdem teilen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The ZIP includes all stored data. Older video references with missing files are listed in manifest.json. Share this export anyway?"
+          }
+        }
+      }
+    },
+    "research.export.missing.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einige Videos sind nicht verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some videos are unavailable"
+          }
+        }
+      }
+    },
+    "research.export.preparing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten werden vorbereitet…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing data…"
+          }
+        }
+      }
+    },
+    "research.export.retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre Aufzeichnungen bleiben unverändert. Prüfen Sie den freien Speicherplatz, lassen Sie das Telefon entsperrt und versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your recordings are unchanged. Check available storage, keep the phone unlocked and try again."
+          }
+        }
+      }
+    },
+    "research.export.share" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Daten teilen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share all recorded data"
+          }
+        }
+      }
+    },
+    "research.export.stop" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Stimulationssitzung vor dem Export aller Daten beenden oder stoppen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish or stop the stimulation session before exporting all data."
+          }
+        }
+      }
+    },
+    "research.export.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studiendaten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Study data"
+          }
+        }
+      }
+    },
+    "research.fingerCheck" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finger werden geprüft"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking fingers"
+          }
+        }
+      }
+    },
+    "research.fingerCheckInterrupted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fingerprüfung beendet. Verbinden Sie die Handschuhe erneut und starten Sie neu."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finger check stopped. Reconnect the gloves and start again."
+          }
+        }
+      }
+    },
+    "research.frequency" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zyklusfrequenz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cycle frequency"
+          }
+        }
+      }
+    },
+    "research.lock" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forschereinstellungen sperren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock researcher controls"
+          }
+        }
+      }
+    },
+    "research.parameters" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulationsparameter"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulation parameters"
+          }
+        }
+      }
+    },
+    "research.pattern" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muster"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pattern"
+          }
+        }
+      }
+    },
+    "research.pattern.explanation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100-ms-Impulse; vier Impulse pro Zyklus. Zufallsfolge: jeweils ein Finger. Gleichzeitig: alle Finger bei jedem Impuls. Die Frequenz ist begrenzt, damit sich Impulse nicht überlagern."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100 ms pulses; four pulses per cycle. Shuffled: one finger at a time. Together: all fingers at each pulse. Frequency is limited to keep pulses from overlapping."
+          }
+        }
+      }
+    },
+    "research.pattern.shuffled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einzelne Finger in Zufallsfolge"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shuffled single fingers"
+          }
+        }
+      }
+    },
+    "research.pattern.simultaneous" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Finger gleichzeitig"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All fingers together"
+          }
+        }
+      }
+    },
+    "research.save" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parameter speichern"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save parameters"
+          }
+        }
+      }
+    },
+    "research.saved" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parameter für künftige Sitzungen gespeichert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parameters saved for future sessions."
+          }
+        }
+      }
+    },
+    "research.saveFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speichern nicht möglich. Stimulation beenden und erneut versuchen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not save. Stop stimulation and try again."
+          }
+        }
+      }
+    },
+    "research.staff" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studienteam"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Study team"
+          }
+        }
+      }
+    },
+    "research.stopToEdit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulation beenden, um Parameter zu ändern."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop stimulation before changing parameters."
+          }
+        }
+      }
+    },
+    "research.tools" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studieneinstellungen & Protokolle"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Study setup & logs"
           }
         }
       }
@@ -5563,6 +7444,17 @@
         }
       }
     },
+    "Save changes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderungen speichern"
+          }
+        }
+      }
+    },
     "Save Check-In" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5725,6 +7617,17 @@
         }
       }
     },
+    "Select" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auswählen"
+          }
+        }
+      }
+    },
     "Select at least one symptom and its intensity." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5758,6 +7661,50 @@
         }
       }
     },
+    "Select video" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video auswählen"
+          }
+        }
+      }
+    },
+    "Select videos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos auswählen"
+          }
+        }
+      }
+    },
+    "Selected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählt"
+          }
+        }
+      }
+    },
+    "Selected day" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählter Tag"
+          }
+        }
+      }
+    },
     "Send Email to vcr@uke.de" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5779,6 +7726,26 @@
           }
         }
       }
+    },
+    "Separate points may have a different protocol or method, incomplete capture, or unknown context." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einzelpunkte können auf ein anderes Protokoll, eine andere Methode, unvollständige Erfassung oder unbekannten Kontext zurückgehen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separate points may have a different protocol or method, incomplete capture, or unknown context."
+          }
+        }
+      }
+    },
+    "Series" : {
+
     },
     "Session interrupted because both gloves disconnected." : {
       "extractionState" : "manual",
@@ -5824,6 +7791,40 @@
         }
       }
     },
+    "settings.general.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprache und Schriftgröße"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language and text size"
+          }
+        }
+      }
+    },
+    "settings.general.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allgemein"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        }
+      }
+    },
     "Severe" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5856,6 +7857,17 @@
         }
       }
     },
+    "Share videos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos teilen"
+          }
+        }
+      }
+    },
     "Share…" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5878,12 +7890,40 @@
         }
       }
     },
+    "Short or different-duration recording: shown separately." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurze oder abweichende Aufnahmedauer: separat dargestellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Short or different-duration recording: shown separately."
+          }
+        }
+      }
+    },
     "Show hand" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hand zeigen"
+          }
+        }
+      }
+    },
+    "Show older recordings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ältere Aufnahmen anzeigen"
           }
         }
       }
@@ -5932,6 +7972,23 @@
         }
       }
     },
+    "Signal gaps: shown separately, not joined to the trend." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signallücken: separat dargestellt, nicht mit dem Verlauf verbunden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signal gaps: shown separately, not joined to the trend."
+          }
+        }
+      }
+    },
     "Signal has gaps" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5950,6 +8007,51 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Das Signal hat Lücken. Diese Werte können weniger zuverlässig sein."
+          }
+        }
+      }
+    },
+    "Size trend not available yet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Größenverlauf noch nicht verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size trend not available yet"
+          }
+        }
+      }
+    },
+    "Size trends use new camera recordings. Older values remain in recording history." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Größenverläufe nutzen neue Kameraaufnahmen. Ältere Werte bleiben in den bisherigen Aufnahmen erhalten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size trends use new camera recordings. Older values remain in recording history."
+          }
+        }
+      }
+    },
+    "Skip question" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frage überspringen"
           }
         }
       }
@@ -5983,6 +8085,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Langsamkeit"
+          }
+        }
+      }
+    },
+    "Small" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klein"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Small"
           }
         }
       }
@@ -6026,6 +8145,28 @@
         }
       }
     },
+    "Some videos could not be deleted. Please try again." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einige Videos konnten nicht gelöscht werden. Bitte versuchen Sie es erneut."
+          }
+        }
+      }
+    },
+    "Something changed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etwas war anders"
+          }
+        }
+      }
+    },
     "Something not working?" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6044,6 +8185,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Geschwindigkeit"
+          }
+        }
+      }
+    },
+    "Standard" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
           }
         }
       }
@@ -6179,6 +8337,7 @@
       }
     },
     "Stimulating" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6222,6 +8381,7 @@
       }
     },
     "Stimulation paused." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6330,6 +8490,7 @@
       }
     },
     "Storage size" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6392,12 +8553,930 @@
         }
       }
     },
+    "study.contact.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei Fragen zur Studie, zu den Geräten oder zu Ihrer Teilnahme nutzen Sie bitte die bestehenden ICNS-Kontaktdaten in den Einstellungen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For questions about the study, devices or your participation, use the existing ICNS support contact details in Settings."
+          }
+        }
+      }
+    },
+    "study.contact.emailSubject" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frage zur vCR-Studie"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR study enquiry"
+          }
+        }
+      }
+    },
+    "study.contact.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact"
+          }
+        }
+      }
+    },
+    "study.devices.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Handschuhe geben leichte Vibrationen an die Fingerspitzen ab. Mit der App dokumentieren Sie Ihre Nutzung, Ihr Befinden, Medikamente und Beschwerden. Kurze Bewegungsaufgaben ergänzen diese Angaben. Je nach Studienablauf wird auch eine Smartwatch zur Erfassung von Bewegungsdaten verwendet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The gloves deliver gentle vibrations to your fingertips. You use the app to record your glove use, how you feel, medication and symptoms. Short movement tasks complement these entries. Depending on the study procedure, a smartwatch is also used to collect movement data."
+          }
+        }
+      }
+    },
+    "study.devices.results" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Bewegungswerte in der App sind keine ärztliche Beurteilung. Bei Fragen zu Ihren Ergebnissen hilft Ihnen das Studienteam."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movement values in the app are not a medical assessment. The study team can help with questions about your results."
+          }
+        }
+      }
+    },
+    "study.devices.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geräte und App"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Devices and app"
+          }
+        }
+      }
+    },
+    "study.info.intro" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hier finden Sie die wichtigsten Informationen zur vCR-Studie. Diese Übersicht ergänzt das Aufklärungsgespräch und Ihre Studienunterlagen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key information about the vCR study. This overview supplements your study documents and the discussion with the study team."
+          }
+        }
+      }
+    },
+    "study.info.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilnahme, Kontakt und Datenschutz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Participation, contact and data protection"
+          }
+        }
+      }
+    },
+    "study.info.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informationen zur Studie"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Information about the study"
+          }
+        }
+      }
+    },
+    "study.participation.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach der Einweisung verwenden Sie die Studiengeräte zu Hause nach dem mit dem Studienteam vereinbarten Plan. Die häusliche Studienphase dauert bis zu sechs Monate. Dazu kommen Untersuchungstermine und eine Nachbefragung."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After your introduction to the devices, you use them at home according to the plan agreed with the study team. The home phase lasts up to six months. There are also examination appointments and a follow-up discussion."
+          }
+        }
+      }
+    },
+    "study.participation.plan" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre genauen Nutzungszeiten und Termine besprechen Sie mit dem Studienteam."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You will discuss your exact usage times and appointments with the study team."
+          }
+        }
+      }
+    },
+    "study.participation.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre Teilnahme"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your participation"
+          }
+        }
+      }
+    },
+    "study.privacy.access.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie haben das Recht auf Auskunft über die Sie betreffenden personenbezogenen Daten, die im Rahmen der klinischen Studie erhoben, verarbeitet oder ggf. an Dritte übermittelt werden (Aushändigen einer kostenfreien Kopie) (Artikel 15 DSGVO, §34 BDSG-neu)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have the right of access to personal data concerning you that are collected, processed or, where applicable, disclosed to third parties as part of the clinical study (provision of a copy free of charge) (Article 15 GDPR, Section 34 BDSG-neu)."
+          }
+        }
+      }
+    },
+    "study.privacy.access.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recht auf Auskunft"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right of access"
+          }
+        }
+      }
+    },
+    "study.privacy.anonymisation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 Anonymisieren ist das Verändern personenbezogener Daten derart, dass die Einzelangaben über persönliche oder sachliche\nVerhältnisse nicht mehr oder nur mit einem unverhältnismäßig großen Aufwand an Zeit, Kosten und Arbeitskraft einer bestimmten oder bestimmbaren natürlichen Person zugeordnet werden können."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 Anonymisation means altering personal data in such a way that individual details concerning personal or material circumstances can no longer, or only with a disproportionately large expenditure of time, costs and labour, be attributed to a particular or identifiable natural person."
+          }
+        }
+      }
+    },
+    "study.privacy.authority" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutz-Aufsichtsbehörde\nDer Landesbeauftragte für den Datenschutz Hamburg\nLudwig-Erhard-Str.22\n20459\n040 / 42854 - 4040\nmailbox@datenschutz.hamburg.de"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data Protection Supervisory Authority\nHamburg Commissioner for Data Protection\nLudwig-Erhard-Str.22\n20459\n040 / 42854 - 4040\nmailbox@datenschutz.hamburg.de"
+          }
+        }
+      }
+    },
+    "study.privacy.basis.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Rechtsgrundlage zur Verarbeitung der Sie betreffenden personenbezogenen Daten bildet bei klinischen Studien Ihre freiwillige schriftliche Einwilligung gemäß DSGVO. Zeitgleich mit der DSGVO trat in Deutschland das überarbeitete Bundesdatenschutzgesetz (BDSG-neu) in Kraft. "
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In clinical studies, the legal basis for processing personal data concerning you is your voluntary written consent under the GDPR. The revised Federal Data Protection Act (BDSG-neu) entered into force in Germany at the same time as the GDPR."
+          }
+        }
+      }
+    },
+    "study.privacy.basis.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechtsgrundlage"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legal basis"
+          }
+        }
+      }
+    },
+    "study.privacy.complaint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Außerdem haben Sie das Recht, Beschwerde bei der/den Aufsichtsbehörde/n einzulegen, wenn Sie der Ansicht sind, dass die Verarbeitung der Sie betreffenden personenbezogenen Daten gegen die DS-GVO verstößt:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You also have the right to lodge a complaint with the supervisory authority or authorities if you consider that the processing of personal data concerning you infringes the GDPR:"
+          }
+        }
+      }
+    },
+    "study.privacy.confidentiality" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die im Rahmen des Forschungsvorhabens nach Einwilligungserklärung der Studienteilnehmenden erhobenen persönlichen Daten, insbesondere Befunde, unterliegen der Schweigepflicht und den datenschutzgesetzlichen Bestimmungen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personal data collected as part of the research project after the study participants have given their declaration of consent, in particular findings, are subject to the duty of confidentiality and data protection legislation."
+          }
+        }
+      }
+    },
+    "study.privacy.contacts.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutz: Kontaktdaten der Aufsicht der Studienleitung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data protection: contact details for supervision of the study leadership"
+          }
+        }
+      }
+    },
+    "study.privacy.definitions.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Begriffserklärungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Definitions"
+          }
+        }
+      }
+    },
+    "study.privacy.dpo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutzbeauftragte/r\nMatthias Jaster\nDatenschutzbeauftragter des Universitätsklinikums Hamburg-Eppendorf\nMartinistraße 52\n20246 Hamburg\n040 / 7410 – 56890\nm.jaster@uke.de"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data Protection Officer\nMatthias Jaster\nData Protection Officer of the University Medical Center Hamburg-Eppendorf\nMartinistraße 52\n20246 Hamburg\n040 / 7410 – 56890\nm.jaster@uke.de"
+          }
+        }
+      }
+    },
+    "study.privacy.erasure.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie haben das Recht auf Löschung Sie betreffender personenbezogener Daten, z. B. wenn diese Daten für den Zweck, für den sie erhoben wurden, nicht mehr notwendig sind (Artikel 17 und 19 DSGVO, §35 BDSG-neu)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have the right to erasure of personal data concerning you, for example if those data are no longer necessary for the purpose for which they were collected (Articles 17 and 19 GDPR, Section 35 BDSG-neu)."
+          }
+        }
+      }
+    },
+    "study.privacy.erasure.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recht auf Löschung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right to erasure"
+          }
+        }
+      }
+    },
+    "study.privacy.ethics" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Forschungsvorhaben ist durch die zuständige Ethik-Kommission ethisch und fachrechtlich beraten worden und wird unter Beachtung der Deklaration von Helsinki (Erklärung des Weltärztebundes zu den ethischen Grundsätzen für die medizinische Forschung am Menschen) sowie der Leitlinie für Gute Klinische Praxis (GCP) durchgeführt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This research project has undergone ethical and professional-regulatory review by the competent ethics committee and is conducted in accordance with the Declaration of Helsinki (the World Medical Association's declaration on ethical principles for medical research involving human participants) and the Guideline for Good Clinical Practice (GCP)."
+          }
+        }
+      }
+    },
+    "study.privacy.gdpr" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ab dem 25. Mai 2018 trat die Europäische Datenschutz-Grundverordnung (DSGVO) in Kraft. Sie werden im Folgenden über die in der DSGVO festgelegten Rechte informiert (Artikel 12 ff. DSGVO)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The European General Data Protection Regulation (GDPR) entered into force as of 25 May 2018. The following information explains the rights set out in the GDPR (Articles 12 et seq. GDPR)."
+          }
+        }
+      }
+    },
+    "study.privacy.heading" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informationen zum Datenschutz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data protection information"
+          }
+        }
+      }
+    },
+    "study.privacy.keyFile" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Zuordnungsliste (Schlüsseldatei) wird getrennt von den Studiendaten und besonders gesichert aufbewahrt. Der Zugriff ist auf die Studienleitung und autorisierte Personen beschränkt. Nach Abschluss der Studie und spätestens 10 Jahre nach Studienende wird die Schlüsseldatei gelöscht, sodass die Daten dauerhaft anonymisiert sind."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The linkage list (key file) is kept separately from the study data and is subject to special security measures. Access is restricted to the study leadership and authorised persons. After the study has been completed, and no later than 10 years after its end, the key file will be deleted so that the data are permanently anonymised."
+          }
+        }
+      }
+    },
+    "study.privacy.objection.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie haben das Recht, jederzeit gegen konkrete Entscheidungen oder Maßnahmen zur Verarbeitung der Sie betreffenden personenbezogenen Daten Widerspruch einzulegen (Art 21 DSGVO, § 36BDSG-neu). Eine solche Verarbeitung findet anschließend grundsätzlich nicht mehr statt. "
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have the right to object at any time to specific decisions or measures concerning the processing of personal data relating to you (Article 21 GDPR, Section 36 BDSG-neu). As a rule, such processing will then cease."
+          }
+        }
+      }
+    },
+    "study.privacy.objection.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widerspruchsrecht"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right to object"
+          }
+        }
+      }
+    },
+    "study.privacy.portability.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie haben das Recht, die Sie betreffenden personenbezogenen Daten, die Sie den Verantwortlichen für die klinische Studie bereitgestellt haben, zu erhalten. Damit können Sie beantragen, dass diese Daten entweder Ihnen oder, soweit technisch möglich, einer anderen von Ihnen benannten Stelle übermittelt werden (Artikel 20 DSGVO)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have the right to receive the personal data concerning you that you have provided to the controllers for the clinical study. You may therefore request that these data be transmitted either to you or, where technically feasible, to another body designated by you (Article 20 GDPR)."
+          }
+        }
+      }
+    },
+    "study.privacy.portability.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recht auf Datenübertragbarkeit "
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right to data portability"
+          }
+        }
+      }
+    },
+    "study.privacy.pseudonymisation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 Pseudonymisieren ist das Ersetzen des Namens und anderer Identifikationsmerkmale durch ein Kennzeichen zu dem Zweck, die Identifizierung des Betroffenen auszuschließen oder wesentlich zu erschweren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 Pseudonymisation means replacing the name and other identifying characteristics with an identifier in order to prevent or substantially impede identification of the data subject."
+          }
+        }
+      }
+    },
+    "study.privacy.rectification.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie haben das Recht, Sie betreffende unrichtige personenbezogene Daten berichtigen zu lassen (Artikel 16 und 19 DSGVO)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have the right to have inaccurate personal data concerning you rectified (Articles 16 and 19 GDPR)."
+          }
+        }
+      }
+    },
+    "study.privacy.rectification.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recht auf Berichtigung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right to rectification"
+          }
+        }
+      }
+    },
+    "study.privacy.responsible.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für die o.g. Studie besteht die verantwortliche Studienleitung des Universitätsklinikums Hamburg-Eppendorf aus Prof. Dr. Claus C. Hilgetag."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The person responsible for leading the above-mentioned study at the University Medical Center Hamburg-Eppendorf is Prof. Dr. Claus C. Hilgetag."
+          }
+        }
+      }
+    },
+    "study.privacy.responsible.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für die Datenverarbeitung verantwortliche Person"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Person responsible for data processing"
+          }
+        }
+      }
+    },
+    "study.privacy.restriction.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unter bestimmten Voraussetzungen haben Sie das Recht, eine Einschränkung der Verarbeitung zu verlangen, d.h. die Daten dürfen nur gespeichert, aber nicht verarbeitet werden. Dies müssen Sie beantragen. Wenden Sie sich hierzu bitte an Ihre Studienleitung oder an den Datenschutzbeauftragten des Prüfzentrums (Artikel 18 und 19 DSGVO)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Under certain conditions, you have the right to request restriction of processing, meaning that the data may only be stored, not processed. You must apply for this. Please contact your study leadership or the data protection officer at the study site (Articles 18 and 19 GDPR)."
+          }
+        }
+      }
+    },
+    "study.privacy.restriction.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recht auf Einschränkung der Verarbeitung "
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right to restriction of processing"
+          }
+        }
+      }
+    },
+    "study.privacy.storage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die übrigen im Rahmen der Studie erhobenen Daten werden in Papierform und auf Datenträgern am UKE aufgezeichnet und pseudonymisiert (verschlüsselt) für die Dauer von 10 Jahren gespeichert. Bei der Pseudonymisierung (Verschlüsselung) werden der Name und andere Identifikationsmerkmale (z.B. Teile des Geburtsdatums) z.B. durch eine mehrstellige Buchstaben- oder Zahlenkombination, auch Code genannt, ersetzt, um die Identifizierung der Studienteilnehmenden auszuschließen oder wesentlich zu erschweren. Zugang zu dem „Schlüssel“, der eine persönliche Zuordnung der Studiendaten ermöglicht, haben ausschließlich die Studienleitung sowie von ihr ausdrücklich berechtigte Personen. "
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The remaining data collected as part of the study are recorded on paper and on data storage media at UKE and stored in pseudonymised (encrypted) form for a period of 10 years. In pseudonymisation (encryption), the name and other identifying characteristics (e.g. parts of the date of birth) are replaced, for example, by a combination of several letters or numbers, also called a code, in order to prevent or substantially impede identification of study participants. Access to the ‘key’, which allows study data to be linked to an individual, is restricted to the study leadership and persons expressly authorised by it."
+          }
+        }
+      }
+    },
+    "study.privacy.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data protection"
+          }
+        }
+      }
+    },
+    "study.privacy.use" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Auswertung und Nutzung der Daten durch die Studienleitung und ihre Mitarbeitenden erfolgt in pseudonymisierter Form. Eine Weitergabe der erhobenen Daten im Rahmen des Forschungszwecks erfolgt nur in anonymisierter Form. Gleiches gilt für die Veröffentlichung der Studienergebnisse. Eine Weitergabe personenbezogener Daten an Dritte erfolgt nicht."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The study leadership and its staff analyse and use the data in pseudonymised form. Data collected for the purposes of the research are disclosed only in anonymised form. The same applies to publication of the study results. Personal data are not disclosed to third parties."
+          }
+        }
+      }
+    },
+    "study.privacy.version" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version 02 vom 14.04.2026"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version 02 dated 14 April 2026"
+          }
+        }
+      }
+    },
+    "study.privacy.withdrawal.basis" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Verarbeitung Ihrer personenbezogenen Daten ist nur mit Ihrer Einwilligung rechtmäßig (Artikel 6 DSGVO)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Processing your personal data is lawful only with your consent (Article 6 GDPR)."
+          }
+        }
+      }
+    },
+    "study.privacy.withdrawal.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie haben das Recht, Ihre Einwilligung zur Verarbeitung personenbezogener Daten jederzeit zu widerrufen. Im Falle des Widerrufs müssen Ihre personenbezogenen Daten grundsätzlich gelöscht werden (Artikel 7, Absatz 3 DSGVO). Es gibt allerdings Ausnahmen, nach denen die bis zum Zeitpunkt des Widerrufs erhobenen Daten weiterverarbeitet werden dürfen, z.B. wenn die weitere Datenverarbeitung zur Erfüllung einer rechtlichen Verpflichtung erforderlich ist (Art. 17 Abs. 3 b DSGVO)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have the right to withdraw your consent to the processing of personal data at any time. If you withdraw your consent, your personal data must, in principle, be erased (Article 7(3) GDPR). There are, however, exceptions under which data collected up to the time of withdrawal may continue to be processed, for example where further processing is necessary to comply with a legal obligation (Article 17(3)(b) GDPR)."
+          }
+        }
+      }
+    },
+    "study.privacy.withdrawal.contact" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Möchten Sie eines dieser Rechte in Anspruch nehmen, wenden Sie sich bitte an die Studienleitung."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you wish to exercise any of these rights, please contact the study leadership."
+          }
+        }
+      }
+    },
+    "study.privacy.withdrawal.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einwilligung zur Verarbeitung personenbezogener Daten und Recht auf Widerruf dieser Einwilligung "
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consent to the processing of personal data and the right to withdraw that consent"
+          }
+        }
+      }
+    },
+    "study.safety.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Nutzung und die zusätzlichen Angaben in der App benötigen Zeit. Beim Tragen der Handschuhe können vorübergehend Hautreizungen, Druckgefühl oder Ermüdung der Hände auftreten. Wenn Beschwerden auftreten oder die Nutzung unangenehm ist, unterbrechen Sie die Anwendung und sprechen Sie mit dem Studienteam."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Using the devices and making entries in the app takes time. Wearing the gloves may cause temporary skin irritation, pressure or hand fatigue. If you develop discomfort or find the gloves unpleasant to use, stop using them and speak to the study team."
+          }
+        }
+      }
+    },
+    "study.safety.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sicherheit und freiwillige Teilnahme"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safety and voluntary participation"
+          }
+        }
+      }
+    },
+    "study.safety.voluntary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre Teilnahme ist freiwillig. Sie können Ihre Einwilligung jederzeit ohne Angabe von Gründen widerrufen. Dadurch entstehen Ihnen keine Nachteile für Ihre medizinische Versorgung. Wenden Sie sich dafür an das Studienteam. Informationen zum Umgang mit bereits erhobenen Daten finden Sie unter Datenschutz."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Participation is voluntary. You may withdraw your consent at any time without giving a reason. This will not disadvantage you in your medical care. To do so, contact the study team. Information about data already collected is provided under Data protection."
+          }
+        }
+      }
+    },
+    "study.study.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In dieser Pilotstudie am Universitätsklinikum Hamburg-Eppendorf (UKE) untersuchen wir, wie gut sich vibrierende Handschuhe im Alltag von Menschen mit Parkinson nutzen lassen. Im Mittelpunkt stehen Handhabung, Alltagstauglichkeit und Ihre Erfahrungen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In this pilot study at the University Medical Center Hamburg-Eppendorf (UKE), we are investigating how well vibrating gloves can be used in the everyday lives of people with Parkinson's. Our focus is on handling, everyday usability and your experiences."
+          }
+        }
+      }
+    },
+    "study.study.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Studie"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The study"
+          }
+        }
+      }
+    },
     "Sun" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "So"
+          }
+        }
+      }
+    },
+    "support.institutionAddress" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Universitätsklinikum Hamburg-Eppendorf (UKE)\nInstitut für Computational Neuroscience (ICNS)\nGebäude W36\nMartinistraße 52\n20246 Hamburg"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "University Medical Center Hamburg-Eppendorf (UKE)\nInstitute for Computational Neuroscience (ICNS)\nBuilding W36\nMartinistraße 52\n20246 Hamburg"
           }
         }
       }
@@ -6424,6 +9503,28 @@
         }
       }
     },
+    "Symptom details" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Symptomdetails"
+          }
+        }
+      }
+    },
+    "Symptom episode" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Symptomepisode"
+          }
+        }
+      }
+    },
     "Symptom Episode" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6436,6 +9537,7 @@
       }
     },
     "Sync data" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6446,6 +9548,7 @@
       }
     },
     "Tap icon to test buzz" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6650,6 +9753,17 @@
         }
       }
     },
+    "These saved copies will be permanently deleted from this phone. This cannot be undone." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese gespeicherten Kopien werden endgültig von diesem iPhone gelöscht. Dies lässt sich nicht rückgängig machen."
+          }
+        }
+      }
+    },
     "These tasks are adapted from hand-movement tests in MDS-UPDRS Part III, used by clinicians to assess movement in Parkinson's disease." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6744,6 +9858,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dieser Wert konnte aus Ihren gespeicherten Aufnahmen nicht berechnet werden."
+          }
+        }
+      }
+    },
+    "This saved copy will be permanently deleted from this phone. This cannot be undone." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese gespeicherte Kopie wird endgültig von diesem iPhone gelöscht. Dies lässt sich nicht rückgängig machen."
           }
         }
       }
@@ -6875,6 +10000,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bis %d Stunden"
+          }
+        }
+      }
+    },
+    "Today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heute"
+          }
+        }
+      }
+    },
+    "Today's check-in" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heutiger Tagesrückblick"
           }
         }
       }
@@ -7054,6 +10201,7 @@
       }
     },
     "Turn gloves on and scan again before resuming." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7091,6 +10239,17 @@
         }
       }
     },
+    "Unable to do usual activities" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alltagsaktivitäten waren nicht möglich"
+          }
+        }
+      }
+    },
     "Unlock Research Mode" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7098,6 +10257,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Forschungsmodus entsperren"
+          }
+        }
+      }
+    },
+    "Unmatched recordings remain separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht vergleichbare Aufnahmen bleiben separat."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unmatched recordings remain separate."
           }
         }
       }
@@ -7272,6 +10448,17 @@
         }
       }
     },
+    "vCR log" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR-Eintrag"
+          }
+        }
+      }
+    },
     "vCR preset" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7347,6 +10534,17 @@
         }
       }
     },
+    "vCR stimulation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vCR-Stimulation"
+          }
+        }
+      }
+    },
     "vCR timing may have been interrupted while the app was not open." : {
       "localizations" : {
         "de" : {
@@ -7410,6 +10608,17 @@
         }
       }
     },
+    "Video deletion failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video konnte nicht gelöscht werden"
+          }
+        }
+      }
+    },
     "Video not saved. Your measurement is saved." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7461,6 +10670,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kein Video verfügbar. Sie können Ihre Messung trotzdem speichern."
+          }
+        }
+      }
+    },
+    "Videos deleted: %d. Measurements kept." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos gelöscht: %d. Messungen bleiben erhalten."
+          }
+        }
+      }
+    },
+    "View entries" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einträge ansehen"
+          }
+        }
+      }
+    },
+    "View or delete videos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos ansehen oder löschen"
           }
         }
       }
@@ -7532,6 +10774,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Schwierigkeiten beim Gehen"
+          }
+        }
+      }
+    },
+    "Was anything different with your Parkinson's medication that day?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gab es an diesem Tag Änderungen bei Ihren Parkinson-Medikamenten?"
+          }
+        }
+      }
+    },
+    "Was anything different with your Parkinson's medication today?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gab es heute Änderungen bei Ihren Parkinson-Medikamenten?"
           }
         }
       }
@@ -7639,6 +10903,17 @@
         }
       }
     },
+    "What changed?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was war anders?"
+          }
+        }
+      }
+    },
     "What happened?" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7733,6 +11008,17 @@
         }
       }
     },
+    "Your entry was not saved. Your answers are still here. Please try again." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihr Eintrag wurde nicht gespeichert. Ihre Antworten sind noch da. Bitte versuchen Sie es erneut."
+          }
+        }
+      }
+    },
     "Your gloves are ready when you are" : {
       "localizations" : {
         "de" : {
@@ -7750,6 +11036,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ihr letzter Check-in erscheint hier."
+          }
+        }
+      }
+    },
+    "Your saved journal could not be opened. Nothing has been overwritten. Please try restarting the app." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihr gespeichertes Journal konnte nicht geöffnet werden. Es wurde nichts überschrieben. Bitte starten Sie die App erneut."
           }
         }
       }

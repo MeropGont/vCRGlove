@@ -1,10 +1,10 @@
 # vCRGlove — Backend Integration Guide for UKE
 
-This document describes the backend integration surface that the vCRGlove iOS app expects. The UKE backend team can implement the server side against this contract and configure the app by editing `vCRGlove/Info.plist` only.
+This is a prototype integration reference, not a deployed research-sharing workflow. Reviewed 14 October 2026: backend configuration is disabled at app launch, private videos are stored in-app, and the bundled server does not persist all current medication/video fields. See [Data formats](docs/DATA_FORMATS.md) for the current local contract and export limits.
 
 ## Configuration
 
-Open `vCRGlove/Info.plist` and set the two custom keys:
+These keys describe the intended configuration surface. Changing them alone does not currently enable uploads, because the launch configuration call is disabled. Do not enable the prototype or flush its pending queue until consent, endpoint security, identity and field completeness have been reviewed.
 
 | Key                          | Value example                       | Purpose                  |
 | ---------------------------- | ----------------------------------- | ------------------------ |
@@ -12,9 +12,9 @@ Open `vCRGlove/Info.plist` and set the two custom keys:
 | `VCRGLOVE_BACKEND_API_KEY`   | `REPLACE_WITH_UKE_API_KEY`          | API key / Bearer token   |
 
 For local development, set `VCRGLOVE_BACKEND_URL` to `http://localhost:8000`.
-To disable automatic upload, remove either key from `Info.plist`.
+Do not put a real API credential in committed source or a public document.
 
-The app reads these keys at launch in `vCRGloveApp.swift` and calls `SessionUploader.shared.configure(baseURL:apiKey:)`.
+The configuration call in `vCRGloveApp.swift` is currently commented out. Explicit Finish still invokes the uploader, which stores measurements in a local UserDefaults queue when unconfigured. Per-take automatic saving does not request upload.
 
 ## Authentication
 
@@ -30,7 +30,7 @@ UKE can change the authentication scheme in `vCRGlove/SessionUploader.swift` if 
 
 ### `POST {VCRGLOVE_BACKEND_URL}/sessions`
 
-Guided sets save locally after each accepted recording and upload when the patient finishes the set. Single-task sessions upload when saved. Upload happens in the background; the patient does not need to interact.
+Guided sets save locally after each completed recording. Explicit Finish requests upload through the prototype; without configuration this only queues measurements locally. It is not an implemented patient-consent transfer flow. Review other uploader call sites before enabling any network path.
 
 Headers:
 
@@ -49,7 +49,7 @@ Body: a single JSON-encoded `MovementSession`.
 
 ## Payload Schema
 
-The `MovementSession` model in `vCRGlove/MovementModels.swift` is `Codable` and serializes to the following JSON structure:
+The example below is an abbreviated historical payload, not a complete current recording or prescribed duration. `vCRGlove/MovementModels.swift` and [Data formats](docs/DATA_FORMATS.md) define the current fields and encodings.
 
 ```json
 {
@@ -143,18 +143,18 @@ JSON/JSONL exports retain this object. Metrics CSV appends seven columns after t
 
 | Field                     | Type   | Description                                                                |
 | ------------------------- | ------ | -------------------------------------------------------------------------- |
-| `cycleCount`              | int    | Completed movement cycles                                                  |
+| `cycleCount`              | int    | Detected movement cycles                                                   |
 | `frequencyHz`             | double | Cycles per second                                                          |
 | `meanAmplitude`           | double | Mean peak-to-peak amplitude                                                |
-| `amplitudeDecrementSlope` | double | Amplitude slope over cycles (negative = fatiguing)                         |
+| `amplitudeDecrementSlope` | double | Slope versus cycle index, normalized by mean amplitude; negative means decreasing amplitude, not proven fatigue |
 | `rhythmCV`                | double | Coefficient of variation of cycle durations                                |
-| `pauseCount`              | int    | Number of abnormal pauses / freezing episodes                              |
-| `onsetLatencySec`         | double | Delay before movement starts                                               |
-| `qualityIndex`            | double | 0–1 heuristic for UI trends; not a validated UPDRS score                   |
+| `pauseCount`              | int    | Detected long cycle intervals; not a diagnosis of freezing                  |
+| `onsetLatencySec`         | double | Delay from first stored sample to first detected event                      |
+| `qualityIndex`            | double | Unvalidated 0–1 heuristic retained in storage, hidden from patient results  |
 
 ## Important Notes
 
-- The app currently uploads **movement measurement data only**, not the recorded video.
-- Measurement videos are saved to the device Photo Library with embedded metadata (task, side, context, patient ID, timestamp). If the backend needs the actual video files, that must be implemented as a separate upload step (e.g. from the device Photos, or by prompting the user to share).
+- If configured, this prototype sends **movement measurement data only**, not recorded video, journal entries or stimulation logs.
+- Measurement videos are silent private files in `Application Support/vcr/tasks/videos/`, linked by trial UUID. They are not automatically saved to Photos and do not carry identifying movie metadata. Explicit sharing is available in Settings > Data; approved video transfer and backup remain separate work.
 - Data is also persisted locally as JSONL in `Documents/vcr/tasks/sessions.jsonl` and can be exported from the app as JSON or CSV.
 - The `MovementModels.swift` file is the source of truth for the payload shape. Any changes to the backend contract should be reflected there.

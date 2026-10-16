@@ -1,5 +1,7 @@
 # Project Handoff Brief — vCRGlove Movement Task Module
 
+> **Historical handoff.** The original brief below is retained for design context, not as current instructions. Tab order, saving, video storage, context choices and test coverage have changed. Use the [documentation index](docs/README.md) and current code instead. Synthetic profiles are test fixtures, not clinical norms or score validation.
+
 > Self-contained brief for an AI coding agent (Devin) to continue development.
 > Everything needed to work on the task is below; no external chat context required.
 > Repo: `github.com/MeropGont/vCRGlove` (private/institutional, ICNS @ UKE). Work on branch `feature/movement-task-module`.

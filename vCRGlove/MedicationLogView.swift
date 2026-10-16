@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MedicationLogView: View {
     let date: Date
+    private let entryID: UUID?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -17,8 +18,21 @@ struct MedicationLogView: View {
     @State private var motorState: MotorState? = nil
     @State private var factors: Set<MedicationFactor> = []
     @State private var note = ""
+    @State private var noteExpanded = false
+    @State private var saveFailed = false
 
     private let calendar = Calendar.current
+    private var showNote: Bool { noteExpanded || !note.isEmpty || (event != nil && event != .usual) }
+
+    init(date: Date, editing entry: JournalEntry? = nil) {
+        self.date = entry?.date ?? date
+        entryID = entry?.id
+        _selectedTime = State(initialValue: entry?.date ?? Date())
+        _event = State(initialValue: entry?.medicationEvent)
+        _motorState = State(initialValue: entry?.motorState)
+        _factors = State(initialValue: Set(entry?.medicationFactors ?? []))
+        _note = State(initialValue: entry?.note ?? "")
+    }
 
     var body: some View {
         ScrollView {
@@ -39,7 +53,24 @@ struct MedicationLogView: View {
                     }
                 }
 
-                sectionTitle("How are you right now?")
+                if showNote {
+                    VStack(alignment: .leading, spacing: 8) {
+                        sectionTitle("Note")
+                        TextField(L10n("Add details"), text: $note, axis: .vertical)
+                            .textFieldStyle(.roundedBorder)
+                            .lineLimit(2...4)
+                            .accessibilityIdentifier("journalMedicationNote")
+                    }
+                } else {
+                    Button { noteExpanded = true } label: {
+                        Label(L10n("Add note"), systemImage: "square.and.pencil")
+                            .frame(minHeight: 44)
+                    }
+                    .accessibilityIdentifier("journalMedicationAddNote")
+                }
+
+                sectionTitle(entryID == nil && calendar.isDateInToday(date)
+                    ? "How are you right now?" : "How did you feel at that time?")
 
                 ForEach(MotorState.allCases) { state in
                     choiceButton(
@@ -80,15 +111,12 @@ struct MedicationLogView: View {
                     }
                 }
 
-                TextField(L10n("Optional note"), text: $note, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .lineLimit(3...5)
             }
             .padding()
             .padding(.bottom, 90)
         }
         .safeAreaInset(edge: .bottom) {
-            Button(L10n("Save Medication Log")) {
+            Button(L10n(entryID == nil ? "Save Medication Log" : "Save changes")) {
                 let entry = JournalEntry(
                     date: combinedDate,
                     type: .medication,
@@ -98,20 +126,35 @@ struct MedicationLogView: View {
                     medicationFactors: Array(factors).sorted { $0.rawValue < $1.rawValue }
                 )
 
-                JournalStore.shared.add(entry)
-                dismiss()
+                let saved: Bool
+                if let entryID {
+                    saved = JournalStore.shared.updateMedication(id: entryID, date: combinedDate, event: event,
+                        motorState: motorState, factors: entry.medicationFactors, note: entry.note)
+                } else {
+                    saved = JournalStore.shared.add(entry)
+                }
+                if saved {
+                    dismiss()
+                } else {
+                    saveFailed = true
+                }
             }
             .buttonStyle(.borderedProminent)
-            .disabled(event == nil || motorState == nil)
+            .disabled(entryID == nil && event == nil)
+            .accessibilityIdentifier("journalSaveMedication")
             .padding()
             .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)
         }
         .navigationTitle(L10n("Medication"))
         .navigationBarTitleDisplayMode(.inline)
+        .journalSaveAlert(isPresented: $saveFailed)
     }
 
     private var combinedDate: Date {
+        if entryID != nil, calendar.compare(selectedTime, to: date, toGranularity: .minute) == .orderedSame {
+            return date
+        }
         let day = calendar.dateComponents([.year, .month, .day], from: date)
         let time = calendar.dateComponents([.hour, .minute], from: selectedTime)
 
@@ -121,6 +164,7 @@ struct MedicationLogView: View {
         components.day = day.day
         components.hour = time.hour
         components.minute = time.minute
+        components.second = calendar.component(.second, from: selectedTime)
 
         return calendar.date(from: components) ?? date
     }
@@ -146,5 +190,7 @@ struct MedicationLogView: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("journalMedicationChoice-\(title)")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

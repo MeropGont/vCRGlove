@@ -456,7 +456,9 @@ struct MovementTaskView: View {
         let r = TrialRecorder(taskType: taskType,
                               side: side,
                               source: activeSignalSource,
-                              stopCondition: stopCondition)
+                              stopCondition: stopCondition,
+                              measurementVersion: cameraCapture != nil ? MovementMeasurementVersion.camera
+                                  : (watchCapture != nil ? MovementMeasurementVersion.watch : nil))
         r.onComplete = { trial in
             guard captureAttemptID == attemptID else { return }
             completedTrial = trial.withMedicationTiming(medicationSnapshot)
@@ -2045,12 +2047,14 @@ struct MovementSessionFlowView: View {
             Button {
                 skipStep()
             } label: {
-                Text(L10n("Skip this measurement"))
+                Label(L10n("Skip this measurement"), systemImage: "forward.end")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Color.primary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
             }
             .buttonStyle(.bordered)
-            .tint(.secondary)
+            .tint(.accentColor)
             .accessibilityIdentifier("movementSkipMeasurement")
 
             if !trials.isEmpty {
@@ -2534,7 +2538,9 @@ struct MovementSessionFlowView: View {
         let r = TrialRecorder(taskType: current.task,
                               side: current.side,
                               source: activeSignalSource,
-                              stopCondition: stopCondition)
+                              stopCondition: stopCondition,
+                              measurementVersion: cameraCapture != nil ? MovementMeasurementVersion.camera
+                                  : (watchCapture != nil ? MovementMeasurementVersion.watch : nil))
         r.onComplete = { trial in
             print("[PERF] flow received trial for step \(self.currentStepIndex + 1)")
             EventStore.shared.append(

@@ -71,6 +71,7 @@ enum TaskSessionExporter {
                     quote(t.medicationTiming?.medicationDose ?? "")
                 ]
                 fields.append(contentsOf: medicationFields)
+                fields.append(quote(t.measurementVersion ?? ""))
                 rows.append(fields.joined(separator: ","))
             }
         }
@@ -101,7 +102,8 @@ enum TaskSessionExporter {
         "amplitude_decrement_slope", "rhythm_cv", "pause_count",
         "onset_latency_sec", "quality_index",
         "medication_status", "medication_taken_at", "seconds_since_medication",
-        "medication_confirmed_at", "medication_journal_entry_id", "medication_name", "medication_dose"
+        "medication_confirmed_at", "medication_journal_entry_id", "medication_name", "medication_dose",
+        "measurement_version"
     ].joined(separator: ",")
 
     private static func write(_ data: Data, name: String, ext: String) throws -> URL {

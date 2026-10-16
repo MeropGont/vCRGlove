@@ -23,6 +23,7 @@ struct NoteLogView: View {
 
     @State private var selectedTime = Date()
     @State private var note = ""
+    @State private var saveFailed = false
     @State private var noteExample = NoteLogView.noteExamples.randomElement() ?? "For example: Today I feel strong."
 
     private let calendar = Calendar.current
@@ -57,8 +58,11 @@ struct NoteLogView: View {
                     note: cleanNote
                 )
 
-                JournalStore.shared.add(entry)
-                dismiss()
+                if JournalStore.shared.add(entry) {
+                    dismiss()
+                } else {
+                    saveFailed = true
+                }
             }
             .buttonStyle(.borderedProminent)
             .disabled(note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -69,6 +73,7 @@ struct NoteLogView: View {
         }
         .navigationTitle(L10n("Note"))
         .navigationBarTitleDisplayMode(.inline)
+        .journalSaveAlert(isPresented: $saveFailed)
     }
 
     private var combinedDate: Date {

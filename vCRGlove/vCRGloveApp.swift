@@ -94,8 +94,13 @@ enum Haptics {
 struct vCRGloveApp: App {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @StateObject private var appSettings = AppSettings.shared
+    @StateObject private var gloveVM = GloveVM()
+    // Keep navigation outside the language-dependent screen identity.
+    @State private var selectedTab: MainTabView.Tab = .vcr
+    @State private var settingsPath: [SettingsRoute] = []
 
     init() {
+        FullDataExporter.removeInterruptedExports()
         _ = PhoneWC.shared
 
         if let url = EventStore.shared.fileURL() {
@@ -110,7 +115,7 @@ struct vCRGloveApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            MainTabView(gloveVM: gloveVM, selectedTab: $selectedTab, settingsPath: $settingsPath)
                 .environment(\.locale, Locale(identifier: appSettings.language.rawValue))
                 .environment(\.dynamicTypeSize, appSettings.fontSize.dynamicTypeSize)
             .id(appSettings.language)

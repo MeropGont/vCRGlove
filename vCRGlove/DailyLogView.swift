@@ -1,240 +1,99 @@
-//
-//  DailyLogView.swift
-//  vCRGlove
-//
-//  Created by Tactile Glove on 27.04.26.
-//
-
 import SwiftUI
 
 struct DailyLogView: View {
     let date: Date
-
     @ObservedObject private var store = JournalStore.shared
+    @ObservedObject private var taskStore = TaskSessionStore.shared
+    @Environment(\.locale) private var locale
 
-    private let calendar = Calendar.current
-
-    private var entriesForDay: [JournalEntry] {
-        store.entries
-            .filter { calendar.isDate($0.date, inSameDayAs: date) }
-            .sorted { $0.date > $1.date }
+    private var entries: [JournalEntry] {
+        store.entries.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }.sorted { $0.date > $1.date }
+    }
+    private var sessions: [MovementSession] {
+        taskStore.sessions.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }.sorted { $0.date > $1.date }
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(date.formatted(date: .complete, time: .omitted))
-                    .font(.title2.bold())
-
-                dailyCheckInCard
-                
-                symptomEpisodeCard
-
-                medicationCard
-                
-                noteCard
-
-                timelineCard
+                Text(date.formatted(Date.FormatStyle(date: .complete, time: .omitted).locale(locale)))
+                    .font(.headline).fixedSize(horizontal: false, vertical: true)
+                if entries.isEmpty && sessions.isEmpty {
+                    Text(L10n("No entries saved for this day yet."))
+                        .foregroundStyle(.secondary)
+                }
+                ForEach(entries) { entry in
+                    if entry.type == .medication {
+                        NavigationLink { MedicationLogView(date: entry.date, editing: entry) } label: {
+                            entryRow(entry, editable: true)
+                        }
+                        .accessibilityIdentifier("journalEditMedication-\(entry.id)")
+                        .accessibilityHint(L10n("Edit entry"))
+                    } else if entry.type == .symptom {
+                        NavigationLink { SymptomEpisodeLogView(date: entry.date, editing: entry) } label: {
+                            entryRow(entry, editable: true)
+                        }
+                        .accessibilityIdentifier("journalEditSymptom-\(entry.id)")
+                        .accessibilityHint(L10n("Edit entry"))
+                    } else if entry.type == .dailyCheckIn && entry.id == store.dailyCheckIn(on: date)?.id {
+                        NavigationLink { DailyCheckInView(entryDate: date) } label: {
+                            entryRow(entry, editable: true)
+                        }
+                        .accessibilityIdentifier("journalEditDailyCheckIn")
+                        .accessibilityHint(L10n("Edit entry"))
+                    } else { entryRow(entry, editable: false) }
+                    Divider()
+                }
+                ForEach(sessions) { session in
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "hand.tap").foregroundStyle(.purple).frame(width: 24)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(L10n("Movement session")).font(.headline)
+                            Text(session.date.formatted(Date.FormatStyle(date: .omitted, time: .shortened).locale(locale)))
+                                .font(.caption).foregroundStyle(.secondary)
+                            Text(String(format: L10n("Movement session: %d trial(s)"), session.trials.count))
+                                .font(.subheadline)
+                            Text(L10n(session.completionLabelKey)).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    Divider()
+                }
             }
+            .buttonStyle(.plain)
             .padding()
         }
-        .navigationTitle(L10n("Daily Log"))
+        .navigationTitle(L10n("Entries"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private var dailyCheckInCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(L10n("Daily Check-In"))
-                .font(.headline)
-
-            Text(L10n("Mood, overall symptoms, and symptom list for this day."))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            NavigationLink {
-                DailyCheckInView(entryDate: date)
-            } label: {
-                Text(L10n("CHECK IN"))
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
+    private func entryRow(_ entry: JournalEntry, editable: Bool) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: entry.iconName).foregroundStyle(.teal).frame(width: 24)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(entry.title).font(.headline)
+                Text(timestamp(for: entry))
+                    .font(.caption).foregroundStyle(.secondary)
+                Text(entry.detailSummary).font(.subheadline).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-    
-    private var symptomEpisodeCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(L10n("Symptom Episode"))
-                .font(.headline)
-
-            Text(L10n("Log OFF periods, tremor, freezing, dyskinesia, or other symptom changes."))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            NavigationLink {
-                SymptomEpisodeLogView(date: date)
-            } label: {
-                Text(L10n("LOG SYMPTOM"))
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-
-
-    private var medicationCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(L10n("Medication"))
-                .font(.headline)
-
-            Text(L10n("Log usual, late, missed, or extra medication events."))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            NavigationLink {
-                MedicationLogView(date: date)
-            } label: {
-                Text(L10n("LOG MEDICATION"))
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-
-    private var noteCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(L10n("Note"))
-                .font(.headline)
-
-            Text(L10n("Record anything unusual or important for this day."))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            NavigationLink {
-                NoteLogView(date: date)
-            } label: {
-                Text(L10n("ADD NOTE"))
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-        }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-
-
-    private var timelineCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(L10n("Day timeline"))
-                .font(.headline)
-
-            if entriesForDay.isEmpty {
-                Text(L10n("No entries saved for this day yet."))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(entriesForDay) { entry in
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: iconName(for: entry))
-                            .foregroundStyle(.blue)
-                            .frame(width: 28, height: 28)
-                            .background(Color.blue.opacity(0.12))
-                            .clipShape(Circle())
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(entry.date.formatted(date: .omitted, time: .shortened))
-                                .font(.subheadline.weight(.semibold))
-
-                            Text(summary(for: entry))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer()
-                    }
-                }
+            Spacer(minLength: 0)
+            if editable {
+                Image(systemName: "pencil").foregroundStyle(Color.accentColor)
+                    .frame(width: 24, height: 24).accessibilityHidden(true)
             }
         }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .foregroundStyle(Color.primary)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
     }
 
-    private func iconName(for entry: JournalEntry) -> String {
-        switch entry.type {
-        case .dailyCheckIn:
-            return "heart.text.square.fill"
-        case .medication:
-            return "pills.fill"
-        case .symptom:
-            return "waveform.path.ecg"
-        case .note:
-            return "note.text"
-        case .stimulation:
-            return "waveform.path.ecg"
-        default:
-            return "circle.fill"
-        }
-    }
-
-
-    private func summary(for entry: JournalEntry) -> String {
-        var parts: [String] = []
-
+    private func timestamp(for entry: JournalEntry) -> String {
         if entry.type == .dailyCheckIn {
-            parts.append(L10n("Daily check-in"))
+            if let savedAt = entry.updatedAt {
+                return String(format: L10n("Last saved: %@"), savedAt.formatted(
+                    Date.FormatStyle(date: .abbreviated, time: .shortened).locale(locale)))
+            }
+            return entry.date.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(locale))
         }
-
-        if entry.type == .symptom {
-            parts.append(L10n("Symptom episode"))
-        }
-
-        if entry.type == .stimulation {
-            parts.append(L10n("vCR stimulation"))
-        }
-
-        if let mood = entry.mood {
-            parts.append(String(format: L10n("Mood %d/5"), mood))
-        }
-
-        if let severity = entry.symptomSeverity {
-            parts.append(severity.label)
-        }
-
-        if let medicationEvent = entry.medicationEvent {
-            parts.append(medicationEvent.displayName)
-        }
-
-        if let motorState = entry.motorState {
-            parts.append(motorState.displayName)
-        }
-
-        if !entry.medicationFactors.isEmpty {
-            parts.append(entry.medicationFactors.map(\.rawValue).joined(separator: ", "))
-        }
-
-        if let note = entry.note {
-            parts.append(note)
-        }
-
-        if !entry.symptoms.isEmpty {
-            parts.append(entry.symptoms.joined(separator: ", "))
-        }
-
-        return parts.isEmpty ? L10n("No details") : parts.joined(separator: " · ")
+        return entry.date.formatted(Date.FormatStyle(date: .omitted, time: .shortened).locale(locale))
     }
-
 }

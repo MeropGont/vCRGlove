@@ -8,35 +8,25 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @StateObject private var gloveVM = GloveVM()
-    @AppStorage("showResearchTab") private var showResearchTab = false
+    enum Tab: Hashable {
+        case vcr, journal, movement, settings
+    }
+
+    @ObservedObject var gloveVM: GloveVM
+    @Binding var selectedTab: Tab
+    @Binding var settingsPath: [SettingsRoute]
     @Environment(\.scenePhase) private var scenePhase
 
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             NavigationStack {
                 PatientVCRView(vm: gloveVM)
             }
             .tabItem {
                 Label(L10n("vCR"), systemImage: "waveform.path.ecg")
             }
-
-            if showResearchTab {
-                NavigationStack {
-                    VCRView(vm: gloveVM)
-                }
-                .tabItem {
-                    Label(L10n("Research"), systemImage: "slider.horizontal.3")
-                }
-            }
-
-            NavigationStack {
-                MovementSessionFlowView()
-            }
-            .tabItem {
-                Label(L10n("Movement"), systemImage: "hand.tap.fill")
-            }
+            .tag(Tab.vcr)
 
             NavigationStack {
                 JournalHomeView()
@@ -44,13 +34,23 @@ struct MainTabView: View {
             .tabItem {
                 Label(L10n("Journal"), systemImage: "book.fill")
             }
+            .tag(Tab.journal)
 
             NavigationStack {
+                MovementSessionFlowView()
+            }
+            .tabItem {
+                Label(L10n("Movement"), systemImage: "hand.tap.fill")
+            }
+            .tag(Tab.movement)
+
+            NavigationStack(path: $settingsPath) {
                 SettingsView(vm: gloveVM)
             }
             .tabItem {
                 Label(L10n("Settings"), systemImage: "gearshape.fill")
             }
+            .tag(Tab.settings)
         }
         .onChange(of: scenePhase) { _, newPhase in
             gloveVM.handleScenePhaseChange(newPhase)

@@ -8,7 +8,176 @@
 
 import Testing
 import Foundation
+import XCTest
 @testable import vCRGlove
+
+@Suite(.serialized)
+@MainActor
+struct FullDataExportTests {
+    @Test func copiesRawMovementAndAllSavedMoviesWithoutRewriting() async throws {
+        let root = try FullDataExporter.makeDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let sessions = root.appendingPathComponent("sessions.jsonl")
+        let raw = Data("{\"unknown_future_field\":7}\nmalformed older line\n".utf8)
+        try raw.write(to: sessions)
+        let videos = root.appendingPathComponent("videos", isDirectory: true)
+        try FileManager.default.createDirectory(at: videos, withIntermediateDirectories: true)
+        let name = "\(UUID().uuidString).mov"
+        let movie = Data("stand-in movie bytes".utf8)
+        try movie.write(to: videos.appendingPathComponent(name))
+        let store = TaskSessionStore(storageURL: sessions, videoStore: MovementVideoStore(directory: videos))
+        let destination = root.appendingPathComponent("snapshot")
+        let absent = try await store.copyExportSnapshot(to: destination)
+        #expect(absent.isEmpty)
+        #expect(try Data(contentsOf: destination.appendingPathComponent("tasks/sessions.jsonl")) == raw)
+        #expect(try Data(contentsOf: destination.appendingPathComponent("tasks/videos/\(name)")) == movie)
+        #expect(try Data(contentsOf: sessions) == raw)
+        #expect(try Data(contentsOf: videos.appendingPathComponent(name)) == movie)
+    }
+
+    @Test func missingStorageIsExplicitAndSymlinksAreRejected() async throws {
+        let root = try FullDataExporter.makeDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let destination = root.appendingPathComponent("snapshot")
+        let store = TaskSessionStore(storageURL: root.appendingPathComponent("absent.jsonl"),
+            videoStore: MovementVideoStore(directory: root.appendingPathComponent("no-videos")))
+        #expect(try await store.copyExportSnapshot(to: destination) == ["tasks/sessions.jsonl"])
+        let original = root.appendingPathComponent("private")
+        try Data("private".utf8).write(to: original)
+        let link = root.appendingPathComponent("link")
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: original)
+        #expect(throws: (any Error).self) {
+            try FullDataExporter.copyFile(link, to: root.appendingPathComponent("must-not-exist"))
+        }
+        #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("must-not-exist").path))
+    }
+
+    @Test func eventSnapshotWaitsForQueuedWrites() async throws {
+        let root = try FullDataExporter.makeDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let events = EventStore(directory: root)
+        events.append(type: "stim", tag: "test", message: "queued-before-snapshot")
+        let destination = root.appendingPathComponent("snapshot")
+        let absent = try await events.copyExportSnapshot(to: destination)
+        let copied = try String(contentsOf: destination.appendingPathComponent("logs/events.jsonl"), encoding: .utf8)
+        #expect(copied.contains("queued-before-snapshot"))
+        #expect(absent == ["logs/handshake.jsonl"])
+    }
+
+    @Test func settingsAllowlistIncludesResearchDataButNotCredentials() {
+        #expect(FullDataExporter.settingsKeys.contains(StimulationProfileStore.key))
+        #expect(FullDataExporter.settingsKeys.contains("patientStudyNotes"))
+        #expect(FullDataExporter.settingsKeys.contains("vcr.uploader.pending"))
+        #expect(!FullDataExporter.settingsKeys.contains("researchPassword"))
+        #expect(!FullDataExporter.settingsKeys.contains("researchUnlocked"))
+    }
+
+    @Test func movementSnapshotWaitsForAcceptedRecordingSave() async throws {
+        let root = try FullDataExporter.makeDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = TaskSessionStore(storageURL: root.appendingPathComponent("sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: root.appendingPathComponent("videos")))
+        let session = MovementSession(patientId: "QUEUED-TEST")
+        let trial = Trial(taskType: .fingerTap, side: .left, source: .camera,
+            stopCondition: .thirtySec, samples: [], metrics: .empty)
+        store.saveAcceptedTrial(trial, in: session, temporaryVideoURL: nil) { _ in }
+        let destination = root.appendingPathComponent("snapshot")
+        #expect(try await store.copyExportSnapshot(to: destination).isEmpty)
+        let raw = try String(contentsOf: destination.appendingPathComponent("tasks/sessions.jsonl"), encoding: .utf8)
+        #expect(raw.contains("QUEUED-TEST"))
+        #expect(raw.contains(trial.id.uuidString))
+    }
+
+    @Test func interruptedCleanupDoesNotTouchUnrelatedFiles() throws {
+        let root = try FullDataExporter.makeDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let interrupted = try FullDataExporter.makeDirectory(parent: root)
+        let unrelated = root.appendingPathComponent("original-recording.mov")
+        try Data("keep".utf8).write(to: unrelated)
+        FullDataExporter.removeInterruptedExports(parent: root)
+        #expect(!FileManager.default.fileExists(atPath: interrupted.path))
+        #expect(try Data(contentsOf: unrelated) == Data("keep".utf8))
+    }
+}
+
+final class FullDataArchiveTests: XCTestCase {
+    @MainActor
+    func testFailureLeavesOriginalsAndRemovesPartialExport() async throws {
+        let root = try FullDataExporter.makeDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let videos = root.appendingPathComponent("videos")
+        try FileManager.default.createDirectory(at: videos, withIntermediateDirectories: true)
+        let source = videos.appendingPathComponent("unexpected-file")
+        try Data("original".utf8).write(to: source)
+        let before = try FileManager.default.contentsOfDirectory(atPath: FullDataExporter.temporaryRoot.path).sorted()
+        do {
+            let package = try await FullDataExporter.prepare(journal: JournalStore(storageURL: root.appendingPathComponent("journal.json")),
+                tasks: TaskSessionStore(storageURL: root.appendingPathComponent("sessions.jsonl"),
+                    videoStore: MovementVideoStore(directory: videos)), events: EventStore(directory: root))
+            package.remove()
+            XCTFail("Unexpected video-store file must not be silently omitted")
+        } catch {
+            XCTAssertTrue(error is MovementVideoStore.VideoError)
+        }
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: FullDataExporter.temporaryRoot.path).sorted(), before)
+        XCTAssertEqual(try Data(contentsOf: source), Data("original".utf8))
+    }
+
+    @MainActor
+    func testCompleteArchiveAndCleanup() async throws {
+        let root = try FullDataExporter.makeDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let journalFile = root.appendingPathComponent("journal.json")
+        let rawJournal = Data("[{\"future_journal_field\":\"preserve exactly\"}]".utf8)
+        try rawJournal.write(to: journalFile)
+        let sessionsFile = root.appendingPathComponent("sessions.jsonl")
+        let name = "\(UUID().uuidString).mov"
+        let missing = "\(UUID().uuidString).mov"
+        let rawSessions = Data("{\"trials\":[{\"video\":{\"fileName\":\"\(name)\"}},{\"video\":{\"fileName\":\"\(missing)\"}}],\"unknown_metadata\":true}\ninvalid legacy line\n".utf8)
+        try rawSessions.write(to: sessionsFile)
+        let videos = root.appendingPathComponent("videos")
+        try FileManager.default.createDirectory(at: videos, withIntermediateDirectories: true)
+        try Data("movie-fixture-contents".utf8).write(to: videos.appendingPathComponent(name))
+        let defaultsName = "full-export-test-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: defaultsName))
+        defer { defaults.removePersistentDomain(forName: defaultsName) }
+        defaults.set("TEST-123", forKey: "patientID")
+        defaults.set("do-not-export-password", forKey: "researchPassword")
+        try StimulationProfileStore(defaults: defaults).save(StimulationProfile())
+        let events = EventStore(directory: root)
+        events.append(type: "stimulation", tag: "test", message: "archive-event-fixture")
+        let package = try await FullDataExporter.prepare(journal: JournalStore(storageURL: journalFile),
+            tasks: TaskSessionStore(storageURL: sessionsFile, videoStore: MovementVideoStore(directory: videos)),
+            events: events, defaults: defaults)
+        defer { package.remove() }
+        XCTAssertEqual(package.missingVideoCount, 1)
+        let archive = try Data(contentsOf: package.archive)
+        XCTAssertEqual(Array(archive.prefix(2)), [0x50, 0x4b])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: package.directory.appendingPathComponent("vCRGlove-data").path))
+        let attachment = XCTAttachment(contentsOfFile: package.archive)
+        attachment.name = "Full-data-export-fixture.zip"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        XCTAssertEqual(try Data(contentsOf: journalFile), rawJournal)
+        XCTAssertEqual(try Data(contentsOf: sessionsFile), rawSessions)
+        package.remove()
+        XCTAssertFalse(FileManager.default.fileExists(atPath: package.archive.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: videos.appendingPathComponent(name).path))
+    }
+
+    @MainActor
+    func testEmptyDeviceStillCreatesArchive() async throws {
+        let root = try FullDataExporter.makeDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let package = try await FullDataExporter.prepare(journal: JournalStore(storageURL: root.appendingPathComponent("journal.json")),
+            tasks: TaskSessionStore(storageURL: root.appendingPathComponent("sessions.jsonl"),
+                videoStore: MovementVideoStore(directory: root.appendingPathComponent("videos"))),
+            events: EventStore(directory: root))
+        defer { package.remove() }
+        XCTAssertEqual(package.missingVideoCount, 0)
+        XCTAssertGreaterThan(try Data(contentsOf: package.archive).count, 100)
+    }
+}
 
 @Suite(.serialized)
 struct TaskSessionExporterTests {
@@ -49,7 +218,7 @@ struct TaskSessionExporterTests {
         sessions[0].trials = [Trial(id: original.id, taskType: original.taskType, side: original.side,
             source: .camera, stopCondition: .thirtySec, startedAt: original.startedAt,
             samples: original.samples, metrics: original.metrics, recordedDurationSeconds: 30,
-            video: video).withMedicationTiming(nil)]
+            video: video, measurementVersion: MovementMeasurementVersion.camera).withMedicationTiming(nil)]
         let url = try TaskSessionExporter.exportJSON(sessions)
         defer { try? FileManager.default.removeItem(at: url) }
         let decoder = JSONDecoder()
@@ -58,6 +227,23 @@ struct TaskSessionExporterTests {
         #expect(decoded[0].trials[0].video == video)
         #expect(decoded[0].trials[0].recordedDurationSeconds == 30)
         #expect(decoded[0].trials[0].id == original.id)
+        #expect(decoded[0].trials[0].measurementVersion == MovementMeasurementVersion.camera)
+    }
+
+    @Test func csvAppendsVersionWithoutChangingExistingColumnsOrLabellingLegacyAsCurrent() throws {
+        var sessions = makeSessions()
+        let original = sessions[0].trials[0]
+        let versioned = Trial(taskType: original.taskType, side: original.side, source: .camera,
+                              stopCondition: original.stopCondition, samples: original.samples,
+                              metrics: original.metrics, measurementVersion: MovementMeasurementVersion.camera)
+        sessions[0].trials.append(versioned)
+        let url = try TaskSessionExporter.exportMetricsCSV(sessions)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let lines = try String(contentsOf: url, encoding: .utf8).split(separator: "\n")
+        #expect(lines[0].hasSuffix(",measurement_version"))
+        #expect(lines[1].hasSuffix(",\"\""))
+        #expect(lines[2].hasSuffix(",\"\(MovementMeasurementVersion.camera)\""))
+        #expect(lines[0].split(separator: ",").count == 29)
     }
 
     @Test func metricsCSVHasHeaderAndOneRowPerTrial() throws {
@@ -105,7 +291,8 @@ struct TaskSessionExporterTests {
         let rows = try String(contentsOf: url, encoding: .utf8).split(separator: "\n")
         let header = rows[0].split(separator: ",", omittingEmptySubsequences: false)
         let values = rows[1].split(separator: ",", omittingEmptySubsequences: false)
-        #expect(header.count == 28 && values.count == 28)
+        #expect(header.count == 29 && values.count == 29)
+        #expect(header[28] == "measurement_version")
         #expect(header[20] == "quality_index")
         #expect(header[21] == "medication_status")
         #expect(values[21] == "takenAt")

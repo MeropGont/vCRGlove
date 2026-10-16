@@ -9,47 +9,52 @@ import SwiftUI
 import UIKit
 import UserNotifications
 
+enum SettingsRoute: Hashable {
+    case general
+}
+
 struct SettingsView: View {
     @ObservedObject var vm: GloveVM
-    @AppStorage("showResearchTab") private var showResearchTab = false
     @AppStorage("patientID") private var patientID = ""
 
-    @State private var researchPassword = ""
-    @State private var researchUnlocked = false
-    @State private var passwordError = false
+    @State private var showResearchUnlock = false
 
     var body: some View {
         List {
             Section {
                 NavigationLink {
-                    VCRSettingsView(vm: vm)
-                } label: {
-                    SettingsRow(icon: "waveform.path.ecg", color: .blue, title: L10n("vCR Settings"), subtitle: L10n("Duration, gloves, and session preferences"))
-                }
-
-                NavigationLink {
                     ProfileSettingsView(patientID: patientID)
                 } label: {
-                    SettingsRow(icon: "person.crop.circle", color: .purple, title: "Profile", subtitle: "ID and icon")
+                    SettingsRow(icon: "person.crop.circle", color: .purple, title: "Profile", subtitle: "ID")
                 }
+                .accessibilityIdentifier("settingsProfile")
 
-                NavigationLink {
-                    ReminderSettingsView()
-                } label: {
-                    SettingsRow(icon: "bell.badge", color: .orange, title: L10n("Reminders"), subtitle: L10n("vCR, journal, and task notifications"))
+                NavigationLink(value: SettingsRoute.general) {
+                    SettingsRow(icon: "gearshape", color: .gray, title: "settings.general.title", subtitle: "settings.general.subtitle")
                 }
-
-                NavigationLink {
-                    PrivacyDataSettingsView()
-                } label: {
-                    SettingsRow(icon: "lock.shield", color: .green, title: L10n("Privacy & Data"), subtitle: L10n("Permissions, storage, and data handling"))
-                }
+                .accessibilityIdentifier("settingsGeneral")
 
                 NavigationLink {
                     InstructionsSettingsView(patientID: patientID)
                 } label: {
                     SettingsRow(icon: "book.closed", color: .teal, title: L10n("Instructions"), subtitle: L10n("Gloves, vCR, journal, and troubleshooting"))
                 }
+                .accessibilityIdentifier("settingsInstructions")
+
+                NavigationLink {
+                    VCRSettingsView(vm: vm)
+                } label: {
+                    SettingsRow(icon: "waveform.path.ecg", color: .blue, title: L10n("vCR Settings"), subtitle: L10n("Duration, gloves, and session preferences"))
+                }
+                .accessibilityIdentifier("settingsVCR")
+
+                NavigationLink {
+                    ReminderSettingsView()
+                } label: {
+                    SettingsRow(icon: "bell.badge", color: .orange, title: L10n("Reminders"), subtitle: L10n("vCR, journal, and task notifications"))
+                }
+                .accessibilityIdentifier("settingsReminders")
+
                 NavigationLink {
                     MovementExportView()
                 } label: {
@@ -60,36 +65,14 @@ struct SettingsView: View {
                         subtitle: "Movement measurements and videos"
                     )
                 }
-            }
+                .accessibilityIdentifier("settingsData")
 
-            Section(L10n("Research Mode")) {
-                if researchUnlocked {
-                    Toggle(L10n("Show Research Tab"), isOn: $showResearchTab)
-
-                    NavigationLink {
-                        ResearchAdminSettingsView(patientID: $patientID)
-                    } label: {
-                        SettingsRow(icon: "slider.horizontal.3", color: .indigo, title: L10n("Research Admin"), subtitle: L10n("Logs, exports, backup, and study notes"))
-                    }
-                } else {
-                    SecureField(L10n("Password"), text: $researchPassword)
-
-                    Button(L10n("Unlock Research Mode")) {
-                        if researchPassword == "vcr2026" {
-                            researchUnlocked = true
-                            passwordError = false
-                            researchPassword = ""
-                        } else {
-                            passwordError = true
-                        }
-                    }
-
-                    if passwordError {
-                        Text(L10n("Incorrect password"))
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    }
+                NavigationLink {
+                    StudyInformationSettingsView(patientID: patientID)
+                } label: {
+                    SettingsRow(icon: "info.circle", color: .teal, title: L10n("study.info.title"), subtitle: L10n("study.info.subtitle"))
                 }
+                .accessibilityIdentifier("settingsStudyInformation")
             }
 
             Section {
@@ -98,18 +81,41 @@ struct SettingsView: View {
                 } label: {
                     SettingsRow(icon: "questionmark.circle", color: .pink, title: L10n("Need Help?"), subtitle: L10n("Contact ICNS support"))
                 }
+                .accessibilityIdentifier("settingsSupport")
+            }
+
+            Section {
+                if vm.researchUnlocked {
+                    NavigationLink {
+                        ResearchAdminSettingsView(vm: vm, patientID: $patientID)
+                    } label: {
+                        Label(L10n("research.tools"), systemImage: "slider.horizontal.3")
+                    }
+                    .accessibilityIdentifier("researchTools")
+
+                    Button {
+                        vm.lockResearch()
+                    } label: {
+                        Label(L10n("research.lock"), systemImage: "lock")
+                    }
+                    .accessibilityIdentifier("researchLock")
+                } else {
+                    Button(L10n("research.staff")) { showResearchUnlock = true }
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("researchUnlockEntry")
+                }
             }
         }
         .navigationTitle(L10n("Settings"))
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink {
-                    LanguageSettingsView()
-                } label: {
-                    Image(systemName: "globe")
-                }
-                .accessibilityLabel(L10n("Language"))
+        .navigationDestination(for: SettingsRoute.self) { route in
+            switch route {
+            case .general:
+                GeneralSettingsView()
             }
+        }
+        .sheet(isPresented: $showResearchUnlock) {
+            ResearchUnlockView(vm: vm)
         }
     }
 }
@@ -211,11 +217,10 @@ private struct VCRSettingsView: View {
 
 private struct ProfileSettingsView: View {
     let patientID: String
-    @StateObject private var appSettings = AppSettings.shared
 
     var body: some View {
         Form {
-            Section(L10n("Patient")) {
+            Section {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L10n("ID"))
                         .font(.caption)
@@ -230,10 +235,24 @@ private struct ProfileSettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+        }
+        .navigationTitle(L10n("Profile"))
+    }
+}
 
-            Section(L10n("Profile")) {
-                Text(L10n("Avatar selection will go here."))
-                    .foregroundStyle(.secondary)
+private struct GeneralSettingsView: View {
+    @StateObject private var appSettings = AppSettings.shared
+
+    var body: some View {
+        Form {
+            Section(L10n("Language")) {
+                Picker(L10n("Language"), selection: $appSettings.language) {
+                    ForEach(AppLanguage.allCases) { lang in
+                        Text(lang.displayName).tag(lang)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .accessibilityIdentifier("settingsLanguagePicker")
             }
 
             Section(L10n("Font Size")) {
@@ -242,32 +261,17 @@ private struct ProfileSettingsView: View {
                         Text(size.displayName).tag(size)
                     }
                 }
-                .pickerStyle(.segmented)
+                .pickerStyle(.inline)
+                .labelsHidden()
+                .accessibilityIdentifier("settingsFontSizePicker")
             }
         }
-        .navigationTitle(L10n("Profile"))
-    }
-}
-
-private struct LanguageSettingsView: View {
-    @StateObject private var appSettings = AppSettings.shared
-
-    var body: some View {
-        List {
-            Section(L10n("Language")) {
-                Picker(L10n("Language"), selection: $appSettings.language) {
-                    ForEach(AppLanguage.allCases) { lang in
-                        Text(lang.displayName).tag(lang)
-                    }
-                }
-                .pickerStyle(.segmented)
-            }
-        }
-        .navigationTitle(L10n("Language"))
+        .navigationTitle(L10n("settings.general.title"))
     }
 }
 
 private struct ResearchAdminSettingsView: View {
+    @ObservedObject var vm: GloveVM
     @Binding var patientID: String
 
     @AppStorage("studyStartDate") private var studyStartDateString = ""
@@ -280,6 +284,12 @@ private struct ResearchAdminSettingsView: View {
     @State private var diagnosticsRefreshDate = Date()
     @State private var diagnosticsMessage: String?
     @State private var showClearAllLogsConfirmation = false
+    @State private var exportPreparation: UUID?
+    @State private var isPreparingExport = false
+    @State private var exportPackage: FullDataExporter.Package?
+    @State private var sharingPackage: FullDataExporter.Package?
+    @State private var showExportError = false
+    @State private var showMissingExportVideos = false
 
     private var studyStartDate: Binding<Date> {
         Binding(
@@ -311,6 +321,25 @@ private struct ResearchAdminSettingsView: View {
 
     var body: some View {
         List {
+            Section {
+                Button {
+                    isPreparingExport = true
+                    exportPreparation = UUID()
+                } label: {
+                    Label(L10n("research.export.share"), systemImage: "square.and.arrow.up")
+                }
+                .disabled(isPreparingExport || vm.hasStimulationSession || !vm.researchUnlocked)
+                .accessibilityIdentifier("researchShareAllData")
+                if isPreparingExport {
+                    ProgressView(L10n("research.export.preparing"))
+                        .accessibilityIdentifier("researchExportProgress")
+                }
+            } header: {
+                Text(L10n("research.export.title"))
+            } footer: {
+                Text(L10n(vm.hasStimulationSession ? "research.export.stop" : "research.export.explanation"))
+            }
+
             Section("Study") {
                 TextField("Patient ID", text: $patientID)
                     .textInputAutocapitalization(.characters)
@@ -358,11 +387,9 @@ private struct ResearchAdminSettingsView: View {
                 }
             }
 
-            Section("Data") {
-                Text("Export logs")
-                Text("Sync data")
-                Text("Storage size")
-                Text("Latest backup")
+            Section(L10n("Logs")) {
+                LogsPanel(logger: Logger.shared)
+                    .frame(height: 260)
             }
 
             Section("Diagnostics") {
@@ -415,6 +442,34 @@ private struct ResearchAdminSettingsView: View {
             }
         }
         .navigationTitle("Research Admin")
+        .task(id: exportPreparation) {
+            guard exportPreparation != nil else { return }
+            defer { isPreparingExport = false; exportPreparation = nil }
+            do {
+                let prepared = try await FullDataExporter.prepare()
+                exportPackage = prepared
+                if prepared.missingVideoCount > 0 { showMissingExportVideos = true }
+                else { sharingPackage = prepared }
+                EventStore.shared.append(type: "admin_action", tag: "Research", message: "Full data export prepared")
+            } catch {
+                if !Task.isCancelled { showExportError = true }
+            }
+        }
+        .sheet(item: $sharingPackage, onDismiss: cleanUpExport) { package in
+            FullDataShareSheet(url: package.archive) { sharingPackage = nil }
+        }
+        .alert(L10n("research.export.missing.title"), isPresented: $showMissingExportVideos) {
+            Button(L10n("Share…")) { sharingPackage = exportPackage }
+            Button(L10n("Cancel"), role: .cancel) { cleanUpExport() }
+        } message: {
+            Text(L10n("research.export.missing.message"))
+        }
+        .alert(L10n("research.export.failed"), isPresented: $showExportError) {
+            Button(L10n("OK"), role: .cancel) {}
+        } message: {
+            Text(L10n("research.export.retry"))
+        }
+        .onDisappear { if sharingPackage == nil { cleanUpExport() } }
         .confirmationDialog(
             "Clear event log file?",
             isPresented: $showClearAllLogsConfirmation,
@@ -430,6 +485,11 @@ private struct ResearchAdminSettingsView: View {
         } message: {
             Text("This deletes the JSONL event log on this phone and starts a new log with an audit entry.")
         }
+    }
+
+    private func cleanUpExport() {
+        exportPackage?.remove()
+        exportPackage = nil
     }
 
     private func infoRow(_ title: LocalizedStringKey, _ value: String) -> some View {
@@ -996,17 +1056,183 @@ enum ReminderScheduler {
     }
 }
 
-private struct PrivacyDataSettingsView: View {
+struct StudyInformationSection: Identifiable {
+    let id: String
+    let headingKey: String?
+    let paragraphKeys: [String]
+}
+
+enum StudyInformationTopic: String, CaseIterable, Identifiable {
+    case study, participation, devices, safety, privacy, contact
+
+    var id: String { rawValue }
+    var titleKey: String { "study.\(rawValue).title" }
+    var icon: String {
+        switch self {
+        case .study: return "info.circle"
+        case .participation: return "calendar"
+        case .devices: return "iphone"
+        case .safety: return "hand.raised"
+        case .contact: return "envelope"
+        case .privacy: return "lock.shield"
+        }
+    }
+
+    var sections: [StudyInformationSection] {
+        guard self == .privacy else {
+            let keys: [String]
+            switch self {
+            case .study: keys = ["study.study.body"]
+            case .participation: keys = ["study.participation.body", "study.participation.plan"]
+            case .devices:
+                return [
+                    .init(id: "devices", headingKey: nil, paragraphKeys: ["study.devices.body", "study.devices.results"]),
+                    .init(id: "storage", headingKey: "Stored data", paragraphKeys: ["privacy.app.localData"]),
+                    .init(id: "videos", headingKey: "privacy.app.videoTitle", paragraphKeys: [
+                        "privacy.app.videoCapture", "privacy.app.videoStorage", "privacy.app.videoSharing", "privacy.app.videoDeletion"])
+                ]
+            case .safety: keys = ["study.safety.body", "study.safety.voluntary"]
+            case .contact: return []
+            case .privacy: keys = []
+            }
+            return [StudyInformationSection(id: rawValue, headingKey: nil, paragraphKeys: keys)]
+        }
+        return [
+            .init(id: "intro", headingKey: "study.privacy.heading", paragraphKeys: [
+                "study.privacy.confidentiality", "study.privacy.storage", "study.privacy.keyFile",
+                "study.privacy.use", "study.privacy.gdpr"]),
+            .init(id: "basis", headingKey: "study.privacy.basis.title", paragraphKeys: ["study.privacy.basis.body"]),
+            .init(id: "responsible", headingKey: "study.privacy.responsible.title", paragraphKeys: ["study.privacy.responsible.body"]),
+            .init(id: "access", headingKey: "study.privacy.access.title", paragraphKeys: ["study.privacy.access.body"]),
+            .init(id: "rectification", headingKey: "study.privacy.rectification.title", paragraphKeys: ["study.privacy.rectification.body"]),
+            .init(id: "erasure", headingKey: "study.privacy.erasure.title", paragraphKeys: ["study.privacy.erasure.body"]),
+            .init(id: "restriction", headingKey: "study.privacy.restriction.title", paragraphKeys: ["study.privacy.restriction.body"]),
+            .init(id: "portability", headingKey: "study.privacy.portability.title", paragraphKeys: ["study.privacy.portability.body"]),
+            .init(id: "objection", headingKey: "study.privacy.objection.title", paragraphKeys: ["study.privacy.objection.body"]),
+            .init(id: "withdrawal", headingKey: "study.privacy.withdrawal.title", paragraphKeys: [
+                "study.privacy.withdrawal.basis", "study.privacy.withdrawal.body", "study.privacy.withdrawal.contact",
+                "study.privacy.complaint"]),
+            .init(id: "contacts", headingKey: "study.privacy.contacts.title", paragraphKeys: [
+                "study.privacy.dpo", "study.privacy.authority"]),
+            .init(id: "definitions", headingKey: "study.privacy.definitions.title", paragraphKeys: [
+                "study.privacy.pseudonymisation", "study.privacy.anonymisation"]),
+            .init(id: "ethics", headingKey: nil, paragraphKeys: ["study.privacy.ethics"])
+        ]
+    }
+}
+
+private struct StudyInformationSettingsView: View {
+    let patientID: String
+
     var body: some View {
         List {
-            Section(L10n("Privacy & Data")) {
-                Text(L10n("Stored data"))
-                Text(L10n("Permissions"))
-                Text(L10n("Storage status"))
-                Text(L10n("Backup status"))
+            Section {
+                Text(L10n("study.info.intro"))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Section {
+                ForEach(StudyInformationTopic.allCases) { topic in
+                    NavigationLink {
+                        if topic == .contact {
+                            StudyContactSettingsView(patientID: patientID)
+                        } else {
+                            StudyInformationTopicView(topic: topic)
+                        }
+                    } label: {
+                        Label {
+                            Text(L10n(topic.titleKey))
+                                .fixedSize(horizontal: false, vertical: true)
+                        } icon: {
+                            Image(systemName: topic.icon).foregroundStyle(.teal)
+                        }
+                        .padding(.vertical, 5)
+                    }
+                    .accessibilityIdentifier("studyTopic_\(topic.rawValue)")
+                }
             }
         }
-        .navigationTitle(L10n("Privacy & Data"))
+        .navigationTitle(L10n("study.info.title"))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private struct StudyInformationTopicView: View {
+    let topic: StudyInformationTopic
+
+    var body: some View {
+        List {
+            ForEach(topic.sections) { content in
+                Section {
+                    ForEach(content.paragraphKeys, id: \.self) { key in
+                        Text(L10n(key))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                            .padding(.vertical, 4)
+                            .accessibilityIdentifier(key)
+                    }
+                } header: {
+                    if let heading = content.headingKey {
+                        Text(L10n(heading))
+                            .textCase(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.isHeader)
+                    }
+                }
+            }
+            if topic == .privacy {
+                Section {
+                    Text(L10n("study.privacy.version"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("studyPrivacyVersion")
+                }
+            }
+        }
+        .navigationTitle(L10n(topic.titleKey))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private struct StudyContactSettingsView: View {
+    let patientID: String
+
+    private var emailURL: URL? {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = "vcr@uke.de"
+        let subject = L10n("study.contact.emailSubject")
+        components.queryItems = [URLQueryItem(name: "subject", value: patientID.isEmpty ? subject : "\(subject) - ID \(patientID)")]
+        return components.url
+    }
+
+    var body: some View {
+        List {
+            Section {
+                ICNSContactDetails(emailURL: emailURL)
+            }
+        }
+        .navigationTitle(L10n("study.contact.title"))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private struct ICNSContactDetails: View {
+    let emailURL: URL?
+
+    var body: some View {
+        Text("ICNS")
+        Text(L10n("support.institutionAddress"))
+            .fixedSize(horizontal: false, vertical: true)
+            .textSelection(.enabled)
+            .accessibilityIdentifier("supportInstitutionAddress")
+        Link("015221500869", destination: URL(string: "tel:015221500869")!)
+            .accessibilityIdentifier("supportPhone")
+        if let emailURL {
+            Link(L10n("Send Email to vcr@uke.de"), destination: emailURL)
+                .accessibilityIdentifier("supportEmail")
+        }
     }
 }
 
@@ -1261,12 +1487,7 @@ struct SupportSettingsView: View {
                 Text(L10n("If the steps above did not solve the issue, contact ICNS support."))
                     .foregroundStyle(.secondary)
 
-                Text("ICNS")
-                Link("015221500869", destination: URL(string: "tel:015221500869")!)
-
-                if let supportEmailURL {
-                    Link(L10n("Send Email to vcr@uke.de"), destination: supportEmailURL)
-                }
+                ICNSContactDetails(emailURL: supportEmailURL)
             }
         }
         .navigationTitle(L10n("Troubleshooting"))

@@ -334,7 +334,8 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
         let clipped = isClipped(observation)
         updateClipped(clipped, at: time)
 
-        guard let value = scalar(from: observation),
+        guard let image = CMSampleBufferGetImageBuffer(sampleBuffer),
+              let value = scalar(from: observation, imageAspectRatio: Double(CVPixelBufferGetWidth(image)) / Double(CVPixelBufferGetHeight(image))),
               let wrist = try? observation.recognizedPoint(.wrist),
               let mcp   = try? observation.recognizedPoint(.middleMCP)
         else {
@@ -393,39 +394,25 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
 
     // MARK: - Scalar extraction
 
-    /// Reduces one hand pose to the task's 1-D signal, normalized by hand
-    /// size (wrist ↔ middle-finger MCP) so camera distance cancels out.
-    /// Uses a one-time calibration if available, otherwise the live frame value.
-    private func scalar(from observation: VNHumanHandPoseObservation) -> Double? {
+    private func scalar(from observation: VNHumanHandPoseObservation, imageAspectRatio: Double) -> Double? {
         guard let wrist = point(observation, .wrist),
               let middleMCP = point(observation, .middleMCP) else { return nil }
-        let liveScale = distance(wrist, middleMCP)
-        let handScale = HandCalibrationStore.shared.isCalibrated
-            ? HandCalibrationStore.shared.scale
-            : liveScale
-        guard handScale > 0.005 else { return nil }   // degenerate / hand too small/edge-on
-
+        let tips: [CGPoint]
         switch taskType {
         case .fingerTap:
             guard let thumbTip = point(observation, .thumbTip),
                   let indexTip = point(observation, .indexTip) else { return nil }
-            return distance(thumbTip, indexTip) / handScale
+            tips = [thumbTip, indexTip]
 
         case .handOpenClose:
-            let tips: [VNHumanHandPoseObservation.JointName] =
+            let names: [VNHumanHandPoseObservation.JointName] =
                 [.thumbTip, .indexTip, .middleTip, .ringTip, .littleTip]
-            let palmCenter = CGPoint(x: (wrist.x + middleMCP.x) / 2,
-                                     y: (wrist.y + middleMCP.y) / 2)
-            let distances = tips.compactMap { name -> Double? in
-                guard let p = point(observation, name) else { return nil }
-                return distance(p, palmCenter)
-            }
-            guard distances.count >= 3 else { return nil }   // tolerate occluded fingers
-            return distances.reduce(0, +) / Double(distances.count) / handScale
-
+            tips = names.compactMap { point(observation, $0) }
         case .pronationSupination:
             return nil   // 3.6 is a Watch task (Task C), not camera-based
         }
+        return CameraMovementSignal.value(task: taskType, wrist: wrist, middleMCP: middleMCP,
+                                          fingertips: tips, imageAspectRatio: imageAspectRatio)
     }
 
     private func point(_ observation: VNHumanHandPoseObservation,

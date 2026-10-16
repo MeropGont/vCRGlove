@@ -36,6 +36,7 @@ final class TrialRecorder: ObservableObject {
     private let side: BodySide
     private let source: SignalSource
     private let stopCondition: StopCondition
+    private let measurementVersion: String?
     private let analyzer = MovementAnalyzer()
     private var latestSampleElapsed: Double = 0
 
@@ -66,11 +67,13 @@ final class TrialRecorder: ObservableObject {
     init(taskType: MovementTaskType,
          side: BodySide,
          source: SignalSource,
-         stopCondition: StopCondition) {
+         stopCondition: StopCondition,
+         measurementVersion: String? = nil) {
         self.taskType = taskType
         self.side = side
         self.source = source
         self.stopCondition = stopCondition
+        self.measurementVersion = measurementVersion
     }
 
     // MARK: - Lifecycle
@@ -232,7 +235,8 @@ final class TrialRecorder: ObservableObject {
                 startUptime:   snapshotUptime,
                 samples:       snapshotBuffer,
                 metrics:       metrics,
-                recordedDurationSeconds: snapshotDuration
+                recordedDurationSeconds: snapshotDuration,
+                measurementVersion: self.measurementVersion
             )
 
             print("[PERF] analyzed \(snapshotBuffer.count) samples in \(String(format: "%.3f", analysisElapsed)) s")

@@ -13,7 +13,7 @@
 import Foundation
 
 /// Only accepted videos live here. The directory is neither temporary nor exposed by Files sharing.
-final class MovementVideoStore {
+final class MovementVideoStore: Sendable {
     static let shared = MovementVideoStore()
     private let directory: URL?
 
@@ -90,6 +90,22 @@ final class MovementVideoStore {
                 throw VideoError.unavailable
             }
             return file
+        }
+    }
+
+    func copyExportSnapshot(to destination: URL) throws {
+        let directory = try root()
+        let files: [URL]
+        do { files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) }
+        catch CocoaError.fileReadNoSuchFile { return }
+        for file in files {
+            // Include orphaned accepted movies too, but never follow arbitrary paths or symbolic links.
+            guard file.pathExtension == "mov", UUID(uuidString: file.deletingPathExtension().lastPathComponent) != nil else {
+                throw VideoError.invalidReference
+            }
+            guard try FullDataExporter.copyFile(file, to: destination.appendingPathComponent(file.lastPathComponent)) else {
+                throw VideoError.unavailable
+            }
         }
     }
 }
@@ -184,6 +200,21 @@ final class TaskSessionStore: ObservableObject {
     }
 
     // MARK: - Write
+
+    func copyExportSnapshot(to destination: URL) async throws -> [String] {
+        let source = try fileURL()
+        let videos = videoStore
+        return try await withCheckedThrowingContinuation { continuation in
+            ioQueue.async {
+                do {
+                    let path = "tasks/sessions.jsonl"
+                    let exists = try FullDataExporter.copyFile(source, to: destination.appendingPathComponent(path))
+                    try videos.copyExportSnapshot(to: destination.appendingPathComponent("tasks/videos", isDirectory: true))
+                    continuation.resume(returning: exists ? [] : [path])
+                } catch { continuation.resume(throwing: error) }
+            }
+        }
+    }
 
     /// Commit the movie before the JSONL reference. Roll back a new movie on failure,
     /// but keep the temporary source so the patient can retry without re-recording.

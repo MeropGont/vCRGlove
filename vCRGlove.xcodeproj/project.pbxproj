@@ -25,7 +25,9 @@
 		A92985802FBB473200B0F0FB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929856D2FBB473200B0F0FB /* SettingsView.swift */; };
 		A92985812FBB473200B0F0FB /* SymptomEpisodeLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929856E2FBB473200B0F0FB /* SymptomEpisodeLogView.swift */; };
 		A92985822FBB473200B0F0FB /* vCRGloveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985702FBB473200B0F0FB /* vCRGloveApp.swift */; };
-		A92985832FBB473200B0F0FB /* VCRView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985712FBB473200B0F0FB /* VCRView.swift */; };
+		A92985832FBB473200B0F0FB /* ResearchTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985712FBB473200B0F0FB /* ResearchTools.swift */; };
+		D01500000000000000000001 /* StimulationProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01500000000000000000002 /* StimulationProfile.swift */; };
+		D01500000000000000000003 /* FullDataExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01500000000000000000004 /* FullDataExporter.swift */; };
 		A92985842FBB473200B0F0FB /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = A929855D2FBB473200B0F0FB /* .gitignore */; };
 		A92985852FBB473200B0F0FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A929855E2FBB473200B0F0FB /* Assets.xcassets */; };
 		A92985892FBB473800B0F0FB /* vCRGloveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92985872FBB473800B0F0FB /* vCRGloveTests.swift */; };
@@ -138,7 +140,9 @@
 		A929856E2FBB473200B0F0FB /* SymptomEpisodeLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SymptomEpisodeLogView.swift; sourceTree = "<group>"; };
 		A929856F2FBB473200B0F0FB /* vCRGlove.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = vCRGlove.entitlements; sourceTree = "<group>"; };
 		A92985702FBB473200B0F0FB /* vCRGloveApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveApp.swift; sourceTree = "<group>"; };
-		A92985712FBB473200B0F0FB /* VCRView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VCRView.swift; sourceTree = "<group>"; };
+		A92985712FBB473200B0F0FB /* ResearchTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResearchTools.swift; sourceTree = "<group>"; };
+		D01500000000000000000002 /* StimulationProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StimulationProfile.swift; sourceTree = "<group>"; };
+		D01500000000000000000004 /* FullDataExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullDataExporter.swift; sourceTree = "<group>"; };
 		A92985872FBB473800B0F0FB /* vCRGloveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveTests.swift; sourceTree = "<group>"; };
 		A929858A2FBB473C00B0F0FB /* vCRGloveUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveUITests.swift; sourceTree = "<group>"; };
 		A929858B2FBB473C00B0F0FB /* vCRGloveUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vCRGloveUITestsLaunchTests.swift; sourceTree = "<group>"; };
@@ -266,7 +270,9 @@
 				A9A51D2C303C656B00E69380 /* TrialRecorder.swift */,
 				A929856F2FBB473200B0F0FB /* vCRGlove.entitlements */,
 				A92985702FBB473200B0F0FB /* vCRGloveApp.swift */,
-				A92985712FBB473200B0F0FB /* VCRView.swift */,
+				A92985712FBB473200B0F0FB /* ResearchTools.swift */,
+				D01500000000000000000002 /* StimulationProfile.swift */,
+				D01500000000000000000004 /* FullDataExporter.swift */,
 				A9A51D2D303C656B00E69380 /* VisionHandPoseCapture.swift */,
 				A9A51D2E303C656B00E69380 /* WatchMotionCapture.swift */,
 			);
@@ -659,7 +665,9 @@
 				A92985802FBB473200B0F0FB /* SettingsView.swift in Sources */,
 				A92985812FBB473200B0F0FB /* SymptomEpisodeLogView.swift in Sources */,
 				A92985822FBB473200B0F0FB /* vCRGloveApp.swift in Sources */,
-				A92985832FBB473200B0F0FB /* VCRView.swift in Sources */,
+				A92985832FBB473200B0F0FB /* ResearchTools.swift in Sources */,
+				D01500000000000000000001 /* StimulationProfile.swift in Sources */,
+				D01500000000000000000003 /* FullDataExporter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

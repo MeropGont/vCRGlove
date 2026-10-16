@@ -23,6 +23,456 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
+    func testResearchFullDataShareEnglishGerman() throws {
+        for (language, size) in [("en", "standard"), ("de", "extraLarge")] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                "--ui-test-journal", UUID().uuidString, "--ui-test-stimulation-profile", UUID().uuidString,
+                "-appLanguage", language, "-appFontSize", size]
+            app.launch()
+            app.tabBars.buttons[language == "de" ? "Einstellungen" : "Settings"].tap()
+            XCTAssertFalse(app.buttons["researchShareAllData"].exists)
+            let entry = app.buttons["researchUnlockEntry"]
+            for _ in 0..<6 where !entry.isHittable { app.swipeUp() }
+            XCTAssertTrue(entry.isHittable)
+            entry.tap()
+            app.secureTextFields["researchPassword"].tap()
+            app.secureTextFields["researchPassword"].typeText("vcr2026")
+            app.buttons["researchUnlockConfirm"].tap()
+            let tools = app.buttons["researchTools"]
+            XCTAssertTrue(tools.waitForExistence(timeout: 5))
+            for _ in 0..<4 where !tools.isHittable { app.swipeUp() }
+            tools.tap()
+            let export = app.buttons["researchShareAllData"]
+            XCTAssertTrue(export.waitForExistence(timeout: 5))
+            XCTAssertTrue(export.isHittable)
+            let page = XCTAttachment(screenshot: app.screenshot())
+            page.name = "Full device data export \(language) \(size)"
+            page.lifetime = .keepAlways
+            add(page)
+            export.tap()
+            let sheet = app.otherElements["ActivityListView"]
+            XCTAssertTrue(sheet.waitForExistence(timeout: 30))
+            let share = XCTAttachment(screenshot: app.screenshot())
+            share.name = "Full data ZIP share sheet \(language)"
+            share.lifetime = .keepAlways
+            add(share)
+            let close = app.buttons["header.closeButton"]
+            XCTAssertTrue(close.waitForExistence(timeout: 5))
+            close.tap()
+            XCTAssertTrue(export.waitForExistence(timeout: 5))
+            XCTAssertTrue(export.isEnabled)
+            export.tap()
+            XCTAssertTrue(sheet.waitForExistence(timeout: 30))
+            close.tap()
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testResearchControlsShareVCRPersistAndRelockEnglishGerman() throws {
+        for (language, size) in [("en", "standard"), ("de", "extraLarge")] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                "--ui-test-stimulation-profile", UUID().uuidString,
+                "-appLanguage", language, "-appFontSize", size, "-showResearchTab", "YES"]
+            app.launch()
+            XCTAssertEqual(app.tabBars.buttons.count, 4)
+            XCTAssertFalse(app.buttons["researchParameters"].exists)
+            app.tabBars.buttons[german ? "Einstellungen" : "Settings"].tap()
+            let entry = app.buttons["researchUnlockEntry"]
+            revealSettingsControl(entry, in: app)
+            XCTAssertGreaterThan(entry.frame.minY, app.buttons["settingsSupport"].frame.minY)
+            entry.tap()
+            app.secureTextFields["researchPassword"].tap()
+            app.secureTextFields["researchPassword"].typeText("wrong")
+            app.buttons["researchUnlockConfirm"].tap()
+            XCTAssertTrue(app.staticTexts["researchPasswordError"].exists)
+            app.secureTextFields["researchPassword"].tap()
+            app.secureTextFields["researchPassword"].typeText("vcr2026")
+            app.buttons["researchUnlockConfirm"].tap()
+            XCTAssertTrue(app.buttons["researchTools"].waitForExistence(timeout: 5))
+            XCTAssertEqual(app.tabBars.buttons.count, 4)
+            app.tabBars.buttons["vCR"].tap()
+            let disclosure = app.buttons["researchParameters"].firstMatch
+            revealSettingsControl(disclosure, in: app)
+            disclosure.tap()
+            let left = app.sliders["researchAmplitudeLeft"]
+            revealSettingsControl(left, in: app)
+            left.adjust(toNormalizedSliderPosition: 0.3)
+            let right = app.sliders["researchAmplitudeRight"]
+            revealSettingsControl(right, in: app)
+            right.adjust(toNormalizedSliderPosition: 0.6)
+            let leftValue = left.value as? String
+            let rightValue = right.value as? String
+            XCTAssertNotEqual(leftValue, rightValue)
+            let frequency = app.steppers["researchFrequency"]
+            let increase = frequency.buttons.element(boundBy: 1)
+            revealSettingsControl(increase, in: app)
+            increase.tap()
+            let pattern = app.buttons["researchPattern"]
+            revealSettingsControl(pattern, in: app)
+            pattern.tap()
+            app.buttons[german ? "Alle Finger gleichzeitig" : "All fingers together"].tap()
+            let save = app.buttons["researchSaveParameters"]
+            revealSettingsControl(save, in: app)
+            XCTAssertTrue(save.isEnabled)
+            let editorShot = XCTAttachment(screenshot: app.screenshot())
+            editorShot.name = "Shared vCR researcher controls \(language) \(size)"
+            editorShot.lifetime = .keepAlways
+            add(editorShot)
+            save.tap()
+            XCTAssertTrue(app.staticTexts["researchSaveMessage"].waitForExistence(timeout: 5))
+
+            app.terminate()
+            app.launch()
+            XCTAssertEqual(app.tabBars.buttons.count, 4)
+            XCTAssertFalse(app.buttons["researchParameters"].exists)
+            app.tabBars.buttons[german ? "Einstellungen" : "Settings"].tap()
+            revealSettingsControl(entry, in: app)
+            entry.tap()
+            app.secureTextFields["researchPassword"].tap()
+            app.secureTextFields["researchPassword"].typeText("vcr2026")
+            app.buttons["researchUnlockConfirm"].tap()
+            app.tabBars.buttons["vCR"].tap()
+            revealSettingsControl(disclosure, in: app)
+            disclosure.tap()
+            revealSettingsControl(left, in: app)
+            XCTAssertEqual(left.value as? String, leftValue)
+            revealSettingsControl(right, in: app)
+            XCTAssertEqual(right.value as? String, rightValue)
+            revealSettingsControl(pattern, in: app)
+            XCTAssertTrue(pattern.label.contains(german ? "Alle Finger gleichzeitig" : "All fingers together"))
+            app.tabBars.buttons[german ? "Einstellungen" : "Settings"].tap()
+            let lock = app.buttons["researchLock"]
+            revealSettingsControl(lock, in: app)
+            lock.tap()
+            app.tabBars.buttons["vCR"].tap()
+            XCTAssertFalse(app.sliders["researchAmplitudeLeft"].exists)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testResearchPatternMenuWrapsAndSelectsEnglishGermanLargeText() throws {
+        for (language, size) in [("en", "standard"), ("de", "extraLarge")] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                "--ui-test-stimulation-profile", UUID().uuidString,
+                "-appLanguage", language, "-appFontSize", size]
+            app.launch()
+            app.tabBars.buttons[german ? "Einstellungen" : "Settings"].tap()
+            let entry = app.buttons["researchUnlockEntry"]
+            revealSettingsControl(entry, in: app)
+            entry.tap()
+            app.secureTextFields["researchPassword"].tap()
+            app.secureTextFields["researchPassword"].typeText("vcr2026")
+            app.buttons["researchUnlockConfirm"].tap()
+            app.tabBars.buttons["vCR"].tap()
+            let controls = app.buttons["researchParameters"]
+            revealSettingsControl(controls, in: app)
+            controls.tap()
+            let pattern = app.buttons["researchPattern"]
+            revealSettingsControl(pattern, in: app)
+            pattern.tap()
+            let choice = german ? "Alle Finger gleichzeitig" : "All fingers together"
+            app.buttons[choice].tap()
+            XCTAssertTrue(pattern.label.contains(choice))
+            if german { XCTAssertGreaterThan(pattern.frame.height, 80) }
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Wrapping pattern menu \(language) \(size)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            let save = app.buttons["researchSaveParameters"]
+            revealSettingsControl(save, in: app)
+            XCTAssertTrue(save.isEnabled)
+            save.tap()
+            XCTAssertTrue(app.staticTexts["researchSaveMessage"].exists)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testGeneralSettingsGroupsLanguageAndTextSizeEnglishGerman() throws {
+        for language in ["en", "de"] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                "--ui-test-stimulation-profile", UUID().uuidString,
+                "-appLanguage", language, "-appFontSize", "standard"]
+            app.launch()
+            app.tabBars.buttons[german ? "Einstellungen" : "Settings"].tap()
+            let general = app.buttons["settingsGeneral"]
+            XCTAssertTrue(general.waitForExistence(timeout: 5))
+            XCTAssertGreaterThan(general.frame.minY, app.buttons["settingsProfile"].frame.minY)
+            XCTAssertLessThan(general.frame.minY, app.buttons["settingsInstructions"].frame.minY)
+            XCTAssertFalse(app.navigationBars.buttons[german ? "Sprache" : "Language"].exists)
+            app.buttons["settingsProfile"].tap()
+            XCTAssertFalse(app.staticTexts["Patient"].exists)
+            XCTAssertTrue(app.staticTexts["ID"].exists)
+            XCTAssertFalse(app.segmentedControls["settingsLanguagePicker"].exists)
+            XCTAssertFalse(app.buttons[german ? "Extra groß" : "Extra Large"].exists)
+            XCTAssertFalse(app.staticTexts[german ? "Avatar-Auswahl folgt." : "Avatar selection will go here."].exists)
+            XCTAssertFalse(app.staticTexts[german ? "ID und Symbol" : "ID and icon"].exists)
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            general.tap()
+            XCTAssertTrue(app.navigationBars[german ? "Allgemein" : "General"].exists)
+            XCTAssertTrue(app.segmentedControls["settingsLanguagePicker"].exists)
+
+            let sizes = german ? ["Klein", "Standard", "Groß", "Extra groß"]
+                : ["Small", "Standard", "Large", "Extra Large"]
+            for size in sizes {
+                let choice = app.buttons[size]
+                XCTAssertTrue(choice.waitForExistence(timeout: 3), app.debugDescription)
+                revealSettingsControl(choice, in: app)
+                choice.tap()
+                XCTAssertTrue(choice.isSelected)
+            }
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "General settings largest text \(language)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+
+            app.terminate()
+            // Launch arguments must not override the preference being checked.
+            app.launchArguments.removeLast(2)
+            app.launch()
+            app.tabBars.buttons[german ? "Einstellungen" : "Settings"].tap()
+            general.tap()
+            let extraLarge = app.buttons[sizes.last!]
+            revealSettingsControl(extraLarge, in: app)
+            XCTAssertTrue(extraLarge.isSelected)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testLanguageSwitchStaysInGeneralEnglishGermanLargeText() throws {
+        for size in ["standard", "extraLarge"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                "--ui-test-stimulation-profile", UUID().uuidString,
+                "-appLanguage", "en", "-appFontSize", size]
+            app.launch()
+            app.tabBars.buttons["Settings"].tap()
+            app.buttons["settingsGeneral"].tap()
+
+            for (choice, tab, title) in [("Deutsch", "Einstellungen", "Allgemein"),
+                                          ("English", "Settings", "General"),
+                                          ("Deutsch", "Einstellungen", "Allgemein")] {
+                let language = app.buttons[choice]
+                XCTAssertTrue(language.waitForExistence(timeout: 5))
+                language.tap()
+                XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5))
+                XCTAssertTrue(app.tabBars.buttons[tab].isSelected)
+                XCTAssertTrue(app.segmentedControls["settingsLanguagePicker"].exists)
+                XCTAssertTrue(app.buttons[choice].isSelected)
+                XCTAssertEqual(app.tabBars.buttons.count, 4)
+            }
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Language switch retains General \(size)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            XCTAssertTrue(app.buttons["settingsGeneral"].waitForExistence(timeout: 5))
+            app.buttons["settingsProfile"].tap()
+            XCTAssertTrue(app.staticTexts["ID"].exists)
+            XCTAssertFalse(app.staticTexts["Avatar-Auswahl folgt."].exists)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testLanguageChangeRetainsSharedResearchController() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+            "--ui-test-stimulation-profile", UUID().uuidString,
+            "-appLanguage", "en", "-appFontSize", "standard"]
+        app.launch()
+        app.tabBars.buttons["Settings"].tap()
+        let entry = app.buttons["researchUnlockEntry"]
+        revealSettingsControl(entry, in: app)
+        entry.tap()
+        app.secureTextFields["researchPassword"].tap()
+        app.secureTextFields["researchPassword"].typeText("vcr2026")
+        app.buttons["researchUnlockConfirm"].tap()
+        let general = app.buttons["settingsGeneral"]
+        app.swipeDown()
+        for _ in 0..<3 where !general.isHittable { app.swipeDown() }
+        XCTAssertTrue(general.isHittable)
+        general.tap()
+        app.buttons["Deutsch"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Einstellungen"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.tabBars.buttons["Einstellungen"].isSelected)
+        XCTAssertTrue(app.navigationBars["Allgemein"].exists)
+        XCTAssertEqual(app.tabBars.buttons.count, 4)
+        app.tabBars.buttons["vCR"].tap()
+        let controls = app.buttons["researchParameters"]
+        revealSettingsControl(controls, in: app)
+        XCTAssertTrue(controls.exists)
+        app.tabBars.buttons["Einstellungen"].tap()
+        XCTAssertTrue(app.navigationBars["Allgemein"].exists)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let lock = app.buttons["researchLock"]
+        revealSettingsControl(lock, in: app)
+        lock.tap()
+        app.terminate()
+        if let languageArgument = app.launchArguments.firstIndex(of: "-appLanguage") {
+            app.launchArguments.removeSubrange(languageArgument...(languageArgument + 1))
+        }
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Einstellungen"].waitForExistence(timeout: 5))
+        app.terminate()
+    }
+
+    @MainActor
+    func testStudyInformationAndSupportEnglishGermanLargeText() throws {
+        for (language, size) in [("en", "standard"), ("de", "extraLarge")] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                "-appLanguage", language, "-appFontSize", size, "-showResearchTab", "NO"]
+            app.launch()
+            app.tabBars.buttons[german ? "Einstellungen" : "Settings"].tap()
+            XCTAssertFalse(app.staticTexts[german ? "Datenschutz & Daten" : "Privacy & Data"].exists)
+            if !german {
+                let order = ["settingsProfile", "settingsGeneral", "settingsInstructions", "settingsVCR",
+                    "settingsReminders", "settingsData", "settingsStudyInformation"]
+                var previousBottom: CGFloat = 0
+                for identifier in order {
+                    let row = app.buttons[identifier]
+                    XCTAssertTrue(row.exists)
+                    XCTAssertGreaterThanOrEqual(row.frame.minY, previousBottom - 0.5)
+                    previousBottom = row.frame.maxY
+                }
+                let settingsShot = XCTAttachment(screenshot: app.screenshot())
+                settingsShot.name = "Primary Settings order"
+                settingsShot.lifetime = .keepAlways
+                add(settingsShot)
+            }
+            let info = app.buttons["settingsStudyInformation"]
+            revealSettingsControl(info, in: app)
+            info.tap()
+            XCTAssertTrue(app.buttons["studyTopic_study"].waitForExistence(timeout: 5))
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Study information index \(language) \(size)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            let titles = german
+                ? ["Die Studie", "Ihre Teilnahme", "Geräte und App", "Sicherheit und freiwillige Teilnahme", "Datenschutz", "Kontakt"]
+                : ["The study", "Your participation", "Devices and app", "Safety and voluntary participation", "Data protection", "Contact"]
+            for (index, topic) in ["study", "participation", "devices", "safety", "privacy", "contact"].enumerated() {
+                let row = app.buttons["studyTopic_\(topic)"]
+                revealSettingsControl(row, in: app)
+                XCTAssertTrue(row.label.contains(titles[index]))
+                row.tap()
+                XCTAssertTrue(app.navigationBars[titles[index]].waitForExistence(timeout: 5))
+                XCTAssertEqual(app.switches.count, 0)
+                XCTAssertFalse(app.alerts.firstMatch.exists)
+                if topic == "privacy" {
+                    XCTAssertTrue(app.staticTexts["study.privacy.confidentiality"].exists)
+                    let beginning = XCTAttachment(screenshot: app.screenshot())
+                    beginning.name = "Privacy notice start \(language) \(size)"
+                    beginning.lifetime = .keepAlways
+                    add(beginning)
+                    let version = app.staticTexts["studyPrivacyVersion"]
+                    let scroll = app.collectionViews.firstMatch
+                    for _ in 0..<80 {
+                        if version.exists && version.isHittable && version.frame.maxY < app.tabBars.firstMatch.frame.minY { break }
+                        scroll.swipeUp(velocity: .fast)
+                    }
+                    XCTAssertTrue(version.isHittable)
+                    XCTAssertLessThan(version.frame.maxY, app.tabBars.firstMatch.frame.minY)
+                    XCTAssertEqual(version.label, german ? "Version 02 vom 14.04.2026" : "Version 02 dated 14 April 2026")
+                    let end = XCTAttachment(screenshot: app.screenshot())
+                    end.name = "Privacy notice end \(language) \(size)"
+                    end.lifetime = .keepAlways
+                    add(end)
+                } else {
+                    XCTAssertFalse(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Claus")).firstMatch.exists)
+                    if topic == "devices" {
+                        let capture = app.staticTexts["privacy.app.videoCapture"]
+                        revealSettingsControl(capture, in: app, fullyVisible: false)
+                        XCTAssertFalse(capture.label.hasPrefix("privacy."))
+                        let deletion = app.staticTexts["privacy.app.videoDeletion"]
+                        revealSettingsControl(deletion, in: app)
+                        XCTAssertFalse(deletion.label.hasPrefix("privacy."))
+                        let storageShot = XCTAttachment(screenshot: app.screenshot())
+                        storageShot.name = "App video information \(language) \(size)"
+                        storageShot.lifetime = .keepAlways
+                        add(storageShot)
+                    }
+                    if topic == "contact" {
+                        XCTAssertFalse(app.staticTexts[german ? "Was funktioniert nicht?" : "What is not working?"].exists)
+                        XCTAssertFalse(app.staticTexts[german ? "Brauchen Sie weiterhin Hilfe?" : "Still Need Help?"].exists)
+                        XCTAssertEqual(app.pickers.count, 0)
+                        let address = app.staticTexts["supportInstitutionAddress"]
+                        revealSettingsControl(address, in: app, fullyVisible: !german)
+                        XCTAssertTrue(address.label.contains("W36"))
+                        XCTAssertTrue(address.label.contains("Martinistraße 52"))
+                        XCTAssertTrue(address.label.contains("20246 Hamburg"))
+                        XCTAssertFalse(address.label.contains("Hilgetag"))
+                        let supportShot = XCTAttachment(screenshot: app.screenshot())
+                        supportShot.name = "Institutional support address \(language) \(size)"
+                        supportShot.lifetime = .keepAlways
+                        add(supportShot)
+                        for identifier in ["supportPhone", "supportEmail"] {
+                            let link = app.descendants(matching: .any)[identifier].firstMatch
+                            revealSettingsControl(link, in: app)
+                            XCTAssertTrue(link.isHittable)
+                        }
+                    }
+                }
+                app.navigationBars.buttons.element(boundBy: 0).tap()
+            }
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            XCTAssertFalse(app.staticTexts[german ? "Datenschutz & Daten" : "Privacy & Data"].exists)
+            XCTAssertFalse(app.tabBars.buttons[german ? "Forschung" : "Research"].exists)
+            if !german {
+                let help = app.staticTexts["Need Help?"]
+                revealSettingsControl(help, in: app)
+                help.tap()
+                XCTAssertTrue(app.navigationBars["Troubleshooting"].waitForExistence(timeout: 5))
+                XCTAssertTrue(app.staticTexts["What is not working?"].exists)
+                let phone = app.descendants(matching: .any)["supportPhone"].firstMatch
+                revealSettingsControl(phone, in: app)
+                XCTAssertTrue(phone.isHittable)
+            }
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    private func revealSettingsControl(_ element: XCUIElement, in app: XCUIApplication, fullyVisible: Bool = true) {
+        let navigation = app.navigationBars.firstMatch
+        let top = navigation.exists ? navigation.frame.maxY + 8 : app.frame.minY + 64
+        let bottom = app.tabBars.firstMatch.frame.minY - 8
+        let height = bottom - top
+        let origin = app.coordinate(withNormalizedOffset: .zero)
+        let dragX = navigation.exists ? app.frame.midX : app.frame.maxX - 6
+        for _ in 0..<(navigation.exists ? 40 : 15) {
+            let exists = element.exists
+            let frame = exists ? element.frame : .zero
+            if exists && element.isHittable && (!fullyVisible || (frame.minY >= top - 0.5 && frame.maxY <= bottom + 0.5)) { break }
+            let down = frame.height > 0 && frame.minY < top
+            let required = frame.height == 0 ? height * 0.65 : down ? top - frame.minY + 12 : frame.maxY - bottom + 12
+            let distance = min(height * 0.65, max(20, required))
+            let y = down ? top + height * 0.2 : bottom - height * 0.15
+            origin.withOffset(CGVector(dx: dragX, dy: y)).press(forDuration: 0.01,
+                thenDragTo: origin.withOffset(CGVector(dx: dragX, dy: y + (down ? distance : -distance))),
+                withVelocity: exists ? .slow : .fast, thenHoldForDuration: 0.1)
+        }
+        XCTAssertTrue(element.isHittable)
+        if fullyVisible {
+            XCTAssertGreaterThanOrEqual(element.frame.minY, top - 0.5)
+            XCTAssertLessThanOrEqual(element.frame.maxY, bottom + 0.5)
+        }
+    }
+
+    @MainActor
     func testExample() throws {
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
@@ -38,20 +488,34 @@ final class vCRGloveUITests: XCTestCase {
         let timer = app.staticTexts["movementRecordingTimer"]
         let record = app.buttons["movementStartRecording"]
         let summaryDone = app.buttons["movementSummaryDone"]
-        let bottom = next.exists ? next.frame.minY - 12
+        let journalSave = app.buttons["journalSaveCheckIn"]
+        let journalEventSave = app.buttons.matching(NSPredicate(format: "identifier IN %@",
+            ["journalSaveMedication", "journalSaveSymptom", "journalSaveNote"])).firstMatch
+        let symptomRequirement = app.staticTexts.matching(NSPredicate(format: "label IN %@", [
+            "Select at least one symptom and its intensity.", "Select at least one symptom.",
+            "Select the symptom intensity.", "Wählen Sie mindestens ein Symptom und dessen Stärke aus.",
+            "Wählen Sie mindestens ein Symptom aus.", "Wählen Sie die Stärke des Symptoms aus."
+        ])).firstMatch
+        let footerBottom = next.exists ? next.frame.minY - 12
             : save.exists ? save.frame.minY - 8
             : timer.exists ? timer.frame.minY - 8
             : summaryDone.exists ? summaryDone.frame.minY - 8
-            : record.exists && element.elementType != .button
+            : journalEventSave.exists ? journalEventSave.frame.minY - 24
+            : journalSave.exists ? journalSave.frame.minY - 24
+            : record.exists && !["movementStartRecording", "movementSkipMeasurement", "movementFinishForNow"].contains(element.identifier)
                 ? record.frame.minY - 12 : app.tabBars.firstMatch.frame.minY
-        let top = app.navigationBars.firstMatch.exists ? app.navigationBars.firstMatch.frame.maxY + 8 : 0
+        let bottom = min(footerBottom, symptomRequirement.exists
+            ? symptomRequirement.frame.minY - 16 : CGFloat.greatestFiniteMagnitude)
+        let isJournal = journalSave.exists || journalEventSave.exists || app.buttons["journalOpenCheckIn"].exists
+        let topMargin: CGFloat = isJournal ? 0 : 8
+        let top = app.navigationBars.firstMatch.exists ? app.navigationBars.firstMatch.frame.maxY + topMargin : 0
         let scroll = app.collectionViews.firstMatch.exists
             ? app.collectionViews.firstMatch : app.scrollViews.firstMatch
-        let contentTop = max(top, scroll.frame.minY + 8)
+        let contentTop = max(top, scroll.frame.minY + topMargin)
         let contentHeight = bottom - contentTop
         let origin = app.coordinate(withNormalizedOffset: .zero)
         for _ in 0..<24 {
-            if element.isHittable && element.frame.maxY <= bottom && element.frame.minY >= contentTop { break }
+            if element.exists && element.isHittable && element.frame.maxY <= bottom && element.frame.minY >= contentTop { break }
             let frame = element.exists ? element.frame : .zero
             let downward = frame.height > 0 && frame.minY < contentTop
             let maximumDrag = contentHeight * 0.6
@@ -120,7 +584,8 @@ final class vCRGloveUITests: XCTestCase {
                 if step == 3 || step == 4 {
                     let clip = step == 3 ? "fist_left" : "fist_right"
                     let demo = app.descendants(matching: .any)["movementDemonstration-\(clip)"].firstMatch
-                    revealMovementControl(demo, in: app)
+                    XCTAssertTrue(demo.waitForExistence(timeout: 5))
+                    revealMovementControl(app.buttons["movementDemonstrationToggle"], in: app)
                     let handShot = XCTAttachment(screenshot: app.screenshot())
                     handShot.name = "Open close hand instruction step \(step) \(language)"
                     handShot.lifetime = .keepAlways
@@ -128,6 +593,13 @@ final class vCRGloveUITests: XCTestCase {
                 }
                 let skip = app.buttons["movementSkipMeasurement"]
                 revealMovementControl(skip, in: app)
+                XCTAssertTrue(skip.isEnabled)
+                XCTAssertGreaterThanOrEqual(skip.frame.height, 44)
+                XCTAssertEqual(skip.label, german ? "Diese Messung überspringen" : "Skip this measurement")
+                let skipShot = XCTAttachment(screenshot: app.screenshot())
+                skipShot.name = "Visible skip step \(step) \(language)"
+                skipShot.lifetime = .keepAlways
+                add(skipShot)
                 skip.tap()
             }
             XCTAssertTrue(app.staticTexts["movementSavedSummary"].waitForExistence(timeout: 5))
@@ -260,6 +732,111 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
+    func testDailyMovementTrendsSizeSelectionAndMoreDetails() throws {
+        try checkDailyMovementTrends(configurations: [("en", "standard"), ("de", "standard")])
+    }
+
+    @MainActor
+    func testDailyMovementTrendsGermanAccessibility() throws {
+        try checkDailyMovementTrends(configurations: [("de", "extraLarge")])
+    }
+
+    @MainActor
+    func testLegacyDurationTrendsAndMethodBoundaryExplanations() throws {
+        for language in ["en", "de"] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-trend-scenario", "legacy-duration", "-appLanguage", language,
+                                   "-appFontSize", german ? "extraLarge" : "standard"]
+            app.launch()
+            app.tabBars.buttons[german ? "Bewegung" : "Movement"].tap()
+            app.buttons["Trends"].tap()
+            let chart = app.descendants(matching: .any)["movementTrendChart"].firstMatch
+            XCTAssertTrue(chart.waitForExistence(timeout: 8))
+            let estimate = app.staticTexts["trendEstimatedDurations"]
+            revealMovementControl(estimate, in: app)
+            XCTAssertEqual(estimate.label, german ? "Dauer älterer Aufnahmen aus Signalzeitstempeln geschätzt."
+                                                : "Earlier durations estimated from signal timestamps.")
+            XCTAssertFalse(app.staticTexts["trendSingleMeasurement"].exists)
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Restored legacy trend \(language)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            let history = app.buttons["trendRecordingHistory"]
+            revealMovementControl(history, in: app)
+            history.tap()
+            let duration = app.staticTexts["trendInferredDuration"].firstMatch
+            revealMovementControl(duration, in: app)
+            XCTAssertTrue(duration.label.contains(german ? "geschätzt" : "estimated"))
+            app.terminate()
+
+            app.launchArguments = ["--ui-test-trend-scenario", "split-method", "-appLanguage", language,
+                                   "-appFontSize", german ? "extraLarge" : "standard"]
+            app.launch()
+            app.tabBars.buttons[german ? "Bewegung" : "Movement"].tap()
+            app.buttons["Trends"].tap()
+            let reason = app.staticTexts["trendSingleMeasurement"]
+            revealMovementControl(reason, in: app)
+            XCTAssertEqual(reason.label, german ? "Frühere und aktuelle Messverfahren bleiben getrennt."
+                                                : "Earlier and current measurement methods are kept separate.")
+            let separated = XCTAttachment(screenshot: app.screenshot())
+            separated.name = "Method boundary explanation \(language)"
+            separated.lifetime = .keepAlways
+            add(separated)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    private func checkDailyMovementTrends(configurations: [(String, String)]) throws {
+        for (language, fontSize) in configurations {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-trend-scenario", "daily", "-appLanguage", language, "-appFontSize", fontSize]
+            app.launch()
+            app.tabBars.buttons[german ? "Bewegung" : "Movement"].tap()
+            app.buttons["Trends"].tap()
+            let chart = app.descendants(matching: .any)["movementTrendChart"].firstMatch
+            XCTAssertTrue(chart.waitForExistence(timeout: 8))
+            let initial = XCTAttachment(screenshot: app.screenshot())
+            initial.name = "Daily rate trends \(language) \(fontSize)"
+            initial.lifetime = .keepAlways
+            add(initial)
+            let info = app.buttons["trendMetricInfo"]
+            revealMovementControl(info, in: app)
+            info.tap()
+            XCTAssertTrue(app.staticTexts["trendMetricExplanation"].waitForExistence(timeout: 5))
+            app.buttons["trendMetricInfoDone"].tap()
+            let picker = app.buttons["trendMetricPicker"]
+            revealMovementControl(picker, in: app)
+            picker.tap()
+            app.buttons[german ? "Bewegungsgröße" : "Movement size"].tap()
+            revealMovementControl(chart, in: app)
+            chart.coordinate(withNormalizedOffset: CGVector(dx: 0.24, dy: 0.5)).tap()
+            let dayLink = app.buttons["trendDayRecordings"]
+            revealMovementControl(dayLink, in: app)
+            XCTAssertTrue(dayLink.isHittable)
+            let selected = XCTAttachment(screenshot: app.screenshot())
+            selected.name = "Selected day summaries \(language) \(fontSize)"
+            selected.lifetime = .keepAlways
+            add(selected)
+            dayLink.tap()
+            XCTAssertTrue(app.navigationBars[german ? "Aufnahmen an diesem Tag" : "Recordings on this day"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.staticTexts["trendRecordingValue"].firstMatch.exists)
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            let details = app.buttons["trendMoreDetails"]
+            revealMovementControl(details, in: app)
+            details.tap()
+            let pauses = app.buttons[german ? "Pausen" : "Pauses"]
+            revealMovementControl(pauses, in: app)
+            pauses.tap()
+            XCTAssertTrue(app.navigationBars[german ? "Pausen" : "Pauses"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["trendMetricPicker"].exists)
+            app.terminate()
+        }
+    }
+
+    @MainActor
     func testMovementTrendStatesEnglish() throws {
         try checkMovementTrendStates(language: "en", fontSize: "standard")
     }
@@ -345,8 +922,8 @@ final class vCRGloveUITests: XCTestCase {
                 let hint = app.staticTexts["trendSingleMeasurement"]
                 for _ in 0..<8 where !hint.exists { app.collectionViews.firstMatch.swipeUp() }
                 XCTAssertTrue(hint.waitForExistence(timeout: 5))
-                XCTAssertEqual(hint.label, german ? "Für einen Verlauf sind weitere Messungen nötig."
-                                                  : "More measurements needed for a trend.")
+                XCTAssertEqual(hint.label, german ? "Aufnahmen mit nicht angegebenem oder früherem Stimulationszeitpunkt bleiben getrennt."
+                                                  : "Recordings with unspecified or historical stimulation timing stay separate.")
                 if scenario == "mixed" {
                     XCTAssertTrue(app.staticTexts[german ? "Aufnahmen ohne diesen Messwert: 1"
                                                          : "Results unavailable for this metric: 1"].exists)
@@ -438,15 +1015,14 @@ final class vCRGloveUITests: XCTestCase {
             }
             XCTAssertTrue(element.isHittable, "Not reachable: \(element)")
         }
-        func choose(_ id: String, _ label: String) {
+        func choose(_ id: String, _ label: String, upward: Bool = true) {
             let picker = app.buttons[id]
-            reveal(picker)
+            reveal(picker, upward: upward)
             picker.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
             app.buttons[label].tap()
         }
         let chart = app.descendants(matching: .any)["movementTrendChart"].firstMatch
         XCTAssertTrue(chart.waitForExistence(timeout: 5))
-        chart.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.5)).tap()
         choose("trendContextFilter", german ? "Vor der Stimulation" : "Before stimulation")
         func checkHistoryValue() {
             let history = app.buttons["trendRecordingHistory"]
@@ -474,7 +1050,8 @@ final class vCRGloveUITests: XCTestCase {
         XCTAssertTrue(app.steppers["trendDoseMinimum"].exists)
         checkHistoryValue()
         choose("trendMedicationFilter", german ? "Alle Medikamentenzeitpunkte" : "All medication timings")
-        choose("trendPeriodFilter", german ? "7 Tage" : "7 days")
+        // Large-text Form rows above the viewport may not exist in the AX tree yet.
+        choose("trendPeriodFilter", german ? "7 Tage" : "7 days", upward: false)
         reveal(empty, upward: false)
         choose("trendPeriodFilter", german ? "Alle Zeiträume" : "All dates")
         reveal(chart, upward: false)
@@ -1217,23 +1794,526 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
+    private func openJournalDay(in app: XCUIApplication, german: Bool) {
+        app.tabBars.buttons["Journal"].tap()
+    }
+
+    @MainActor
+    private func addJournalEvent(_ identifier: String, in app: XCUIApplication) {
+        let choice = app.buttons[identifier]
+        revealMovementControl(choice, in: app)
+        choice.tap()
+    }
+
+    @MainActor
+    private func viewJournalEntries(in app: XCUIApplication) {
+        let entries = app.buttons["journalViewEntries"]
+        revealMovementControl(entries, in: app)
+        entries.tap()
+    }
+
+    @MainActor
+    func testJournalMedicationAndSymptomEditsEnglishGerman() throws {
+        for language in ["en", "de"] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-journal", UUID().uuidString, "--ui-test-session-save", UUID().uuidString,
+                                   "-appLanguage", language, "-appFontSize", "standard", "-showResearchTab", "NO"]
+            app.launch()
+            XCTAssertEqual(app.tabBars.buttons.element(boundBy: 1).label, "Journal")
+            openJournalDay(in: app, german: german)
+            let home = XCTAttachment(screenshot: app.screenshot())
+            home.name = "Calendar-first Journal \(language)"
+            home.lifetime = .keepAlways
+            add(home)
+            addJournalEvent("journalAddMedication", in: app)
+            let usualLabel = german ? "Medikamente wie üblich eingenommen" : "Took usual medication"
+            let lateLabel = german ? "Medikamente verspätet eingenommen" : "Took medication late"
+            let onLabel = german ? "ON / Medikament wirkt" : "ON / medication working"
+            let offLabel = german ? "OFF / Symptome sind zurück" : "OFF / symptoms are back"
+            let usual = app.buttons["journalMedicationChoice-\(usualLabel)"]
+            let late = app.buttons["journalMedicationChoice-\(lateLabel)"]
+            let on = app.buttons["journalMedicationChoice-\(onLabel)"]
+            let off = app.buttons["journalMedicationChoice-\(offLabel)"]
+            revealMovementControl(usual, in: app)
+            usual.tap()
+            revealMovementControl(on, in: app)
+            on.tap()
+            app.buttons["journalSaveMedication"].tap()
+            viewJournalEntries(in: app)
+            let medicationEntry = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'journalEditMedication-'"))
+            XCTAssertEqual(medicationEntry.count, 1)
+            medicationEntry.firstMatch.tap()
+            XCTAssertTrue(usual.waitForExistence(timeout: 5) && usual.isSelected)
+            revealMovementControl(late, in: app)
+            late.tap()
+            revealMovementControl(off, in: app)
+            off.tap()
+            app.buttons["journalSaveMedication"].tap()
+            XCTAssertEqual(medicationEntry.count, 1)
+            app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+            addJournalEvent("journalAddSymptom", in: app)
+            let tremor = app.buttons["journalSymptom-Tremor"]
+            XCTAssertTrue(tremor.waitForExistence(timeout: 5))
+            tremor.tap()
+            let mild = app.buttons["journalSymptomChoice-Mild"]
+            let moderate = app.buttons["journalSymptomChoice-\(german ? "Mäßig" : "Moderate")"]
+            revealMovementControl(mild, in: app)
+            mild.tap()
+            app.buttons["journalSaveSymptom"].tap()
+            viewJournalEntries(in: app)
+            let symptomEntry = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'journalEditSymptom-'"))
+            XCTAssertEqual(symptomEntry.count, 1)
+            symptomEntry.firstMatch.tap()
+            XCTAssertTrue(tremor.waitForExistence(timeout: 5) && tremor.isSelected)
+            revealMovementControl(mild, in: app)
+            XCTAssertTrue(mild.isSelected)
+            revealMovementControl(moderate, in: app)
+            moderate.tap()
+            app.buttons["journalSaveSymptom"].tap()
+            XCTAssertEqual(symptomEntry.count, 1)
+            XCTAssertEqual(medicationEntry.count, 1)
+            app.terminate()
+            app.launch()
+            openJournalDay(in: app, german: german)
+            viewJournalEntries(in: app)
+            XCTAssertEqual(medicationEntry.count, 1)
+            revealMovementControl(medicationEntry.firstMatch, in: app)
+            medicationEntry.firstMatch.tap()
+            revealMovementControl(late, in: app)
+            XCTAssertTrue(late.isSelected)
+            revealMovementControl(off, in: app)
+            XCTAssertTrue(off.isSelected)
+            app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+            revealMovementControl(symptomEntry.firstMatch, in: app)
+            symptomEntry.firstMatch.tap()
+            revealMovementControl(moderate, in: app)
+            XCTAssertTrue(moderate.isSelected)
+            let edit = XCTAttachment(screenshot: app.screenshot())
+            edit.name = "Reopened symptom correction \(language)"
+            edit.lifetime = .keepAlways
+            add(edit)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testJournalSelectedDayAndFutureDateEnglishGermanLargeText() throws {
+        for language in ["en", "de"] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-journal", UUID().uuidString, "--ui-test-session-save", UUID().uuidString,
+                                   "-appLanguage", language, "-appFontSize", german ? "extraLarge" : "standard"]
+            app.launch()
+            openJournalDay(in: app, german: german)
+            let next = app.buttons["journalNextMonth"]
+            revealMovementControl(next, in: app)
+            next.tap()
+            let checkIn = app.buttons["journalOpenCheckIn"]
+            revealMovementControl(checkIn, in: app)
+            XCTAssertFalse(checkIn.isEnabled)
+            for id in ["journalAddMedication", "journalAddSymptom", "journalAddNote"] {
+                XCTAssertFalse(app.buttons[id].isEnabled)
+            }
+            let previous = app.buttons["journalPreviousMonth"]
+            revealMovementControl(previous, in: app)
+            previous.tap()
+            previous.tap()
+            let firstDay = app.buttons["journalCalendarDay-1"]
+            XCTAssertTrue(firstDay.isSelected)
+            revealMovementControl(checkIn, in: app)
+            XCTAssertTrue(checkIn.isEnabled)
+            let home = XCTAttachment(screenshot: app.screenshot())
+            home.name = "Selected historical day \(language)"
+            home.lifetime = .keepAlways
+            add(home)
+            checkIn.tap()
+            XCTAssertTrue(app.staticTexts[german ? "Wie ging es Ihnen an diesem Tag?" : "How were you feeling that day?"].exists)
+            let impact = app.buttons["journalImpact-unsure"]
+            revealMovementControl(impact, in: app)
+            impact.tap()
+            XCTAssertTrue(app.buttons["journalSaveCheckIn"].isEnabled)
+            app.buttons["journalSaveCheckIn"].tap()
+            XCTAssertEqual(checkIn.label, german ? "Tagesrückblick bearbeiten" : "Edit check-in")
+            let today = app.buttons["journalReturnToday"]
+            revealMovementControl(today, in: app)
+            today.tap()
+            revealMovementControl(checkIn, in: app)
+            XCTAssertEqual(checkIn.label, german ? "Heutiger Tagesrückblick" : "Today's check-in")
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testJournalLegacyEventsRemainEditableWithoutInventedAnswers() throws {
+        for language in ["en", "de"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-journal", UUID().uuidString, "--ui-test-journal-legacy-events",
+                "--ui-test-session-save", UUID().uuidString, "-appLanguage", language, "-appFontSize", "standard"]
+            app.launch()
+            openJournalDay(in: app, german: language == "de")
+            viewJournalEntries(in: app)
+            let medication = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'journalEditMedication-'"))
+            let symptom = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'journalEditSymptom-'"))
+            XCTAssertEqual(medication.count, 1)
+            medication.firstMatch.tap()
+            let historicalQuestion = app.staticTexts[language == "de"
+                ? "Wie ging es Ihnen zu diesem Zeitpunkt?" : "How did you feel at that time?"]
+            revealMovementControl(historicalQuestion, in: app)
+            let correction = XCTAttachment(screenshot: app.screenshot())
+            correction.name = "Legacy medication correction \(language)"
+            correction.lifetime = .keepAlways
+            add(correction)
+            let saveMedication = app.buttons["journalSaveMedication"]
+            XCTAssertTrue(saveMedication.waitForExistence(timeout: 5) && saveMedication.isEnabled)
+            saveMedication.tap()
+            symptom.firstMatch.tap()
+            let saveSymptom = app.buttons["journalSaveSymptom"]
+            XCTAssertTrue(saveSymptom.waitForExistence(timeout: 5) && saveSymptom.isEnabled)
+            XCTAssertFalse(app.buttons["journalSymptom-Tremor"].isSelected)
+            saveSymptom.tap()
+            app.terminate()
+            app.launch()
+            openJournalDay(in: app, german: language == "de")
+            viewJournalEntries(in: app)
+            XCTAssertEqual(medication.count, 1)
+            XCTAssertEqual(symptom.count, 1)
+            medication.firstMatch.tap()
+            let note = app.descendants(matching: .any)["journalMedicationNote"]
+            revealMovementControl(note, in: app)
+            XCTAssertEqual(note.value as? String, "Legacy medication note")
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testJournalFailedEventEditsKeepDraftsAndOriginalRecords() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-test-journal", UUID().uuidString, "--ui-test-journal-legacy-events",
+            "--ui-test-journal-save-failure", "--ui-test-session-save", UUID().uuidString,
+            "-appLanguage", "en", "-appFontSize", "standard"]
+        app.launch()
+        openJournalDay(in: app, german: false)
+        viewJournalEntries(in: app)
+        for type in ["Medication", "Symptom"] {
+            let entry = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "journalEdit\(type)-")).firstMatch
+            revealMovementControl(entry, in: app)
+            entry.tap()
+            let field = app.descendants(matching: .any)["journal\(type)Note"]
+            revealMovementControl(field, in: app)
+            field.tap()
+            field.typeText(" revised")
+            let save = app.buttons["journalSave\(type)"]
+            save.tap()
+            let alert = app.alerts["Journal not saved"]
+            XCTAssertTrue(alert.waitForExistence(timeout: 5))
+            alert.buttons.firstMatch.tap()
+            XCTAssertTrue((field.value as? String)?.contains("revised") == true)
+            XCTAssertTrue(save.isEnabled)
+            app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+            XCTAssertFalse(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'revised'")).firstMatch.exists)
+        }
+        app.terminate()
+    }
+
+    @MainActor
+    func testJournalCheckInCanBeEditedAndSurvivesRelaunchEnglishGerman() throws {
+        for language in ["en", "de"] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-journal", UUID().uuidString,
+                                   "--ui-test-session-save", UUID().uuidString,
+                                   "-appLanguage", language, "-appFontSize", german ? "extraLarge" : "standard"]
+            app.launch()
+            openJournalDay(in: app, german: german)
+            let checkIn = app.buttons["journalOpenCheckIn"]
+            revealMovementControl(checkIn, in: app)
+            checkIn.tap()
+            let mood = app.buttons["journalMood-4"]
+            XCTAssertTrue(mood.waitForExistence(timeout: 5))
+            let initial = XCTAttachment(screenshot: app.screenshot())
+            initial.name = "Journal quick check-in \(language)"
+            initial.lifetime = .keepAlways
+            add(initial)
+            revealMovementControl(mood, in: app)
+            mood.tap()
+            let impact = app.buttons["journalImpact-little"]
+            revealMovementControl(impact, in: app)
+            impact.tap()
+            let save = app.buttons["journalSaveCheckIn"]
+            XCTAssertTrue(save.isEnabled && save.isHittable)
+            save.tap()
+            XCTAssertTrue(checkIn.waitForExistence(timeout: 5))
+            XCTAssertEqual(checkIn.label, german ? "Tagesrückblick bearbeiten" : "Edit check-in")
+            checkIn.tap()
+            XCTAssertTrue(mood.waitForExistence(timeout: 5) && mood.isSelected)
+            revealMovementControl(impact, in: app)
+            XCTAssertTrue(impact.isSelected)
+            XCTAssertEqual(save.label, german ? "Speichern" : "Save")
+            let changedMood = app.buttons["journalMood-2"]
+            revealMovementControl(changedMood, in: app)
+            changedMood.tap()
+            save.tap()
+            XCTAssertTrue(checkIn.waitForExistence(timeout: 5))
+            app.terminate()
+            app.launch()
+            openJournalDay(in: app, german: german)
+            revealMovementControl(checkIn, in: app)
+            checkIn.tap()
+            XCTAssertTrue(app.buttons["journalMood-2"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["journalMood-2"].isSelected)
+            revealMovementControl(impact, in: app)
+            XCTAssertTrue(impact.isSelected)
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Reopened editable journal check-in \(language)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testJournalTwoQuestionsAndSavedLogShortcutsEnglishGerman() throws {
+        for language in ["en", "de"] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-journal", UUID().uuidString,
+                "--ui-test-session-save", UUID().uuidString,
+                "-appLanguage", language, "-appFontSize", german ? "extraLarge" : "standard"]
+            app.launch()
+            openJournalDay(in: app, german: german)
+            XCTAssertFalse(app.buttons["journalAddEntry"].exists)
+            for id in ["journalAddMedication", "journalAddSymptom", "journalAddNote"] {
+                XCTAssertTrue(app.buttons[id].exists)
+            }
+            let checkIn = app.buttons["journalOpenCheckIn"]
+            revealMovementControl(checkIn, in: app)
+            checkIn.tap()
+            let neutralMood = app.buttons["journalMood-3"]
+            XCTAssertTrue(neutralMood.waitForExistence(timeout: 5))
+            XCTAssertEqual(neutralMood.label, "Okay")
+            XCTAssertFalse(app.buttons["journalSaveCheckIn"].isEnabled)
+            XCTAssertFalse(app.buttons["journalImpact-skipped"].exists)
+            XCTAssertFalse(app.buttons["journalDailyMedication-skipped"].exists)
+            XCTAssertFalse(app.buttons["journalDailyMedication-changed"].exists)
+            XCTAssertFalse(app.buttons["journalDailyMedication-asPlanned"].exists)
+            XCTAssertFalse(app.descendants(matching: .any)["journalSymptomDetails"].exists)
+            let date = app.staticTexts["journalCheckInDate"]
+            let question = app.staticTexts["journalMoodQuestion"]
+            XCTAssertLessThanOrEqual(question.frame.minY - date.frame.maxY, 12)
+            revealMovementControl(neutralMood, in: app)
+            neutralMood.tap()
+            let moodScreenshot = XCTAttachment(screenshot: app.screenshot())
+            moodScreenshot.name = "Revised mood choices \(language)"
+            moodScreenshot.lifetime = .keepAlways
+            add(moodScreenshot)
+            var previous: XCUIElement?
+            for value in ["notAtAll", "little", "moderate", "large", "unable", "unsure"] {
+                let button = app.buttons["journalImpact-\(value)"]
+                XCTAssertTrue(button.exists)
+                if let previous {
+                    XCTAssertEqual(button.frame.minX, previous.frame.minX, accuracy: 1)
+                    XCTAssertGreaterThan(button.frame.minY, previous.frame.minY)
+                }
+                previous = button
+            }
+            let moderate = app.buttons["journalImpact-moderate"]
+            revealMovementControl(moderate, in: app)
+            moderate.tap()
+            let impactScreenshot = XCTAttachment(screenshot: app.screenshot())
+            impactScreenshot.name = "Ordered activity choices \(language)"
+            impactScreenshot.lifetime = .keepAlways
+            add(impactScreenshot)
+            let medicationShortcut = app.buttons["journalShortcutMedication"]
+            revealMovementControl(medicationShortcut, in: app)
+            medicationShortcut.tap()
+            let medicationSave = app.buttons["journalSaveMedication"]
+            XCTAssertTrue(medicationSave.waitForExistence(timeout: 5))
+            XCTAssertFalse(medicationSave.isEnabled)
+            let usual = app.buttons["journalMedicationChoice-\(german ? "Medikamente wie üblich eingenommen" : "Took usual medication")"]
+            let late = app.buttons["journalMedicationChoice-\(german ? "Medikamente verspätet eingenommen" : "Took medication late")"]
+            XCTAssertFalse(usual.isSelected)
+            XCTAssertFalse(app.descendants(matching: .any)["journalMedicationNote"].exists)
+            revealMovementControl(late, in: app)
+            late.tap()
+            let note = app.descendants(matching: .any)["journalMedicationNote"].firstMatch
+            XCTAssertTrue(note.exists)
+            revealMovementControl(usual, in: app)
+            usual.tap()
+            XCTAssertFalse(note.exists)
+            revealMovementControl(late, in: app)
+            late.tap()
+            revealMovementControl(note, in: app)
+            note.tap()
+            note.typeText("Reason for this dose")
+            let medicationScreenshot = XCTAttachment(screenshot: app.screenshot())
+            medicationScreenshot.name = "Conditional medication note \(language)"
+            medicationScreenshot.lifetime = .keepAlways
+            add(medicationScreenshot)
+            medicationSave.tap()
+            XCTAssertTrue(neutralMood.waitForExistence(timeout: 5) && neutralMood.isSelected)
+            let symptomsShortcut = app.buttons["journalShortcutSymptoms"]
+            revealMovementControl(symptomsShortcut, in: app)
+            symptomsShortcut.tap()
+            let tremor = app.buttons["journalSymptom-Tremor"]
+            revealMovementControl(tremor, in: app)
+            tremor.tap()
+            XCTAssertTrue(tremor.isSelected)
+            let mild = app.buttons["journalSymptomChoice-Mild"]
+            revealMovementControl(mild, in: app)
+            mild.tap()
+            XCTAssertTrue(mild.isSelected)
+            XCTAssertTrue(app.buttons["journalSaveSymptom"].isEnabled)
+            app.buttons["journalSaveSymptom"].tap()
+            let save = app.buttons["journalSaveCheckIn"]
+            XCTAssertTrue(save.isEnabled && save.isHittable)
+            save.tap()
+            let dashboard = XCTAttachment(screenshot: app.screenshot())
+            dashboard.name = "Direct journal dashboard \(language)"
+            dashboard.lifetime = .keepAlways
+            add(dashboard)
+            app.terminate()
+            app.launch()
+            openJournalDay(in: app, german: german)
+            revealMovementControl(checkIn, in: app)
+            checkIn.tap()
+            XCTAssertTrue(neutralMood.waitForExistence(timeout: 5) && neutralMood.isSelected)
+            revealMovementControl(moderate, in: app)
+            XCTAssertTrue(moderate.isSelected)
+            app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+            viewJournalEntries(in: app)
+            let medicationEntries = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'journalEditMedication-'"))
+            let symptomEntries = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'journalEditSymptom-'"))
+            XCTAssertEqual(medicationEntries.count, 1)
+            XCTAssertEqual(symptomEntries.count, 1)
+            revealMovementControl(medicationEntries.firstMatch, in: app)
+            medicationEntries.firstMatch.tap()
+            revealMovementControl(note, in: app)
+            XCTAssertEqual(note.value as? String, "Reason for this dose")
+            revealMovementControl(usual, in: app)
+            usual.tap()
+            XCTAssertTrue(note.exists)
+            XCTAssertEqual(note.value as? String, "Reason for this dose")
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testJournalFailedSaveKeepsCheckInAnswersEnglishGerman() throws {
+        for language in ["en", "de"] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-journal", UUID().uuidString, "--ui-test-journal-save-failure",
+                                   "--ui-test-session-save", UUID().uuidString,
+                                   "-appLanguage", language, "-appFontSize", german ? "extraLarge" : "standard"]
+            app.launch()
+            openJournalDay(in: app, german: german)
+            let checkIn = app.buttons["journalOpenCheckIn"]
+            revealMovementControl(checkIn, in: app)
+            checkIn.tap()
+            let mood = app.buttons["journalMood-4"]
+            revealMovementControl(mood, in: app)
+            mood.tap()
+            let impact = app.buttons["journalImpact-moderate"]
+            revealMovementControl(impact, in: app)
+            impact.tap()
+            app.buttons["journalSaveCheckIn"].tap()
+            let alert = app.alerts[german ? "Journal nicht gespeichert" : "Journal not saved"]
+            XCTAssertTrue(alert.waitForExistence(timeout: 5))
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Journal failed save retains answers \(language)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            alert.buttons.firstMatch.tap()
+            revealMovementControl(mood, in: app)
+            XCTAssertTrue(mood.isSelected)
+            revealMovementControl(impact, in: app)
+            XCTAssertTrue(impact.isSelected)
+            XCTAssertTrue(app.buttons["journalSaveCheckIn"].isEnabled)
+            XCTAssertFalse(checkIn.exists)
+            for id in ["journalShortcutMedication", "journalShortcutSymptoms"] {
+                let shortcut = app.buttons[id]
+                revealMovementControl(shortcut, in: app)
+                shortcut.tap()
+                XCTAssertTrue(alert.waitForExistence(timeout: 5))
+                alert.buttons.firstMatch.tap()
+                XCTAssertFalse(app.buttons["journalSaveMedication"].exists)
+                XCTAssertFalse(app.buttons["journalSaveSymptom"].exists)
+                XCTAssertTrue(mood.isSelected && impact.isSelected)
+            }
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testJournalEmptyShortcutDoesNotCreateCheckInEnglishGerman() throws {
+        for language in ["en", "de"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-journal", UUID().uuidString,
+                "--ui-test-session-save", UUID().uuidString, "-appLanguage", language, "-appFontSize", "standard"]
+            app.launch()
+            openJournalDay(in: app, german: language == "de")
+            let checkIn = app.buttons["journalOpenCheckIn"]
+            revealMovementControl(checkIn, in: app)
+            checkIn.tap()
+            let shortcut = app.buttons["journalShortcutMedication"]
+            revealMovementControl(shortcut, in: app)
+            shortcut.tap()
+            let save = app.buttons["journalSaveMedication"]
+            XCTAssertTrue(save.waitForExistence(timeout: 5) && !save.isEnabled)
+            let usual = app.buttons["journalMedicationChoice-\(language == "de" ? "Medikamente wie üblich eingenommen" : "Took usual medication")"]
+            XCTAssertFalse(usual.isSelected)
+            revealMovementControl(usual, in: app)
+            usual.tap()
+            save.tap()
+            XCTAssertTrue(app.buttons["journalSaveCheckIn"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.buttons["journalSaveCheckIn"].isEnabled)
+            app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+            app.terminate()
+            app.launch()
+            openJournalDay(in: app, german: language == "de")
+            XCTAssertFalse(app.descendants(matching: .any)["journalCheckInStatus"].exists)
+            revealMovementControl(checkIn, in: app)
+            XCTAssertEqual(checkIn.label, language == "de" ? "Heutiger Tagesrückblick" : "Today's check-in")
+            viewJournalEntries(in: app)
+            XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'journalEditMedication-'" )).count, 1)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testJournalFailedNoteSaveKeepsDraft() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-test-journal", UUID().uuidString, "--ui-test-journal-save-failure",
+                               "--ui-test-session-save", UUID().uuidString, "-appLanguage", "en"]
+        app.launch()
+        openJournalDay(in: app, german: false)
+        addJournalEvent("journalAddNote", in: app)
+        let field = app.descendants(matching: .any)["journalNoteField"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText("Please keep my draft")
+        app.buttons["journalSaveNote"].tap()
+        let alert = app.alerts["Journal not saved"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        alert.buttons.firstMatch.tap()
+        XCTAssertEqual(field.value as? String, "Please keep my draft")
+        XCTAssertTrue(app.buttons["journalSaveNote"].isEnabled)
+    }
+
+    @MainActor
     func testJournalNoteExampleEnglishGerman() throws {
         for language in ["en", "de"] {
             let german = language == "de"
             let app = XCUIApplication()
-            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+            app.launchArguments = ["--ui-test-journal", UUID().uuidString, "--ui-test-session-save", UUID().uuidString,
                                    "-appLanguage", language, "-appFontSize", german ? "extraLarge" : "standard"]
             func openToday() {
                 app.tabBars.buttons["Journal"].tap()
-                let today = app.buttons[german ? "HEUTIGES PROTOKOLL ÖFFNEN" : "OPEN TODAY'S LOG"]
-                revealMovementControl(today, in: app)
-                today.tap()
             }
             app.launch()
             openToday()
-            let addNote = app.buttons[german ? "NOTIZ HINZUFÜGEN" : "ADD NOTE"]
-            revealMovementControl(addNote, in: app)
-            addNote.tap()
+            addJournalEvent("journalAddNote", in: app)
             let field = app.descendants(matching: .any)["journalNoteField"]
             let save = app.buttons["journalSaveNote"]
             XCTAssertTrue(field.waitForExistence(timeout: 5))
@@ -1268,6 +2348,7 @@ final class vCRGloveUITests: XCTestCase {
             XCTAssertTrue(save.isEnabled)
             save.tap()
             XCTAssertFalse(field.exists)
+            viewJournalEntries(in: app)
             let saved = app.staticTexts[note]
             revealMovementControl(saved, in: app)
             XCTAssertTrue(saved.exists)
@@ -1275,13 +2356,11 @@ final class vCRGloveUITests: XCTestCase {
             app.terminate()
             app.launch()
             openToday()
+            viewJournalEntries(in: app)
             revealMovementControl(app.staticTexts[note], in: app)
             XCTAssertTrue(app.staticTexts[note].exists)
-            let anotherNote = app.buttons[german ? "NOTIZ HINZUFÜGEN" : "ADD NOTE"]
-            let scroll = app.scrollViews.firstMatch
-            for _ in 0..<12 where !anotherNote.exists { scroll.swipeDown() }
-            revealMovementControl(anotherNote, in: app)
-            anotherNote.tap()
+            app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+            addJournalEvent("journalAddNote", in: app)
             XCTAssertTrue(field.waitForExistence(timeout: 5))
             XCTAssertTrue(examples.contains(try XCTUnwrap(field.placeholderValue)))
             XCTAssertFalse(save.isEnabled)
@@ -1317,7 +2396,7 @@ final class vCRGloveUITests: XCTestCase {
             XCTAssertEqual(day.label, expectedDate)
             day.tap()
             XCTAssertTrue(day.isSelected)
-            let openLog = app.buttons[german ? "TAGESPROTOKOLL ÖFFNEN" : "OPEN DAILY LOG"]
+            let openLog = app.buttons["journalViewEntries"]
             revealMovementControl(openLog, in: app)
             openLog.tap()
             XCTAssertTrue(app.navigationBars.firstMatch.buttons.element(boundBy: 0).waitForExistence(timeout: 5))

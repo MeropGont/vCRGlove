@@ -122,14 +122,6 @@ extension HDevice {
 }
 
 
-// MARK: - vCR Preset
-enum VCRPreset {
-    static let amplitude: Double = 70
-    static let frequency: Double = 1.5
-    static let pulseMs: Int = 100
-    static let fingersPerCycle: Int = 4
-}
-
 // MARK: - ViewModel
 @MainActor
 final class GloveVM: ObservableObject {
@@ -145,15 +137,90 @@ final class GloveVM: ObservableObject {
     private var stimulationBackgroundTask: UIBackgroundTaskIdentifier = .invalid
 
 
-    // Vibration params (manual mode)
-    @Published var amplitude: Double = 70
-    @Published var frequency: Double = 1.5
-    @Published var pulseMs: Double = 100
+    @Published private(set) var stimulationProfile: StimulationProfile
+    @Published private(set) var configurationNeedsReview = false
+    @Published private(set) var researchUnlocked = false
+    @Published private(set) var isCheckingFingers = false
     @Published var totalSeconds: Double = 4 * 60 * 60
-    @Published var fingersPerCycle: Int = 4
+    var patientSessionWasStarted = false
+    var patientSessionPausedForNoGloves = false
 
-    // vCR toggle
-    @Published var vcrMode = false
+    private let profileStore: StimulationProfileStore
+    private let motorOutput: (String, [UInt8]) -> Void
+    private let stopOutput: () -> Void
+    private let recordEvent: (String, [String: String]) -> Void
+    private(set) var sessionProfile: StimulationProfile?
+    // Reject delayed callbacks from an earlier run or pulse after stop/restart.
+    private var runIDs: [String: UUID] = [:]
+    private var pulseIDs: [String: UUID] = [:]
+    private var fingerCheckTask: Task<Void, Never>?
+    private var fingerCheckID: UUID?
+
+    var hasStimulationSession: Bool {
+        isCheckingFingers || countdowns.values.contains { $0 > 0 }
+    }
+
+    init(defaults: UserDefaults? = nil,
+         motorOutput: @escaping (String, [UInt8]) -> Void = { position, motors in
+             position.withCString { pstr in
+                 motors.withUnsafeBufferPointer { buffer in
+                     if let base = buffer.baseAddress { BhapticsPlugin_playMotors(pstr, motors.count, base) }
+                 }
+             }
+         },
+         stopOutput: @escaping () -> Void = { BhapticsPlugin_stop() },
+         recordEvent: @escaping (String, [String: String]) -> Void = { type, details in
+             EventStore.shared.append(type: type, tag: "vCR", message: type, details: details)
+         }) {
+        profileStore = StimulationProfileStore(defaults: defaults ?? Self.profileDefaults())
+        self.motorOutput = motorOutput
+        self.stopOutput = stopOutput
+        self.recordEvent = recordEvent
+        do { stimulationProfile = try profileStore.load() }
+        catch {
+            stimulationProfile = StimulationProfile()
+            configurationNeedsReview = true
+        }
+    }
+
+    private static func profileDefaults() -> UserDefaults {
+        #if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        if let index = arguments.firstIndex(of: "--ui-test-stimulation-profile"), index + 1 < arguments.count,
+           let suite = UserDefaults(suiteName: "stimulation-ui-\(arguments[index + 1])") {
+            return suite
+        }
+        #endif
+        return .standard
+    }
+
+    @discardableResult
+    func unlockResearch(password: String) -> Bool {
+        guard password == "vcr2026" else { return false }
+        researchUnlocked = true
+        recordEvent("research_unlocked", [:])
+        return true
+    }
+
+    func lockResearch() {
+        researchUnlocked = false
+        recordEvent("research_locked", [:])
+    }
+
+    @discardableResult
+    func saveStimulationProfile(_ profile: StimulationProfile) -> Bool {
+        guard researchUnlocked, !hasStimulationSession, profile.isValid else { return false }
+        do {
+            let previous = stimulationProfile
+            try profileStore.save(profile)
+            stimulationProfile = profile
+            configurationNeedsReview = false
+            var details = profile.eventDetails
+            for (key, value) in previous.eventDetails { details["previous_\(key)"] = value }
+            recordEvent("stimulation_profile_saved", details)
+            return true
+        } catch { return false }
+    }
 
     private var localState: [String: (connected: Bool?, paired: Bool?)] = [:]
     private var pollTimer: Timer?
@@ -265,6 +332,7 @@ final class GloveVM: ObservableObject {
 
 
     func startScan(clearHistory: Bool = true) {
+        let clearHistory = clearHistory && !hasStimulationSession
         Logger.shared.log("BLE", "Fresh scan started")
         scanning = true
         scanTimeoutTimer?.invalidate()
@@ -411,12 +479,13 @@ final class GloveVM: ObservableObject {
 
     
     func testBuzz(device: HDevice) {
-        guard !device.pos.isEmpty else {
-            Logger.shared.log("BLE", "Cannot buzz \(device.prettyName): missing position")
+        guard !hasStimulationSession, !configurationNeedsReview else { return }
+        guard let amplitude = stimulationProfile.amplitude(for: device.pos) else {
+            Logger.shared.log("BLE", "Cannot buzz \(device.prettyName): unknown glove position")
             return
         }
 
-        sendBurstAll(position: device.pos, strength: 70, burstMs: 120)
+        sendPulse(position: device.pos, indices: Array(0..<20), strength: UInt8(amplitude), burstMs: 120)
         Logger.shared.log("BLE", "Test buzz sent to \(device.prettyName)")
     }
 
@@ -446,44 +515,36 @@ final class GloveVM: ObservableObject {
 
     // MARK: - Vibration
     func startVibration(position: String, durationSeconds: Int? = nil, logEvent: Bool = true) {
-        stopVibration(position: position, logEvent: false)
-
+        let profile = sessionProfile ?? stimulationProfile
+        guard !configurationNeedsReview, profile.isValid,
+              let amp = profile.amplitude(for: position) else { return }
         let sessionSeconds = durationSeconds ?? Int(totalSeconds)
+        guard sessionSeconds > 0 else { return }
+        stopVibration(position: position, logEvent: false)
+        sessionProfile = profile
         startedAt[position] = Date()
         countdowns[position] = sessionSeconds
+        let runID = UUID()
+        runIDs[position] = runID
 
-        let amp = vcrMode ? VCRPreset.amplitude : amplitude
-        let freq = vcrMode ? VCRPreset.frequency : frequency
-        let pMs = vcrMode ? VCRPreset.pulseMs : Int(pulseMs)
-        let fingers = vcrMode ? VCRPreset.fingersPerCycle : max(1, min(4, fingersPerCycle))
-
-        let cycleInterval = max(0.1, 1.0 / max(0.1, freq))
-        let slots = max(1, fingers)
-        let slotSpacing = cycleInterval / Double(slots)
-
-        let timer = Timer(timeInterval: cycleInterval, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: profile.cycleInterval, repeats: true) { [weak self] _ in
             Task { @MainActor in
-                guard let self = self else { return }
-
-                let indices = Array(0..<slots).shuffled()
-                for (i, motorIndex) in indices.enumerated() {
-                    let when = Double(i) * slotSpacing
-                    DispatchQueue.main.asyncAfter(deadline: .now() + when) {
-                        if self.vcrMode {
-                            self.sendBurst(position: position, motorIndex: motorIndex, strength: UInt8(amp), burstMs: pMs)
-                        } else {
-                            self.sendBurstAll(position: position, strength: UInt8(amp), burstMs: pMs)
-                        }
-                    }
+                guard let self, self.runIDs[position] == runID,
+                      let start = self.startedAt[position] else { return }
+                let remaining = max(sessionSeconds - Int(Date().timeIntervalSince(start)), 0)
+                self.countdowns[position] = remaining
+                guard remaining > 0 else {
+                    self.stopVibration(position: position)
+                    return
                 }
 
-                if let start = self.startedAt[position] {
-                    let elapsed = Int(Date().timeIntervalSince(start))
-                    let remaining = max(sessionSeconds - elapsed, 0)
-                    self.countdowns[position] = remaining
-
-                    if remaining <= 0 {
-                        self.stopVibration(position: position)
+                let order = Array(0..<StimulationProfile.slotsPerCycle).shuffled()
+                for (slot, indices) in profile.motorIndices(order: order).enumerated() {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + Double(slot) * profile.slotSpacing) { [weak self] in
+                        guard let self, self.runIDs[position] == runID,
+                              Date().timeIntervalSince(start) < Double(sessionSeconds) else { return }
+                        self.sendPulse(position: position, indices: indices, strength: UInt8(amp),
+                                       burstMs: StimulationProfile.pulseMs)
                     }
                 }
             }
@@ -497,9 +558,16 @@ final class GloveVM: ObservableObject {
         if logEvent {
             Logger.shared.log("vCR", "Start vibration @ \(position) [total=\(sessionSeconds)s]")
         }
+        var details = profile.eventDetails
+        details["position"] = position
+        details["effectiveAmplitude"] = String(amp)
+        details["durationSeconds"] = String(sessionSeconds)
+        recordEvent("stimulation_started", details)
     }
 
     func stopVibration(position: String, logEvent: Bool = true) {
+        cancelFingerCheck()
+        runIDs[position] = nil
         vibTimers[position]?.invalidate()
         vibTimers[position] = nil
         countdowns[position] = 0
@@ -510,7 +578,7 @@ final class GloveVM: ObservableObject {
         sendAllOff(position: position)
 
         if activeStimPositions.isEmpty {
-            BhapticsPlugin_stop()
+            stopOutput()
         }
 
         updateIdleTimerLock()
@@ -518,6 +586,7 @@ final class GloveVM: ObservableObject {
         if activeStimPositions.isEmpty {
             endStimulationBackgroundTaskIfNeeded()
         }
+        if !hasStimulationSession { sessionProfile = nil }
 
         if logEvent {
             Logger.shared.log("vCR", "Stopped vibration @ \(position)")
@@ -539,8 +608,9 @@ final class GloveVM: ObservableObject {
 
     
     func pauseVibration(position: String) {
+        cancelFingerCheck()
         guard vibTimers[position] != nil else { return }
-
+        runIDs[position] = nil
         vibTimers[position]?.invalidate()
         vibTimers[position] = nil
         activeStimPositions.remove(position)
@@ -553,77 +623,86 @@ final class GloveVM: ObservableObject {
     
     func startVibrationWithFingerCheck(positions: [String], durationSeconds: Int? = nil) {
         let cleaned = Array(Set(positions.filter { !$0.isEmpty }))
-        guard !cleaned.isEmpty else { return }
-
+        let profile = stimulationProfile
+        guard !hasStimulationSession, !configurationNeedsReview, profile.isValid,
+              !cleaned.isEmpty, cleaned.allSatisfy({ profile.amplitude(for: $0) != nil }) else { return }
         let sessionSeconds = durationSeconds ?? Int(totalSeconds)
+        guard sessionSeconds > 0 else { return }
         let fingerIndices = [0, 1, 2, 3, 4]
         let pulseMs: UInt64 = 450
         let gapMs: UInt64 = 150
-        let strength: UInt8 = 70
 
         for position in cleaned {
             stopVibration(position: position, logEvent: false)
             countdowns[position] = sessionSeconds
         }
+        sessionProfile = profile
+        let checkID = UUID()
+        fingerCheckID = checkID
+        isCheckingFingers = true
+        activeStimPositions.formUnion(cleaned)
+        updateIdleTimerLock()
 
         let orderedPositions = cleaned.sorted { lhs, rhs in
-            if lhs.contains("GloveL") { return true }
-            if rhs.contains("GloveL") { return false }
+            let left = lhs.lowercased().contains("glovel") || lhs.lowercased().contains("glove left")
+            let right = rhs.lowercased().contains("glovel") || rhs.lowercased().contains("glove left")
+            if left != right { return left }
             return lhs < rhs
         }
 
-        Task { @MainActor in
+        fingerCheckTask = Task { @MainActor [weak self] in
+            guard let self else { return }
             Logger.shared.log("vCR", "Finger check started before vCR for \(cleaned.joined(separator: ", "))")
+            self.recordEvent("finger_check_started", profile.eventDetails)
 
             for position in orderedPositions {
+                guard let amplitude = profile.amplitude(for: position) else { return }
+                let strength = UInt8(amplitude)
                 for motorIndex in fingerIndices {
-                    sendSingleMotorOn(position: position, motorIndex: motorIndex, strength: strength)
-
-                    try? await Task.sleep(nanoseconds: pulseMs * 1_000_000)
-
-                    sendAllOff(position: position)
-
-                    try? await Task.sleep(nanoseconds: gapMs * 1_000_000)
+                    guard !Task.isCancelled, self.fingerCheckID == checkID else { return }
+                    self.sendSingleMotorOn(position: position, motorIndex: motorIndex, strength: strength)
+                    do { try await Task.sleep(nanoseconds: pulseMs * 1_000_000) }
+                    catch { return }
+                    guard self.fingerCheckID == checkID else { return }
+                    self.sendAllOff(position: position)
+                    do { try await Task.sleep(nanoseconds: gapMs * 1_000_000) }
+                    catch { return }
                 }
             }
-
+            guard !Task.isCancelled, self.fingerCheckID == checkID else { return }
+            self.fingerCheckID = nil
+            self.fingerCheckTask = nil
+            self.isCheckingFingers = false
             for position in cleaned {
-                startVibration(position: position, durationSeconds: sessionSeconds)
+                self.startVibration(position: position, durationSeconds: sessionSeconds)
             }
         }
     }
 
-
-
+    private func cancelFingerCheck() {
+        guard fingerCheckID != nil else { return }
+        fingerCheckTask?.cancel()
+        fingerCheckTask = nil
+        fingerCheckID = nil
+        isCheckingFingers = false
+        for position in activeStimPositions {
+            pausedPositions.insert(position)
+            sendAllOff(position: position)
+        }
+        activeStimPositions.removeAll()
+        updateIdleTimerLock()
+        recordEvent("finger_check_cancelled", [:])
+    }
 
     // MARK: - Low-level motor helpers
-    private func sendBurstAll(position: String, strength: UInt8, burstMs: Int) {
-        var arr = [UInt8](repeating: strength, count: 20)
-        position.withCString { pstr in
-            arr.withUnsafeBufferPointer { buf in
-                if let base = buf.baseAddress {
-                    BhapticsPlugin_playMotors(pstr, arr.count, base)
-                }
-            }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(burstMs)) {
-            self.sendAllOff(position: position)
-        }
-    }
-
-    private func sendBurst(position: String, motorIndex: Int, strength: UInt8, burstMs: Int) {
+    private func sendPulse(position: String, indices: [Int], strength: UInt8, burstMs: Int) {
+        let pulseID = UUID()
+        pulseIDs[position] = pulseID
         var motors = [UInt8](repeating: 0, count: 20)
-        if motorIndex >= 0 && motorIndex < motors.count {
-            motors[motorIndex] = strength
-        }
-        position.withCString { pstr in
-            motors.withUnsafeBufferPointer { buf in
-                if let base = buf.baseAddress {
-                    BhapticsPlugin_playMotors(pstr, motors.count, base)
-                }
-            }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(burstMs)) {
+        for index in indices where motors.indices.contains(index) { motors[index] = strength }
+        motorOutput(position, motors)
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(burstMs)) { [weak self] in
+            guard let self, self.pulseIDs[position] == pulseID else { return }
             self.sendAllOff(position: position)
         }
     }
@@ -635,24 +714,12 @@ final class GloveVM: ObservableObject {
             motors[motorIndex] = strength
         }
 
-        position.withCString { pstr in
-            motors.withUnsafeBufferPointer { buf in
-                if let base = buf.baseAddress {
-                    BhapticsPlugin_playMotors(pstr, motors.count, base)
-                }
-            }
-        }
+        motorOutput(position, motors)
     }
 
 
     private func sendAllOff(position: String) {
-        var off = [UInt8](repeating: 0, count: 20)
-        position.withCString { pstr in
-            off.withUnsafeBufferPointer { buf in
-                if let base = buf.baseAddress {
-                    BhapticsPlugin_playMotors(pstr, off.count, base)
-                }
-            }
-        }
+        pulseIDs[position] = nil
+        motorOutput(position, [UInt8](repeating: 0, count: 20))
     }
 }

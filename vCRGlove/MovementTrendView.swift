@@ -2,8 +2,7 @@
 //  MovementTrendView.swift
 //  vCRGlove
 //
-//  Individual recording measurements, with context filters rather than
-//  implied treatment effects or a guessed clinical score.
+//  Context-separated daily medians with traceable recordings, not a clinical score.
 //
 
 import SwiftUI
@@ -16,27 +15,45 @@ enum TrendMetric: String, CaseIterable, Identifiable {
 
     // Keep the experimental index available to legacy data/export code, not patient UI.
     static var patientCases: [Self] { allCases.filter { $0 != .quality } }
-    static var plotCases: [Self] { [.frequency, .rhythm] }
+    static var plotCases: [Self] { [.frequency, .amplitude, .rhythm] }
 
     func plotName(task: MovementTaskType) -> String {
-        self == .frequency ? L10n(task == .fingerTap ? "Tapping rate" : "Repetition rate") : displayName
+        if self == .frequency { return L10n(task == .fingerTap ? "Tapping rate" : "Repetition rate") }
+        return self == .amplitude ? L10n("Movement size") : displayName
     }
 
     func plotValue(_ value: Double) -> Double { self == .rhythm ? value * 100 : value }
 
     func plotUnit(task: MovementTaskType) -> String {
-        self == .rhythm ? "%" : L10n(task == .fingerTap ? "Taps/second" : "Repetitions/second")
+        switch self {
+        case .rhythm: return "%"
+        case .amplitude: return L10n("Relative size")
+        case .pauses: return L10n("count")
+        case .decrement: return L10n("/cycle")
+        default: return L10n(task == .fingerTap ? "Taps/second" : "Repetitions/second")
+        }
     }
 
     func plotFormatted(_ value: Double, task: MovementTaskType) -> String {
         let locale = Locale(identifier: AppSettings.shared.language.rawValue)
+        if self == .amplitude { return String(format: L10n("%.2f palm lengths"), locale: locale, value) }
+        if self == .pauses {
+            return String(format: value == value.rounded() ? "%.0f" : "%.1f", locale: locale, value)
+        }
+        if self == .decrement { return formatted(value) }
         let key = self == .rhythm ? "%.1f %%" : (task == .fingerTap ? "%.1f taps/s" : "%.1f repetitions/s")
         return String(format: L10n(key), locale: locale, plotValue(value))
     }
 
     var plotExplanationKey: String {
-        self == .frequency ? "How quickly you repeated the movement."
-            : "Variation in the time between repetitions. Lower values mean a more even rhythm, not a clinical rating."
+        switch self {
+        case .frequency: return "How quickly you repeated the movement."
+        case .amplitude: return "Average movement excursion relative to your palm length, not centimetres. Keep the same hand position and camera angle."
+        case .rhythm: return "Variation in the time between repetitions. Lower values mean a more even rhythm, not a clinical rating."
+        case .pauses: return "Intervals longer than twice your typical interval in this recording. This does not diagnose freezing."
+        case .decrement: return "Change in movement size per repetition, relative to its average. Negative values mean size decreased during the recording."
+        default: return "These values describe your recordings. They are not a clinical rating."
+        }
     }
 
     var id: String { rawValue }
@@ -179,13 +196,68 @@ struct MovementTrendRecording: Identifiable {
     let segment: Int
     let duration: TimeInterval?
     let hasSignalGaps: Bool
+    let trial: Trial
+    let participantID: String
+
+    var comparisonKey: String {
+        let stop = trial.stopCondition
+        let protocolKey = stop.mode == .duration ? "duration-\(stop.targetDuration)" : "reps-\(stop.targetReps)"
+        return "\(participantID)/\(context.rawValue)/\(trial.source.rawValue)/\(trial.measurementVersion ?? "legacy")/\(protocolKey)"
+    }
+
+    /// Display-only evidence for older camera recordings, never saved as elapsed time.
+    var inferredDuration: TimeInterval? {
+        let stop = trial.stopCondition
+        guard duration == nil, trial.measurementVersion == nil, trial.source == .camera,
+              stop.mode == .duration, stop.targetDuration.isFinite, stop.targetDuration > 0 else { return nil }
+        let signal = MovementSignalAssessment(samples: trial.samples, recordedDurationSeconds: stop.targetDuration)
+        guard signal.hasAnalysisInput, !signal.hasGaps,
+              let first = trial.samples.first, let last = trial.samples.last,
+              abs(last.t - stop.targetDuration) <= 0.5,
+              last.t - first.t >= stop.targetDuration - 0.5 else { return nil }
+        return last.t
+    }
+
+    var cautionKey: String? {
+        if hasSignalGaps { return "Signal gaps: shown separately, not joined to the trend." }
+        guard let duration = duration ?? inferredDuration, duration.isFinite, duration > 0 else {
+            return "Recording duration unknown: shown separately."
+        }
+        let stop = trial.stopCondition
+        if stop.mode == .duration {
+            // Timer scheduling tolerance, not a motor-performance threshold.
+            guard stop.targetDuration.isFinite, stop.targetDuration > 0,
+                  abs(duration - stop.targetDuration) <= 0.5 else {
+                return "Short or different-duration recording: shown separately."
+            }
+        } else if stop.targetReps <= 0 || trial.metrics.cycleCount < stop.targetReps {
+            return "Incomplete repetition test: shown separately."
+        }
+        return nil
+    }
+
+    func supportsSizeTrend(metric: TrendMetric) -> Bool {
+        metric != .amplitude || (trial.source == .camera && trial.measurementVersion == MovementMeasurementVersion.camera)
+    }
+}
+
+struct MovementTrendDay: Identifiable {
+    let id: String
+    let date: Date
+    let recordings: [MovementTrendRecording]
+    let median: Double
+    let minimum: Double
+    let maximum: Double
+    let connects: Bool
+    var seriesID: String
+    var context: StimulationContext { recordings[0].context }
 }
 
 enum TrendPeriod: String, CaseIterable, Identifiable {
-    case week, month, all
+    case week, month, quarter, all
     var id: String { rawValue }
     var titleKey: String {
-        switch self { case .week: return "7 days"; case .month: return "30 days"; case .all: return "All dates" }
+        switch self { case .week: return "7 days"; case .month: return "30 days"; case .quarter: return "90 days"; case .all: return "All dates" }
     }
 }
 
@@ -212,7 +284,7 @@ struct MovementTrendFilters: Equatable {
     func includes(_ trial: Trial, context: StimulationContext, now: Date, calendar: Calendar) -> Bool {
         if let selected = self.context, selected != context { return false }
         if period != .all {
-            let days = period == .week ? 7 : 30
+            let days = period == .week ? 7 : (period == .month ? 30 : 90)
             guard let start = calendar.date(byAdding: .day, value: -(days - 1), to: calendar.startOfDay(for: now)),
                   trial.startedAt >= start, trial.startedAt <= now else { return false }
         }
@@ -232,13 +304,14 @@ struct MovementTrendFilters: Equatable {
 struct MovementTrendSummary {
     let recordings: [MovementTrendRecording]
     let unfilteredCount: Int
+    let days: [MovementTrendDay]
 
     init(sessions: [MovementSession], task: MovementTaskType, side: BodySide, metric: TrendMetric,
          filters: MovementTrendFilters = .init(), now: Date = Date(), calendar: Calendar = .current,
          source: SignalSource? = nil) {
         let trials = sessions.flatMap { session in
             session.trials.filter { $0.taskType == task && $0.side == side && (source == nil || $0.source == source) }
-                .map { (id: "\(session.id)/\($0.id)", context: session.stimulationContext, trial: $0) }
+                .map { (id: "\(session.id)/\($0.id)", context: session.stimulationContext, trial: $0, participantID: session.patientId) }
         }.sorted {
             if $0.trial.startedAt == $1.trial.startedAt { return $0.id < $1.id }
             return $0.trial.startedAt < $1.trial.startedAt
@@ -255,13 +328,88 @@ struct MovementTrendSummary {
                                           availability: availability, segment: segment,
                                           duration: item.trial.recordedDurationSeconds,
                                           hasSignalGaps: MovementSignalAssessment(samples: item.trial.samples,
-                                              recordedDurationSeconds: item.trial.recordedDurationSeconds).hasGaps)
+                                              recordedDurationSeconds: item.trial.recordedDurationSeconds).hasGaps,
+                                          trial: item.trial, participantID: item.participantID)
         }
+        // Filter first; summarize only within a matching context, acquisition
+        // version and protocol. Partial/gapped observations remain separate.
+        let usable = recordings.filter { $0.availability.value != nil && $0.supportsSizeTrend(metric: metric) }
+        let grouped = Dictionary(grouping: usable) { recording in
+            let day = calendar.startOfDay(for: recording.date).timeIntervalSince1970
+            return "\(day)/\(recording.comparisonKey)/\(recording.cautionKey == nil ? "complete" : recording.id)"
+        }
+        var summaries: [MovementTrendDay] = []
+        for (key, group) in grouped {
+            let records = group.sorted { $0.id < $1.id }
+            let values: [Double] = records.compactMap { $0.availability.value }.sorted()
+            let middle = values.count / 2
+            let median = values.count.isMultiple(of: 2) ? values[middle - 1] / 2 + values[middle] / 2 : values[middle]
+            let connects = records[0].cautionKey == nil && StimulationContext.patientChoices.contains(records[0].context)
+            let summary = MovementTrendDay(id: key, date: calendar.startOfDay(for: records[0].date), recordings: records,
+                                          median: median, minimum: values[0], maximum: values[values.count - 1],
+                                          connects: connects, seriesID: records[0].comparisonKey)
+            summaries.append(summary)
+        }
+        summaries.sort { $0.date == $1.date ? $0.id < $1.id : $0.date < $1.date }
+        var previousDay: [String: Date] = [:]
+        var segments: [String: Int] = [:]
+        let barriers = Dictionary(grouping: recordings.filter { $0.availability.value == nil || $0.cautionKey != nil }, by: \.comparisonKey)
+        for index in summaries.indices where summaries[index].connects {
+            let key = summaries[index].seriesID
+            let day = summaries[index].date
+            if let previous = previousDay[key], barriers[key, default: []].contains(where: {
+                let missingDay = calendar.startOfDay(for: $0.date)
+                return missingDay > previous && missingDay < day
+            }) { segments[key, default: 0] += 1 }
+            previousDay[key] = day
+            summaries[index].seriesID = "\(key)/segment-\(segments[key, default: 0])"
+        }
+        days = summaries
     }
 
     var points: [MovementTrendRecording] { recordings.filter { $0.availability.value != nil } }
     var unavailableCount: Int { recordings.count - points.count }
-    var canShowTrend: Bool { Set(points.map(\.date)).count >= 2 }
+    var canShowTrend: Bool {
+        Dictionary(grouping: days.filter(\.connects), by: \.seriesID).values.contains { $0.count >= 2 }
+    }
+    var hasStandalonePoints: Bool {
+        let counts = Dictionary(grouping: days.filter(\.connects), by: \.seriesID).mapValues(\.count)
+        return days.contains { !$0.connects || counts[$0.seriesID, default: 0] < 2 }
+    }
+
+    var noTrendExplanationKey: String? {
+        guard !days.isEmpty, !canShowTrend else { return nil }
+        let complete = days.filter(\.connects)
+        if complete.isEmpty {
+            if days.allSatisfy({ $0.recordings[0].cautionKey != nil }) {
+                return "Incomplete capture or unknown duration keeps these points separate."
+            }
+            return "Recordings with unspecified or historical stimulation timing stay separate."
+        }
+        if Set(complete.map(\.date)).count < 2 {
+            return Set(days.map(\.date)).count > 1
+                ? "Only one day has comparable complete recordings. Other points remain separate."
+                : "A line needs matching recordings on at least two different days."
+        }
+        let recordings = complete.flatMap(\.recordings)
+        if Set(recordings.map(\.participantID)).count > 1 {
+            return "Recordings with different study IDs are kept separate."
+        }
+        if Set(recordings.map { $0.trial.measurementVersion ?? "legacy" }).count > 1 {
+            return "Earlier and current measurement methods are kept separate."
+        }
+        if Set(recordings.map(\.context)).count > 1 {
+            return "Each stimulation timing needs matching recordings on at least two days."
+        }
+        if Set(recordings.map(\.comparisonKey)).count > 1 {
+            return "Different test protocols or recording sources are kept separate."
+        }
+        return "An intervening day with incomplete capture separates these trend segments."
+    }
+
+    func nearestDay(to date: Date) -> Date? {
+        days.min { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }?.date
+    }
 
     func nearest(to date: Date) -> MovementTrendRecording? {
         points.min { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }
@@ -279,6 +427,18 @@ struct MovementTrendView: View {
     @State private var metric: TrendMetric = .frequency
     @State private var filters = MovementTrendFilters()
     @State private var historyLimit = 50
+    @State private var selectedDate: Date?
+    @State private var showingMetricInfo = false
+    private var isDetail = false
+
+    init(task: MovementTaskType = .fingerTap, side: BodySide = .right,
+         metric: TrendMetric = .frequency, filters: MovementTrendFilters = .init(), isDetail: Bool = false) {
+        _taskType = State(initialValue: task)
+        _side = State(initialValue: side)
+        _metric = State(initialValue: metric)
+        _filters = State(initialValue: filters)
+        self.isDetail = isDetail
+    }
 
     private var summary: MovementTrendSummary {
         var sessions = store.sessions
@@ -334,10 +494,15 @@ struct MovementTrendView: View {
                             : L10n("Try changing the filters below.")
                     )
                     .accessibilityIdentifier("trendEmpty")
-                } else if summary.points.isEmpty {
+                } else if summary.days.isEmpty {
+                    let needsNewSize = metric == .amplitude && !summary.recordings.contains {
+                        $0.supportsSizeTrend(metric: .amplitude)
+                    }
                     resultMessage(
-                        title: L10n("Not enough movement data"),
-                        detail: L10n("This metric could not be calculated from your saved recordings.")
+                        title: L10n(needsNewSize ? "Size trend not available yet" : "Not enough movement data"),
+                        detail: L10n(needsNewSize
+                            ? "Size trends use new camera recordings. Older values remain in recording history."
+                            : "This metric could not be calculated from your saved recordings.")
                     )
                     .accessibilityIdentifier("trendUnavailable")
                 } else {
@@ -345,8 +510,9 @@ struct MovementTrendView: View {
                         .frame(minHeight: 260)
                         .padding(.vertical, 8)
                         .accessibilityIdentifier("movementTrendChart")
-                    if summary.points.count == 1 {
-                        Text(L10n("More measurements needed for a trend."))
+                    legend(summary: summary)
+                    if let explanation = summary.noTrendExplanationKey {
+                        Text(L10n(explanation))
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityIdentifier("trendSingleMeasurement")
@@ -358,14 +524,63 @@ struct MovementTrendView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             } header: {
-                Text(String(format: L10n("%@ over time"), metric.plotName(task: taskType)))
+                HStack(alignment: .firstTextBaseline) {
+                    Text(String(format: L10n("%@ over time"), metric.plotName(task: taskType)))
+                    Spacer(minLength: 8)
+                    Button { showingMetricInfo = true } label: {
+                        Image(systemName: "info.circle").font(.body).frame(minWidth: 44, minHeight: 44)
+                    }
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel(L10n("About this metric"))
+                    .help(L10n("About this metric"))
+                    .accessibilityIdentifier("trendMetricInfo")
+                }
             } footer: {
-                if !summary.points.isEmpty {
+                if !summary.days.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(L10n(metric.plotExplanationKey))
-                        Text(L10n("These values describe your recordings. They are not a clinical rating."))
+                        Text(L10n("Daily medians of matching recordings."))
+                        Text(L10n("Not a clinical score."))
                     }
                     .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            if let selectedDate, let day = summary.nearestDay(to: selectedDate) {
+                Section {
+                    ForEach(summary.days.filter { $0.date == day }) { point in
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(contextLabel(point.context)).font(.subheadline).foregroundStyle(.secondary)
+                            Text(metric.plotFormatted(point.median, task: taskType)).font(.headline)
+                            Text(String(format: L10n("Daily median · %d recording(s)"), point.recordings.count))
+                                .font(.subheadline).foregroundStyle(.secondary)
+                            if point.recordings.count > 1 {
+                                Text(String(format: L10n("Range: %@ to %@"),
+                                            metric.plotFormatted(point.minimum, task: taskType),
+                                            metric.plotFormatted(point.maximum, task: taskType)))
+                                    .font(.subheadline).foregroundStyle(.secondary)
+                            }
+                            Text(protocolLabel(point.recordings[0])).font(.caption).foregroundStyle(.secondary)
+                            if let caution = point.recordings[0].cautionKey {
+                                Text(L10n(caution)).font(.caption).foregroundStyle(.secondary)
+                            }
+                            if point.recordings.contains(where: { $0.inferredDuration != nil }) {
+                                Text(L10n("Earlier durations estimated from signal timestamps."))
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        .fixedSize(horizontal: false, vertical: true)
+                    }
+                    NavigationLink {
+                        List {
+                            ForEach(summary.recordings.filter { Calendar.current.isDate($0.date, inSameDayAs: day) }.reversed()) {
+                                recordingRow($0)
+                            }
+                        }
+                        .navigationTitle(L10n("Recordings on this day"))
+                    } label: { Label(L10n("Recordings on this day"), systemImage: "list.bullet") }
+                    .accessibilityIdentifier("trendDayRecordings")
+                } header: {
+                    Text(day, format: .dateTime.day().month().year())
+                        .accessibilityIdentifier("trendDaySummary")
                 }
             }
             Section(L10n("Filters")) {
@@ -400,6 +615,18 @@ struct MovementTrendView: View {
                         .accessibilityIdentifier("trendDoseMaximum")
                 }
             }
+            if !isDetail {
+                Section {
+                    DisclosureGroup(L10n("More details")) {
+                        ForEach(taskType == .pronationSupination ? [TrendMetric.pauses] : [.pauses, .decrement]) { detail in
+                            NavigationLink(detail.displayName) {
+                                MovementTrendView(task: taskType, side: side, metric: detail, filters: filters, isDetail: true)
+                            }
+                        }
+                    }
+                    .accessibilityIdentifier("trendMoreDetails")
+                }
+            }
             if !summary.recordings.isEmpty {
                 Section {
                     NavigationLink {
@@ -420,7 +647,35 @@ struct MovementTrendView: View {
                 }
             }
         }
-        .navigationTitle(L10n("Trends"))
+        .navigationTitle(isDetail ? metric.displayName : L10n("Trends"))
+        .sheet(isPresented: $showingMetricInfo) {
+            NavigationStack {
+                Form {
+                    Section {
+                        Text(L10n(metric.plotExplanationKey))
+                            .accessibilityIdentifier("trendMetricExplanation")
+                        Text(L10n("Daily medians. Lines join matching recordings on measured days, not changes between them."))
+                        Text(L10n("Separate points may have a different protocol or method, incomplete capture, or unknown context."))
+                        Text(L10n("These values describe your recordings. They are not a clinical rating."))
+                    }
+                }
+                .navigationTitle(metric.plotName(task: taskType))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(L10n("Done")) { showingMetricInfo = false }
+                            .accessibilityIdentifier("trendMetricInfoDone")
+                    }
+                }
+            }
+        }
+        .onChange(of: filters) { _, _ in selectedDate = nil }
+        .onChange(of: side) { _, _ in selectedDate = nil }
+        .onChange(of: metric) { _, _ in selectedDate = nil }
+        .onChange(of: taskType) { _, task in
+            selectedDate = nil
+            if !visibleMetrics.contains(metric) { metric = visibleMetrics[0] }
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink { MovementExportView() } label: {
@@ -442,10 +697,15 @@ struct MovementTrendView: View {
 
     private var metricPicker: some View {
         Picker(L10n("Metric"), selection: $metric) {
-            ForEach(TrendMetric.plotCases) { metric in
+            ForEach(visibleMetrics) { metric in
                 Text(metric.plotName(task: taskType)).tag(metric)
             }
         }
+    }
+
+    private var visibleMetrics: [TrendMetric] {
+        if isDetail { return taskType == .pronationSupination ? [.pauses] : [.pauses, .decrement] }
+        return TrendMetric.plotCases.filter { taskType != .pronationSupination || $0 != .amplitude }
     }
 
     private func selectionLabel(title: String, value: String) -> some View {
@@ -462,27 +722,112 @@ struct MovementTrendView: View {
     }
 
     private func chart(summary: MovementTrendSummary) -> some View {
-        let first = summary.points.first!.date
-        let last = summary.points.last!.date
-        let padding = max(3600, last.timeIntervalSince(first) * 0.05)
-        let maximum = summary.points.compactMap { $0.availability.value }.map(metric.plotValue).max() ?? 0
+        let first = summary.days.first!.date
+        let last = summary.days.last!.date
+        let padding = max(43200, last.timeIntervalSince(first) * 0.05)
+        let values = summary.days.map { metric.plotValue($0.median) }
+        let maximum = values.max() ?? 0
+        let minimum = values.min() ?? 0
+        let lower = min(0, minimum < -Double.greatestFiniteMagnitude / 1.15 ? minimum : minimum * 1.15)
+        let upper = max(metric == .decrement ? 0.01 : 1,
+                        maximum > Double.greatestFiniteMagnitude / 1.15 ? maximum : maximum * 1.15)
         return Chart {
-            ForEach(summary.points) { p in
-                if let value = p.availability.value {
-                    PointMark(x: .value(L10n("Date"), p.date),
-                              y: .value(metric.plotName(task: taskType), metric.plotValue(value)))
-                        .foregroundStyle(Color.accentColor)
-                        .symbolSize(80)
-                        .accessibilityLabel("\(contextLabel(p.context)), \(p.date.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened).locale(Locale(identifier: AppSettings.shared.language.rawValue))))")
-                        .accessibilityValue(metric.plotFormatted(value, task: taskType))
+            ForEach(summary.days) { point in
+                if point.connects {
+                    LineMark(x: .value(L10n("Date"), point.date),
+                             y: .value(metric.plotName(task: taskType), metric.plotValue(point.median)),
+                             series: .value("Series", point.seriesID))
+                        .foregroundStyle(contextColor(point.context))
+                        .lineStyle(StrokeStyle(lineWidth: 2, dash: contextDash(point.context)))
+                        .interpolationMethod(.linear)
+                        .accessibilityHidden(true)
                 }
+                PointMark(x: .value(L10n("Date"), point.date),
+                          y: .value(metric.plotName(task: taskType), metric.plotValue(point.median)))
+                    .foregroundStyle(point.recordings[0].cautionKey == nil ? contextColor(point.context) : Color.secondary)
+                    .symbol(contextSymbol(point.context))
+                    .symbolSize(60)
+                    .accessibilityLabel("\(contextLabel(point.context)), \(point.date.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(Locale(identifier: AppSettings.shared.language.rawValue)))), \(L10n("Daily median")), \(protocolLabel(point.recordings[0]))")
+                    .accessibilityValue(metric.plotFormatted(point.median, task: taskType))
+            }
+            if let selectedDate, let day = summary.nearestDay(to: selectedDate) {
+                RuleMark(x: .value(L10n("Date"), day)).foregroundStyle(.secondary.opacity(0.35))
+                    .accessibilityHidden(true)
             }
         }
         .chartXScale(domain: first.addingTimeInterval(-padding)...last.addingTimeInterval(padding))
-        .chartYScale(domain: 0...max(1, maximum <= Double.greatestFiniteMagnitude / 1.15 ? maximum * 1.15 : maximum))
+        .chartYScale(domain: lower...upper)
         .chartXAxis { AxisMarks(preset: .aligned, values: .automatic(desiredCount: 3)) }
         .chartYAxisLabel(metric.plotUnit(task: taskType))
         .chartLegend(.hidden)
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                Rectangle().fill(.clear).contentShape(Rectangle())
+                    .onTapGesture { location in
+                        if let frame = proxy.plotFrame {
+                            let rect = geometry[frame]
+                            guard rect.contains(location) else { return }
+                            let date: Date? = proxy.value(atX: location.x - rect.minX)
+                            selectedDate = date.flatMap { summary.nearestDay(to: $0) }
+                        }
+                    }
+                    .accessibilityHidden(true)
+            }
+        }
+        .accessibilityAction(named: Text(L10n("Latest day"))) { selectedDate = summary.days.last?.date }
+    }
+
+    private func contextColor(_ context: StimulationContext) -> Color {
+        switch context {
+        case .preStim: return .blue
+        case .postStim: return .orange
+        case .noStimPlanned: return .teal
+        default: return .secondary
+        }
+    }
+
+    private func contextSymbol(_ context: StimulationContext) -> BasicChartSymbolShape {
+        switch context {
+        case .preStim: return .circle
+        case .postStim: return .diamond
+        case .noStimPlanned: return .square
+        default: return .cross
+        }
+    }
+
+    private func contextDash(_ context: StimulationContext) -> [CGFloat] {
+        switch context { case .postStim: return [6, 3]; case .noStimPlanned: return [2, 3]; default: return [] }
+    }
+
+    private func legend(summary: MovementTrendSummary) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(StimulationContext.allCases.filter { context in summary.days.contains { $0.context == context } }) { context in
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Image(systemName: context == .preStim ? "circle.fill" : context == .postStim ? "diamond.fill"
+                          : context == .noStimPlanned ? "square.fill" : "xmark")
+                        .foregroundStyle(contextColor(context)).font(.caption).accessibilityHidden(true)
+                    Text(contextLabel(context)).font(.caption).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            if summary.hasStandalonePoints {
+                Text(L10n("Unmatched recordings remain separate."))
+                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            if summary.days.contains(where: { $0.recordings.contains(where: { $0.inferredDuration != nil }) }) {
+                Text(L10n("Earlier durations estimated from signal timestamps."))
+                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("trendEstimatedDurations")
+            }
+        }
+    }
+
+    private func protocolLabel(_ recording: MovementTrendRecording) -> String {
+        let stop = recording.trial.stopCondition
+        let protocolName = stop.mode == .duration
+            ? String(format: L10n("%.0f-second test"), stop.targetDuration)
+            : String(format: L10n("%d-repetition test"), stop.targetReps)
+        return protocolName + " · " + L10n(recording.trial.measurementVersion == nil ? "Earlier measurement method" : "Current measurement method")
+            + " · " + recording.participantID
     }
 
     private func resultMessage(title: String, detail: String) -> some View {
@@ -503,7 +848,8 @@ struct MovementTrendView: View {
     private func recordingRow(_ recording: MovementTrendRecording) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             if let value = recording.availability.value {
-                Text(metric.plotFormatted(value, task: taskType))
+                Text(metric == .amplitude && !recording.supportsSizeTrend(metric: metric)
+                     ? metric.formatted(value) : metric.plotFormatted(value, task: taskType))
                     .font(.headline)
                     .accessibilityIdentifier("trendRecordingValue")
             } else {
@@ -519,6 +865,11 @@ struct MovementTrendView: View {
             Text(contextLabel(recording.context))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+            Text(protocolLabel(recording)).font(.caption).foregroundStyle(.secondary)
+            if metric == .amplitude && !recording.supportsSizeTrend(metric: metric) {
+                Text(L10n("Older size measurement: different scale, not used in the size trend."))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             if let timing = recording.medicationTiming {
                 MovementMedicationSummary(timing: timing, recordedAt: recording.date)
             } else {
@@ -527,9 +878,14 @@ struct MovementTrendView: View {
             if let duration = recording.duration, duration.isFinite, duration >= 0 {
                 Text(String(format: L10n("Recorded: %.1f seconds"), locale: Locale(identifier: AppSettings.shared.language.rawValue), duration))
                     .font(.subheadline).foregroundStyle(.secondary)
+            } else if let duration = recording.inferredDuration {
+                Text(String(format: L10n("Approx. %.1f seconds (estimated from signal)"),
+                            locale: Locale(identifier: AppSettings.shared.language.rawValue), duration))
+                    .font(.subheadline).foregroundStyle(.secondary)
+                    .accessibilityIdentifier("trendInferredDuration")
             }
-            if recording.hasSignalGaps {
-                Text(L10n("Signal has gaps. These values may be less reliable."))
+            if let caution = recording.cautionKey {
+                Text(L10n(caution))
                     .font(.subheadline).foregroundStyle(.secondary)
             }
         }
@@ -551,7 +907,7 @@ private enum MovementTrendFixtures {
               arguments.indices.contains(index + 1) else { return nil }
         let scenario = arguments[index + 1]
         let date = Date(timeIntervalSince1970: 1_790_000_000)
-        let samples = (0..<60).map { TimestampedSample(t: Double($0) / 10, value: sin(Double($0)) + 1) }
+        let samples = (0..<300).map { TimestampedSample(t: Double($0) / 10, value: sin(Double($0)) + 1) }
         let metrics = MovementMetrics(cycleCount: 10, frequencyHz: 2, meanAmplitude: 0.3,
                                       amplitudeDecrementSlope: 0, rhythmCV: 0.1, pauseCount: 0,
                                       onsetLatencySec: 0, qualityIndex: 0.8)
@@ -561,7 +917,7 @@ private enum MovementTrendFixtures {
             let trial = Trial(taskType: .fingerTap, side: .right, source: .synthetic,
                               stopCondition: .thirtySec, startedAt: startedAt,
                               samples: available ? samples : [], metrics: available ? metrics : .empty,
-                              medicationTiming: medication, recordedDurationSeconds: 6)
+                              medicationTiming: medication, recordedDurationSeconds: 30)
             return MovementSession(patientId: "UI-FIXTURE", date: startedAt,
                                    stimulationContext: context, trials: [trial])
         }
@@ -570,8 +926,40 @@ private enum MovementTrendFixtures {
         case "unavailable": return [session(offset: 0, available: false)]
         case "single": return [session(offset: 0, available: true)]
         case "mixed": return [session(offset: 0, available: true), session(offset: 3600, available: false)]
-        case "multiple": return [session(offset: 0, available: true), session(offset: 3600, available: false),
-                                 session(offset: 7200, available: true)]
+        case "multiple": return [session(offset: 0, available: true, context: .preStim),
+                                 session(offset: 86400, available: true, context: .preStim),
+                                 session(offset: 172800, available: false, context: .preStim)]
+        case "legacy-duration", "split-method":
+            let legacySamples = (0...900).map {
+                TimestampedSample(t: 0.02 + Double($0) / 30, value: sin(Double($0)) + 1)
+            }
+            let legacy = (0..<(scenario == "legacy-duration" ? 2 : 1)).map { day in
+                let trial = Trial(taskType: .fingerTap, side: .right, source: .camera, stopCondition: .thirtySec,
+                                  startedAt: date.addingTimeInterval(Double(day) * 86400),
+                                  samples: legacySamples, metrics: metrics)
+                return MovementSession(patientId: "UI-FIXTURE", stimulationContext: .preStim, trials: [trial])
+            }
+            let current = Trial(taskType: .fingerTap, side: .right, source: .camera, stopCondition: .thirtySec,
+                                startedAt: date.addingTimeInterval(2 * 86400), samples: samples, metrics: metrics,
+                                recordedDurationSeconds: 30, measurementVersion: MovementMeasurementVersion.camera)
+            return legacy + [MovementSession(patientId: "UI-FIXTURE", stimulationContext: .preStim, trials: [current])]
+        case "daily":
+            func current(_ offset: TimeInterval, _ rate: Double, context: StimulationContext = .preStim,
+                         duration: Double = 30, version: String? = MovementMeasurementVersion.camera) -> MovementSession {
+                var values = metrics
+                values.frequencyHz = rate
+                values.meanAmplitude = rate / 5
+                let trial = Trial(taskType: .fingerTap, side: .right, source: .camera, stopCondition: .thirtySec,
+                                  startedAt: date.addingTimeInterval(offset),
+                                  samples: samples.filter { $0.t < duration }, metrics: values,
+                                  recordedDurationSeconds: duration, measurementVersion: version)
+                return MovementSession(patientId: "UI-FIXTURE", stimulationContext: context, trials: [trial])
+            }
+            return [current(0, 2), current(1800, 4), current(86400, 3.2), current(172800, 3.4),
+                    current(0, 3.5, context: .postStim), current(86400, 3.7, context: .postStim),
+                    current(172800, 3.8, context: .postStim), current(86400, 2.5, context: .noStimPlanned),
+                    current(172800, 2.8, context: .noStimPlanned), current(86400, 1, context: .unspecified),
+                    current(172800, 1.5, duration: 5), current(259200, 2, version: nil)]
         case "contexts": return [
             session(offset: 0, available: true, context: .preStim,
                     medication: MedicationTiming(status: .takenAt, takenAt: date.addingTimeInterval(-3600))),

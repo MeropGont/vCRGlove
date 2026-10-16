@@ -1,3 +1,5 @@
+> **Historical changelog.** This July snapshot predates private video storage and the current recording flow. Use the [documentation index](README.md) for current behaviour; the no-video statement below is no longer current.
+
 ## 2026-07-08 · Movement Task Module: Kamera-Erfassung via Vision Hand Pose (Task B)
 
 Branch: main (lokal, uncommitted — kein Git-Commit gewünscht)  ·  Status: kompiliert (Simulator + Geräte-Compile ok; **Verifikation am echten iPhone ausstehend** — Simulator hat keine Kamera)

@@ -118,9 +118,9 @@ These are engineering/research proposals, not validated clinical rules:
    only within each task and hand; do not introduce a cross-task or bilateral
    total. Keep capture adequacy separate from motor impairment.
 
-## Trends: Decision Pending
+## Trends: Implemented 16 October 2026
 
-Recommended view: daily median points connected separately by stimulation context.
+Approved view: daily median points connected separately by stimulation context.
 Date/context/medication filters act before aggregation. Each daily point should
 show count/range and link to the original recordings in history.
 
@@ -136,6 +136,7 @@ slow/small movements as bad capture. Duration, capture gaps and calibration or
 protocol differences need explicit handling before estimating a slope or
 claiming clinically meaningful change.
 
-Daily medians versus individual-recording lines requires user approval before
-implementation. One day in a context shows its value without invented trend
-or extrapolation.
+The user approved implementation. One day in a context shows its value without
+an invented trend or extrapolation. Protocol/version differences and incomplete
+recordings are handled explicitly; see [implemented results](MOVEMENT_RESULTS.md).
+Velocity estimation and clinical composites remain research, not implemented scores.

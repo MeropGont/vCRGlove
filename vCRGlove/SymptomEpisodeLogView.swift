@@ -9,22 +9,40 @@ import SwiftUI
 
 struct SymptomEpisodeLogView: View {
     let date: Date
+    private let entryID: UUID?
+    private let originalSymptoms: Set<String>
+    private let originalSeverity: SymptomSeverity?
 
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedTime = Date()
-    @State private var selectedSymptoms: Set<SymptomTag> = []
+    @State private var selectedSymptoms: Set<String> = []
     @State private var severity: SymptomSeverity? = nil
     @State private var motorState: MotorState? = nil
     @State private var note = ""
+    @State private var saveFailed = false
 
     private let calendar = Calendar.current
+
+    init(date: Date, editing entry: JournalEntry? = nil) {
+        self.date = entry?.date ?? date
+        entryID = entry?.id
+        originalSymptoms = Set(entry?.symptoms ?? [])
+        originalSeverity = entry?.symptomSeverity
+        _selectedTime = State(initialValue: entry?.date ?? Date())
+        _selectedSymptoms = State(initialValue: Set(entry?.symptoms ?? []))
+        _severity = State(initialValue: entry?.symptomSeverity)
+        _motorState = State(initialValue: entry?.motorState)
+        _note = State(initialValue: entry?.note ?? "")
+    }
     
     private var isSaveDisabled: Bool {
-        selectedSymptoms.isEmpty || severity == nil
+        if entryID != nil && selectedSymptoms == originalSymptoms && severity == originalSeverity { return false }
+        return selectedSymptoms.isEmpty || severity == nil
     }
 
     private var saveRequirementMessage: String? {
+        guard isSaveDisabled else { return nil }
         switch (selectedSymptoms.isEmpty, severity == nil) {
         case (true, true):
             return L10n("Select at least one symptom and its intensity.")
@@ -50,17 +68,17 @@ struct SymptomEpisodeLogView: View {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 145))], spacing: 10) {
                     ForEach(SymptomTag.allCases) { symptom in
                         Button {
-                            if selectedSymptoms.contains(symptom) {
-                                selectedSymptoms.remove(symptom)
+                            if selectedSymptoms.contains(symptom.rawValue) {
+                                selectedSymptoms.remove(symptom.rawValue)
                             } else {
-                                selectedSymptoms.insert(symptom)
+                                selectedSymptoms.insert(symptom.rawValue)
                             }
                         } label: {
                             HStack {
                                 Text(symptom.displayName)
                                     .font(.subheadline)
                                 Spacer()
-                                if selectedSymptoms.contains(symptom) {
+                                if selectedSymptoms.contains(symptom.rawValue) {
                                     Image(systemName: "checkmark.circle.fill")
                                 }
                             }
@@ -68,10 +86,12 @@ struct SymptomEpisodeLogView: View {
                             .padding(.vertical, 10)
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(selectedSymptoms.contains(symptom) ? Color.blue.opacity(0.15) : Color(.systemGray6))
+                                    .fill(selectedSymptoms.contains(symptom.rawValue) ? Color.blue.opacity(0.15) : Color(.systemGray6))
                             )
                         }
                         .buttonStyle(.plain)
+                        .accessibilityIdentifier("journalSymptom-\(symptom.rawValue)")
+                        .accessibilityAddTraits(selectedSymptoms.contains(symptom.rawValue) ? .isSelected : [])
                     }
                 }
 
@@ -102,6 +122,7 @@ struct SymptomEpisodeLogView: View {
                 TextField(L10n("Add details"), text: $note, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(3...6)
+                    .accessibilityIdentifier("journalSymptomNote")
             }
             .padding()
             .padding(.bottom, 90)
@@ -122,21 +143,30 @@ struct SymptomEpisodeLogView: View {
                         date: combinedDate,
                         type: .symptom,
                         symptomSeverity: severity,
-                        symptoms: selectedSymptoms
-                            .map { $0.rawValue }
-                            .sorted(),
+                        symptoms: selectedSymptoms.sorted(),
                         note: cleanNote.isEmpty ? nil : cleanNote,
                         motorState: motorState
                     )
 
-                    JournalStore.shared.add(entry)
-                    dismiss()
+                    let saved: Bool
+                    if let entryID {
+                        saved = JournalStore.shared.updateSymptom(id: entryID, date: combinedDate, severity: severity,
+                            symptoms: entry.symptoms, motorState: motorState, note: entry.note)
+                    } else {
+                        saved = JournalStore.shared.add(entry)
+                    }
+                    if saved {
+                        dismiss()
+                    } else {
+                        saveFailed = true
+                    }
                 } label: {
-                    Text(L10n("Save Symptom Episode"))
+                    Text(L10n(entryID == nil ? "Save Symptom Episode" : "Save changes"))
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(isSaveDisabled)
+                .accessibilityIdentifier("journalSaveSymptom")
                 .accessibilityHint(
                     Text(
                         saveRequirementMessage
@@ -149,9 +179,13 @@ struct SymptomEpisodeLogView: View {
         }
         .navigationTitle(L10n("Symptom"))
         .navigationBarTitleDisplayMode(.inline)
+        .journalSaveAlert(isPresented: $saveFailed)
     }
 
     private var combinedDate: Date {
+        if entryID != nil, calendar.compare(selectedTime, to: date, toGranularity: .minute) == .orderedSame {
+            return date
+        }
         let day = calendar.dateComponents([.year, .month, .day], from: date)
         let time = calendar.dateComponents([.hour, .minute], from: selectedTime)
 
@@ -161,6 +195,7 @@ struct SymptomEpisodeLogView: View {
         components.day = day.day
         components.hour = time.hour
         components.minute = time.minute
+        components.second = calendar.component(.second, from: selectedTime)
 
         return calendar.date(from: components) ?? date
     }
@@ -186,5 +221,7 @@ struct SymptomEpisodeLogView: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("journalSymptomChoice-\(title)")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

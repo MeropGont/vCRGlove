@@ -9,7 +9,8 @@ import Foundation
 
 final class EventStore {
     static let shared = EventStore()
-    private init() {}
+    private let directory: URL?
+    init(directory: URL? = nil) { self.directory = directory }
 
     private let iso: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
@@ -18,6 +19,7 @@ final class EventStore {
     }()
 
     private func logsDirectory() throws -> URL {
+        if let directory { return directory }
         let docs = try FileManager.default.url(for: .documentDirectory,
                                                in: .userDomainMask,
                                                appropriateFor: nil,
@@ -76,7 +78,29 @@ final class EventStore {
         try? eventFileURL()
     }
 
+    func copyExportSnapshot(to destination: URL) async throws -> [String] {
+        let logs = try logsDirectory()
+        return try await withCheckedThrowingContinuation { continuation in
+            ioQueue.async {
+                do {
+                    var absent = [String]()
+                    for name in ["events.jsonl", "handshake.jsonl"] {
+                        let path = "logs/\(name)"
+                        if try !FullDataExporter.copyFile(logs.appendingPathComponent(name), to: destination.appendingPathComponent(path)) {
+                            absent.append(path)
+                        }
+                    }
+                    continuation.resume(returning: absent)
+                } catch { continuation.resume(throwing: error) }
+            }
+        }
+    }
+
     func clearEventLog(patientID: String) {
+        ioQueue.async { self.clearStoredLog(patientID: patientID) }
+    }
+
+    private func clearStoredLog(patientID: String) {
         do {
             let url = try eventFileURL()
 

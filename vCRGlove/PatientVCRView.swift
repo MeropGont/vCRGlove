@@ -24,8 +24,6 @@ struct PatientVCRView: View {
     @State private var missingActivePositions: Set<String> = []
     @State private var sessionMessage: String?
     @State private var sessionMonitorTimer: Timer?
-    @State private var sessionWasStarted = false
-    @State private var sessionPausedForNoGloves = false
 
 
 
@@ -118,6 +116,10 @@ struct PatientVCRView: View {
 
                 sessionCard
 
+                if vm.researchUnlocked {
+                    ResearchStimulationControls(vm: vm)
+                }
+
                 troubleshootingLink
 
                 Text(L10n("Keep this app open during stimulation."))
@@ -133,7 +135,6 @@ struct PatientVCRView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .navigationBar)
         .onAppear {
-            applyPatientPreset()
             startSessionMonitor()
         }
         .onDisappear {
@@ -158,12 +159,12 @@ struct PatientVCRView: View {
 
     private func monitorPatientSession() {
         if !isSessionRunning {
-            if sessionWasStarted && remainingSeconds == 0 {
+            if vm.patientSessionWasStarted && remainingSeconds == 0 {
                 sessionMessage = completionMessageForCurrentPlan()
                 Logger.shared.log("vCR", "Patient session completed")
                 patientSessionActive = false
-                sessionWasStarted = false
-                sessionPausedForNoGloves = false
+                vm.patientSessionWasStarted = false
+                vm.patientSessionPausedForNoGloves = false
             }
             return
         }
@@ -173,8 +174,16 @@ struct PatientVCRView: View {
         let stillReadyActivePositions = currentlyActive.intersection(readyPositions)
         let disconnectedActivePositions = currentlyActive.subtracting(readyPositions)
 
+        if vm.isCheckingFingers {
+            if !disconnectedActivePositions.isEmpty {
+                stopSession()
+                sessionMessage = "research.fingerCheckInterrupted"
+            }
+            return
+        }
+
         if !currentlyActive.isEmpty && stillReadyActivePositions.isEmpty {
-            if !sessionPausedForNoGloves {
+            if !vm.patientSessionPausedForNoGloves {
                 sessionMessage = "Gloves disconnected. Turn them on and scan again to continue."
                 Logger.shared.log("vCR", "Patient session paused: no active gloves connected")
 
@@ -182,7 +191,7 @@ struct PatientVCRView: View {
                     vm.pauseVibration(position: position)
                 }
 
-                sessionPausedForNoGloves = true
+                vm.patientSessionPausedForNoGloves = true
                 missingActivePositions = currentlyActive
                 autoPairAttemptedIDs.removeAll()
 
@@ -210,10 +219,10 @@ struct PatientVCRView: View {
             }
         }
 
-        if sessionPausedForNoGloves && !stillReadyActivePositions.isEmpty {
+        if vm.patientSessionPausedForNoGloves && !stillReadyActivePositions.isEmpty {
             sessionMessage = "Gloves reconnected. Press Resume to continue."
             Logger.shared.log("vCR", "Glove connection restored during paused patient session")
-            sessionPausedForNoGloves = false
+            vm.patientSessionPausedForNoGloves = false
             missingActivePositions.removeAll()
         }
 
@@ -231,7 +240,7 @@ struct PatientVCRView: View {
             let remaining = max(remainingSeconds, 1)
             vm.startVibration(position: glove.pos, durationSeconds: remaining)
 
-            if isSessionPaused || sessionPausedForNoGloves {
+            if isSessionPaused || vm.patientSessionPausedForNoGloves {
                 vm.pauseVibration(position: glove.pos)
                 Logger.shared.log("vCR", "Added \(glove.prettyName) to paused patient session with \(remaining)s remaining")
             } else {
@@ -244,9 +253,11 @@ struct PatientVCRView: View {
         guard sessionMonitorTimer == nil else { return }
 
         let timer = Timer(timeInterval: 1.0, repeats: true) { _ in
-            vm.refreshDevices()
-            stopScanningWhenBothGlovesReady()
-            monitorPatientSession()
+            Task { @MainActor in
+                vm.refreshDevices()
+                stopScanningWhenBothGlovesReady()
+                monitorPatientSession()
+            }
         }
 
         RunLoop.main.add(timer, forMode: .common)
@@ -281,7 +292,8 @@ struct PatientVCRView: View {
                             .fill(isSessionPaused ? Color.orange : Color.indigo)
                             .frame(width: 10, height: 10)
 
-                        Text(isSessionPaused ? L10n("Paused") : L10n("Stimulation running"))
+                        Text(vm.isCheckingFingers ? L10n("research.fingerCheck")
+                             : isSessionPaused ? L10n("Paused") : L10n("Stimulation running"))
                             .font(.headline)
 
                         Spacer()
@@ -309,6 +321,7 @@ struct PatientVCRView: View {
                     ) {
                         togglePauseSession()
                     }
+                    .disabled(vm.isCheckingFingers)
 
                     holdStopButton
                 }
@@ -340,7 +353,7 @@ struct PatientVCRView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(isVCRCompleteToday ? .gray : .green)
-                .disabled(readyGloves.isEmpty || isVCRCompleteToday)
+                .disabled(readyGloves.isEmpty || isVCRCompleteToday || vm.configurationNeedsReview)
             }
         }
         .frame(maxWidth: .infinity)
@@ -427,6 +440,13 @@ struct PatientVCRView: View {
                     .foregroundStyle(.orange)
             }
 
+            if vm.configurationNeedsReview {
+                Text(L10n("research.configurationReview"))
+                    .font(.callout)
+                    .foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
             if !isSessionRunning {
                 HStack(spacing: 8) {
                     setupStep("1", "Turn gloves on")
@@ -488,7 +508,7 @@ struct PatientVCRView: View {
     private func gloveStatusCard(title: String, assetName: String, glove: HDevice?) -> some View {
         let isReady = glove?.isReadyForStimulation == true
         let isStimulating = glove.flatMap { vm.countdowns[$0.pos] } ?? 0 > 0
-        let canBuzz = isReady && !isStimulating
+        let canBuzz = isReady && !vm.hasStimulationSession && !vm.configurationNeedsReview
         let battery = batteryForGlove(title: title, fallback: glove?.battery)
 
         return VStack(spacing: 10) {
@@ -634,23 +654,16 @@ struct PatientVCRView: View {
         return String(format: L10n("%d glove(s) ready."), readyGloves.count)
     }
 
-    private func applyPatientPreset() {
-        vm.vcrMode = true
-        vm.amplitude = VCRPreset.amplitude
-        vm.frequency = VCRPreset.frequency
-        vm.pulseMs = Double(VCRPreset.pulseMs)
-        vm.fingersPerCycle = VCRPreset.fingersPerCycle
-    }
-
     private func startSession() {
-        applyPatientPreset()
         vm.clearTimingCompromiseWarning()
         vm.totalSeconds = Double(currentSessionDurationSeconds)
 
         vm.startVibrationWithFingerCheck(positions: readyGloves.map(\.pos))
+        guard vm.hasStimulationSession else { return }
 
         patientSessionActive = true
-        sessionWasStarted = true
+        vm.patientSessionWasStarted = true
+        vm.patientSessionPausedForNoGloves = false
         sessionMessage = nil
         missingActivePositions.removeAll()
 
@@ -665,9 +678,10 @@ struct PatientVCRView: View {
     private func stopSession() {
         for position in activePositions {
             vm.stopVibration(position: position)
-            patientSessionActive = false
-            sessionWasStarted = false
         }
+        patientSessionActive = false
+        vm.patientSessionWasStarted = false
+        vm.patientSessionPausedForNoGloves = false
     }
 
     private func startStopHold() {
