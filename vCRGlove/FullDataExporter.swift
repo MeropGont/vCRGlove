@@ -35,6 +35,7 @@ enum FullDataExporter {
     // Export only app-owned study settings, never credentials or the entire preferences domain.
     static let settingsKeys = [
         "patientID", "studyStartDate", "patientStudyNotes", "deviceAssignmentNotes", "protocolNotes",
+        "movementTrendIdentityLinks",
         StimulationProfileStore.key, "calibratedHandScale", "vcrSessionPlan",
         "vcrSplitCompletionDate", "vcrSplitCompletionCount", "vcrFourHourCompletionDate",
         "appLanguage", "appFontSize", "notificationsEnabled", "vcrReminderEnabled",
@@ -117,6 +118,7 @@ enum FullDataExporter {
     ISO-8601 timestamps. Trials use startedAt for their recording time.
     tasks/videos/: All retained private task movies, including any orphaned movies.
     study-settings.plist: App-owned study/profile/preferences and pending upload data.
+    It may include explicit local test-session display links; original session IDs are unchanged.
     Data-valued preferences (including the stimulation profile) are base64 in this plist.
     manifest.json: UTC export interval, app version, original time zone, file sizes and
     SHA-256 hashes (excluding the manifest itself), absent stores and missing video files.

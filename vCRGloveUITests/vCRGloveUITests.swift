@@ -482,6 +482,17 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
+    private func openMovementVideoLibrary(in app: XCUIApplication) {
+        let folder = app.buttons["movementVideoLibrary"]
+        if app.launchArguments.contains("--ui-test-video-library") {
+            let ready = expectation(for: NSPredicate(format: "value == %@", "4"), evaluatedWith: folder)
+            wait(for: [ready], timeout: 15)
+        }
+        revealMovementControl(folder, in: app)
+        folder.tap()
+    }
+
+    @MainActor
     private func revealMovementControl(_ element: XCUIElement, in app: XCUIApplication) {
         let next = app.buttons["movementContextContinue"]
         let save = app.buttons["movementSaveContinue"]
@@ -732,6 +743,141 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
+    func testConsistentTrendAnalysisAndSeparationReasonsEnglishGerman() throws {
+        for (language, size) in [("en", "standard"), ("de", "extraLarge")] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-trend-scenario", "consistent-analysis",
+                                   "-appLanguage", language, "-appFontSize", size]
+            app.launch()
+            app.tabBars.buttons[language == "de" ? "Bewegung" : "Movement"].tap()
+            app.buttons["Trends"].tap()
+            let chart = app.descendants(matching: .any)["movementTrendChart"].firstMatch
+            XCTAssertTrue(chart.waitForExistence(timeout: 8))
+            let note = app.staticTexts["trendReanalysisNote"]
+            XCTAssertFalse(note.exists)
+            XCTAssertFalse(app.staticTexts["trendEstimatedDurations"].exists)
+            let cleanChart = XCTAttachment(screenshot: app.screenshot())
+            cleanChart.name = "Patient trend without technical footnotes \(language)"
+            cleanChart.lifetime = .keepAlways
+            add(cleanChart)
+            let info = app.buttons["trendMetricInfo"]
+            revealMovementControl(info, in: app)
+            info.tap()
+            for _ in 0..<8 where !note.isHittable { app.collectionViews.firstMatch.swipeUp() }
+            XCTAssertTrue(note.isHittable)
+            XCTAssertEqual(note.label, language == "de" ? "Frühere Aufnahmen für diesen Verlauf neu ausgewertet."
+                                                       : "Earlier recordings reanalysed for this trend.")
+            app.buttons["trendMetricInfoDone"].tap()
+            let why = app.buttons["trendSeparationInfo"]
+            revealMovementControl(why, in: app)
+            why.tap()
+            XCTAssertTrue(app.staticTexts[language == "de" ? "Aufnahmen mit unterschiedlichen Studien-IDs bleiben getrennt."
+                                                          : "Recordings with different study IDs are kept separate."].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.staticTexts[language == "de" ? "Frühere und aktuelle Messverfahren bleiben getrennt."
+                                                          : "Earlier and current measurement methods are kept separate."].exists)
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Trend separation reasons \(language) \(size)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            app.buttons["trendSeparationDone"].tap()
+            let history = app.buttons["trendRecordingHistory"]
+            revealMovementControl(history, in: app)
+            history.tap()
+            let rowNote = app.staticTexts["trendRecordingReanalysis"].firstMatch
+            revealMovementControl(rowNote, in: app)
+            XCTAssertTrue(rowNote.label.contains(language == "de" ? "Originalwerte" : "Original values"))
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testStudyIDRequiresExplicitSaveAndConfirmationEnglish() throws {
+        try checkStudyIDWorkflow(language: "en")
+    }
+
+    @MainActor
+    func testStudyIDRequiresExplicitSaveAndConfirmationGerman() throws {
+        try checkStudyIDWorkflow(language: "de")
+    }
+
+    @MainActor
+    private func checkStudyIDWorkflow(language: String) throws {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                                   "--ui-test-stimulation-profile", UUID().uuidString,
+                                   "-appLanguage", language, "-appFontSize", "standard"]
+            app.launch()
+            let settings = language == "de" ? "Einstellungen" : "Settings"
+            app.tabBars.buttons[settings].tap()
+            revealSettingsControl(app.buttons["researchUnlockEntry"], in: app)
+            app.buttons["researchUnlockEntry"].tap()
+            app.secureTextFields["researchPassword"].tap()
+            app.secureTextFields["researchPassword"].typeText("vcr2026")
+            app.buttons["researchUnlockConfirm"].tap()
+
+            func openResearch() {
+                let tools = app.buttons["researchTools"]
+                XCTAssertTrue(app.secureTextFields["researchPassword"].waitForNonExistence(timeout: 5))
+                let form = app.collectionViews.firstMatch
+                for _ in 0..<8 {
+                    if tools.exists && tools.isHittable && tools.frame.maxY < app.tabBars.firstMatch.frame.minY - 8 { break }
+                    form.swipeUp()
+                }
+                XCTAssertTrue(tools.isHittable)
+                XCTAssertLessThan(tools.frame.maxY, app.tabBars.firstMatch.frame.minY)
+                tools.tap()
+            }
+            func enterID(_ value: String) {
+                let field = app.textFields["researchStudyID"]
+                revealSettingsControl(field, in: app, fullyVisible: false)
+                field.tap()
+                let current = field.value as? String ?? ""
+                field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count) + value + "\n")
+            }
+            func save() {
+                let button = app.buttons["researchSaveMetadata"]
+                revealSettingsControl(button, in: app)
+                button.tap()
+            }
+            func checkProfile(_ value: String) {
+                app.navigationBars.buttons.element(boundBy: 0).tap()
+                let profile = app.buttons["settingsProfile"]
+                let form = app.collectionViews.firstMatch
+                for _ in 0..<8 where !profile.isHittable { form.swipeDown() }
+                XCTAssertTrue(profile.isHittable)
+                profile.tap()
+                XCTAssertEqual(app.staticTexts["profileStudyID"].label, value)
+                XCTAssertFalse(app.textFields.firstMatch.exists)
+                app.navigationBars.buttons.element(boundBy: 0).tap()
+            }
+            openResearch()
+            enterID("TEAM-UI-A")
+            save()
+            if app.alerts.firstMatch.waitForExistence(timeout: 2) { app.buttons.matching(identifier: "researchConfirmStudyID").firstMatch.tap() }
+            checkProfile("TEAM-UI-A")
+            openResearch()
+            enterID("TEAM-UI-B")
+            checkProfile("TEAM-UI-A") // Typing alone cannot change the stored ID.
+            openResearch()
+            enterID("TEAM-UI-B")
+            save()
+            XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5))
+            app.alerts.buttons[language == "de" ? "Abbrechen" : "Cancel"].tap()
+            checkProfile("TEAM-UI-A")
+            openResearch()
+            enterID("TEAM-UI-B")
+            save()
+            app.buttons.matching(identifier: "researchConfirmStudyID").firstMatch.tap()
+            checkProfile("TEAM-UI-B")
+            app.terminate()
+            app.launch()
+            app.tabBars.buttons[settings].tap()
+            app.buttons["settingsProfile"].tap()
+            XCTAssertEqual(app.staticTexts["profileStudyID"].label, "TEAM-UI-B")
+            app.terminate()
+    }
+
+    @MainActor
     func testDailyMovementTrendsSizeSelectionAndMoreDetails() throws {
         try checkDailyMovementTrends(configurations: [("en", "standard"), ("de", "standard")])
     }
@@ -754,9 +900,15 @@ final class vCRGloveUITests: XCTestCase {
             let chart = app.descendants(matching: .any)["movementTrendChart"].firstMatch
             XCTAssertTrue(chart.waitForExistence(timeout: 8))
             let estimate = app.staticTexts["trendEstimatedDurations"]
-            revealMovementControl(estimate, in: app)
+            XCTAssertFalse(estimate.exists)
+            let info = app.buttons["trendMetricInfo"]
+            revealMovementControl(info, in: app)
+            info.tap()
+            for _ in 0..<8 where !estimate.isHittable { app.collectionViews.firstMatch.swipeUp() }
+            XCTAssertTrue(estimate.isHittable)
             XCTAssertEqual(estimate.label, german ? "Dauer älterer Aufnahmen aus Signalzeitstempeln geschätzt."
                                                 : "Earlier durations estimated from signal timestamps.")
+            app.buttons["trendMetricInfoDone"].tap()
             XCTAssertFalse(app.staticTexts["trendSingleMeasurement"].exists)
             let screenshot = XCTAttachment(screenshot: app.screenshot())
             screenshot.name = "Restored legacy trend \(language)"
@@ -925,8 +1077,8 @@ final class vCRGloveUITests: XCTestCase {
                 XCTAssertEqual(hint.label, german ? "Aufnahmen mit nicht angegebenem oder früherem Stimulationszeitpunkt bleiben getrennt."
                                                   : "Recordings with unspecified or historical stimulation timing stay separate.")
                 if scenario == "mixed" {
-                    XCTAssertTrue(app.staticTexts[german ? "Aufnahmen ohne diesen Messwert: 1"
-                                                         : "Results unavailable for this metric: 1"].exists)
+                    XCTAssertFalse(app.staticTexts[german ? "Aufnahmen ohne diesen Messwert: 1"
+                                                          : "Results unavailable for this metric: 1"].exists)
                 }
                 let history = app.buttons["trendRecordingHistory"]
                 for _ in 0..<10 where !history.isHittable {
@@ -1684,6 +1836,118 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
+    func testAngleResultsEnglishGermanLargeText() throws {
+        for language in ["en", "de"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString, "--ui-test-save-result",
+                                   "--ui-test-angle-metrics", "-appLanguage", language,
+                                   "-appFontSize", "extraLarge"]
+            app.launch()
+            app.tabBars.buttons[language == "de" ? "Bewegung" : "Movement"].tap()
+            let opening = app.descendants(matching: .any)["movementAngleMetric-Opening angle"].firstMatch
+            revealMovementControl(opening, in: app)
+            XCTAssertEqual(opening.value as? String, language == "de" ? "40,0 °" : "40.0 °")
+            let ownRate = app.descendants(matching: .any)["movementStudyYourRate"].firstMatch
+            revealMovementControl(ownRate, in: app)
+            XCTAssertEqual(ownRate.value as? String, language == "de" ? "2,00 Taps/Sekunde" : "2.00 Taps/second")
+            let reference = app.descendants(matching: .any)["movementStudyMedian"].firstMatch
+            revealMovementControl(reference, in: app)
+            XCTAssertEqual(reference.value as? String, language == "de" ? "4,05 Taps/Sekunde" : "4.05 Taps/second")
+            let info = app.buttons["movementStudyInfo"]
+            // Large-type rows can virtualize the preceding Form header.
+            for _ in 0..<8 {
+                if info.exists { break }
+                app.collectionViews.firstMatch.swipeDown()
+            }
+            revealMovementControl(info, in: app)
+            info.tap()
+            XCTAssertTrue(app.buttons["movementStudyInfoDone"].waitForExistence(timeout: 5))
+            let infoScreenshot = XCTAttachment(screenshot: app.screenshot())
+            infoScreenshot.name = "Study comparison explanation \(language) large text"
+            infoScreenshot.lifetime = .keepAlways
+            add(infoScreenshot)
+            app.buttons["movementStudyInfoDone"].tap()
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Tapping angle results \(language) large text"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            XCTAssertTrue(app.buttons["movementRetake"].isHittable)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testStudyComparisonAvailableFromMainResultsEnglishGerman() throws {
+        for language in ["en", "de"] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-trend-scenario", "study-comparison",
+                                   "-appLanguage", language, "-appFontSize", "standard"]
+            app.launch()
+            app.tabBars.buttons[language == "de" ? "Bewegung" : "Movement"].tap()
+            app.buttons["Trends"].tap()
+            let profileInfo = app.buttons["trendProfileInfo"]
+            revealMovementControl(profileInfo, in: app)
+            profileInfo.tap()
+            XCTAssertTrue(app.buttons["trendProfileInfoDone"].waitForExistence(timeout: 5))
+            app.buttons["trendProfileInfoDone"].tap()
+            let personalRate = app.staticTexts["trendProfileValue-rate"]
+            revealMovementControl(personalRate, in: app)
+            XCTAssertEqual(personalRate.label, language == "de" ? "3,0 Taps/s" : "3.0 taps/s")
+            XCTAssertTrue(app.staticTexts["trendProfileTypical-rate"].exists)
+            let profileShot = XCTAttachment(screenshot: app.screenshot())
+            profileShot.name = "Personal movement profile \(language)"
+            profileShot.lifetime = .keepAlways
+            add(profileShot)
+            let research = app.buttons["trendResearchComparison"]
+            revealMovementControl(research, in: app)
+            research.tap()
+            let info = app.buttons["movementStudyInfo"]
+            revealMovementControl(info, in: app)
+            info.tap()
+            XCTAssertTrue(app.buttons["movementStudyInfoDone"].waitForExistence(timeout: 5))
+            app.buttons["movementStudyInfoDone"].tap()
+            let own = app.descendants(matching: .any)["movementStudyYourRate"].firstMatch
+            revealMovementControl(own, in: app)
+            XCTAssertEqual(own.value as? String, language == "de" ? "3,00 Taps/Sekunde" : "3.00 Taps/second")
+            let reference = app.descendants(matching: .any)["movementStudyMedian"].firstMatch
+            revealMovementControl(reference, in: app)
+            XCTAssertEqual(reference.value as? String, language == "de" ? "4,05 Taps/Sekunde" : "4.05 Taps/second")
+            XCTAssertTrue(app.descendants(matching: .any)["movementStudyRecordingDate"].firstMatch.exists)
+            let shot = XCTAttachment(screenshot: app.screenshot())
+            shot.name = "Main results study comparison \(language)"
+            shot.lifetime = .keepAlways
+            add(shot)
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            let left = app.segmentedControls.buttons[language == "de" ? "Links" : "Left"]
+            for _ in 0..<8 {
+                if left.isHittable { break }
+                app.collectionViews.firstMatch.swipeDown()
+            }
+            left.tap()
+            revealMovementControl(personalRate, in: app)
+            XCTAssertEqual(personalRate.label, language == "de" ? "2,0 Taps/s" : "2.0 taps/s")
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testStudyComparisonUnavailableDoesNotHideSaveActions() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-test-session-save", UUID().uuidString, "--ui-test-save-result",
+                               "--ui-test-angle-metrics", "--ui-test-angle-brief", "-appLanguage", "en",
+                               "-appFontSize", "standard"]
+        app.launch()
+        app.tabBars.buttons["Movement"].tap()
+        let unavailable = app.staticTexts["movementStudyUnavailable"]
+        revealMovementControl(unavailable, in: app)
+        XCTAssertTrue(unavailable.exists)
+        XCTAssertFalse(app.descendants(matching: .any)["movementStudyYourRate"].exists)
+        XCTAssertTrue(app.buttons["movementSaveContinue"].isHittable)
+        XCTAssertTrue(app.buttons["movementRetake"].isHittable)
+        app.terminate()
+    }
+
+    @MainActor
     private func expectSavedCounts(_ count: String, in app: XCUIApplication) {
         let element = app.staticTexts["movementSavedTestCounts"]
         XCTAssertTrue(element.waitForExistence(timeout: 5))
@@ -1760,6 +2024,7 @@ final class vCRGloveUITests: XCTestCase {
             let data = app.staticTexts[german ? "Daten" : "Data"]
             revealMovementControl(data, in: app)
             data.tap()
+            openMovementVideoLibrary(in: app)
             let video = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "movementOpenVideo_")).firstMatch
             XCTAssertTrue(video.waitForExistence(timeout: 15))
             revealMovementControl(video, in: app)
@@ -2416,6 +2681,8 @@ final class vCRGloveUITests: XCTestCase {
                 let title = app.staticTexts[german ? "Daten" : "Data"]
                 for _ in 0..<8 where !title.isHittable { app.swipeUp() }
                 title.tap()
+                XCTAssertFalse(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "movementOpenVideo_")).firstMatch.exists)
+                openMovementVideoLibrary(in: app)
             }
             func rows(_ prefix: String) -> XCUIElementQuery {
                 app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", prefix))
@@ -2431,8 +2698,10 @@ final class vCRGloveUITests: XCTestCase {
                     if ids.count >= expected { break }
                     scroll.swipeUp()
                 }
-                let heading = app.staticTexts[german ? "Aufgezeichnete Daten" : "Recorded data"]
-                for _ in 0..<8 where !heading.isHittable { scroll.swipeDown() }
+                if let firstID = ids.first {
+                    let first = app.buttons[firstID]
+                    for _ in 0..<8 where !first.isHittable { scroll.swipeDown() }
+                }
                 return ids
             }
             app.launchArguments = arguments + ["--ui-test-video-library"]
@@ -2493,6 +2762,51 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
+    func testAngleExportEnglishGermanAndLegacyVisibility() throws {
+        for language in ["en", "de"] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            let arguments = ["--ui-test-session-save", UUID().uuidString, "-appLanguage", language,
+                             "-appFontSize", german ? "extraLarge" : "standard"]
+            func openData() {
+                app.tabBars.buttons[german ? "Einstellungen" : "Settings"].tap()
+                let title = app.staticTexts[german ? "Daten" : "Data"]
+                for _ in 0..<8 where !title.isHittable { app.swipeUp() }
+                title.tap()
+            }
+            app.launchArguments = arguments
+            app.launch()
+            openData()
+            XCTAssertFalse(app.buttons["movementExportAngles"].exists)
+            app.terminate()
+            app.launchArguments = arguments + ["--ui-test-video-library"]
+            app.launch()
+            openData()
+            XCTAssertTrue(app.buttons["movementVideoLibrary"].waitForExistence(timeout: 15))
+            XCTAssertFalse(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "movementOpenVideo_"))
+                .firstMatch.exists)
+            let export = app.buttons["movementExportAngles"]
+            revealMovementControl(export, in: app)
+            XCTAssertTrue(export.isHittable)
+            XCTAssertTrue(export.label.contains(german ? "Finger-Tapping-Winkel" : "finger-tapping angles"))
+            let attachment = XCTAttachment(screenshot: app.screenshot())
+            attachment.name = "Angle export \(language)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+            export.tap()
+            let file = app.descendants(matching: .any)
+                .matching(identifier: "movementLastExportFile").firstMatch
+            revealMovementControl(file, in: app)
+            XCTAssertTrue(file.waitForExistence(timeout: 5))
+            let share = app.buttons["movementShareLastExport"]
+            revealMovementControl(share, in: app)
+            share.tap()
+            XCTAssertTrue(app.otherElements["ActivityListView"].waitForExistence(timeout: 10))
+            app.terminate()
+        }
+    }
+
+    @MainActor
     func testPrivateVideoSavePlaybackAndRelaunchEnglishGerman() throws {
         for language in ["en", "de"] {
             let app = XCUIApplication()
@@ -2540,6 +2854,7 @@ final class vCRGloveUITests: XCTestCase {
             let title = app.staticTexts[language == "de" ? "Daten" : "Data"]
             for _ in 0..<8 where !title.isHittable { app.swipeUp() }
             if export.exists { export.tap() } else { title.tap() }
+            openMovementVideoLibrary(in: app)
             let recording = app.buttons.containing(.staticText, identifier:
                 language == "de" ? "Finger-Tapping · Rechts" : "Finger Tapping · Right").firstMatch
             XCTAssertTrue(recording.waitForExistence(timeout: 10))
@@ -2570,6 +2885,7 @@ final class vCRGloveUITests: XCTestCase {
             let dataTitle = app.staticTexts[language == "de" ? "Daten" : "Data"]
             for _ in 0..<8 where !dataTitle.isHittable { app.swipeUp() }
             dataTitle.tap()
+            openMovementVideoLibrary(in: app)
             XCTAssertTrue(app.otherElements["movementNoSavedVideos"].waitForExistence(timeout: 10)
                 || app.staticTexts["movementNoSavedVideos"].exists)
             XCTAssertFalse(app.buttons["movementManageVideos"].exists)

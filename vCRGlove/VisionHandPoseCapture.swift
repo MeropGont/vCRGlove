@@ -57,9 +57,11 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
     var tracksCalibration = false
     @Published private(set) var calibrationFrame: HandCalibrationFrame?
 
-    /// One normalized scalar per processed frame. Called on the main queue.
+    /// One valid normalized scalar per processed frame. Called on the video queue.
     /// `time` is in the host/monotonic clock (comparable to systemUptime).
     var onSample: ((_ value: Double, _ time: Double) -> Void)?
+    /// Recording callback includes unavailable frames; shares the scalar's timestamp.
+    var onFrame: ((_ frame: CameraMovementFrame, _ time: Double) -> Void)?
 
     private var taskType: MovementTaskType = .fingerTap
     private let videoQueue = DispatchQueue(label: "vcr.handpose.video", qos: .userInitiated)
@@ -85,7 +87,8 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
     private var movieHasFinished = false
     private var movieStopRequested = false
     private var movieStartCompletion: ((Bool) -> Void)?
-    private var recordingCompletions: [(URL?) -> Void] = []
+    private var recordingCompletions: [(URL?, Double?) -> Void] = []
+    private var movieStartCapturePTSSeconds: Double?
 
     // MARK: - Lifecycle
 
@@ -119,16 +122,16 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
     }
 
     func stop(completion: (() -> Void)? = nil) {
-        stopRecording { url in
+        stopRecording { url, _ in
             if let url { try? FileManager.default.removeItem(at: url) }
             self.stopSession(completion: completion)
         }
     }
 
     /// Keep a completed movie for acceptance while stopping the live preview safely.
-    func finishMeasurement(completion: @escaping (URL?) -> Void) {
-        stopRecording { url in
-            self.stopSession { completion(url) }
+    func finishMeasurement(completion: @escaping (URL?, Double?) -> Void) {
+        stopRecording { url, startPTS in
+            self.stopSession { completion(url, startPTS) }
         }
     }
 
@@ -157,9 +160,11 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
             let url = FileManager.default.temporaryDirectory
                 .appendingPathComponent(UUID().uuidString).appendingPathExtension("mov")
             self.recordingURL = url
+            self.movieStartCapturePTSSeconds = nil
             self.movieStartCompletion = completion
-            self.recordingDelegate.onStart = {
+            self.recordingDelegate.onStart = { startPTS in
                 self.videoQueue.async {
+                    self.movieStartCapturePTSSeconds = startPTS
                     let started = self.movieStartCompletion
                     self.movieStartCompletion = nil
                     DispatchQueue.main.async { started?(true) }
@@ -183,10 +188,10 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
 
     /// Stop the active recording. `completion` is called on the main queue with the
     /// temporary file URL, or `nil` if no recording was running or it failed.
-    func stopRecording(completion: @escaping (URL?) -> Void) {
+    func stopRecording(completion: @escaping (URL?, Double?) -> Void) {
         videoQueue.async {
             guard self.recordingURL != nil else {
-                DispatchQueue.main.async { completion(nil) }
+                DispatchQueue.main.async { completion(nil, nil) }
                 return
             }
             self.recordingCompletions.append(completion)
@@ -200,14 +205,16 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
         guard movieHasFinished, !recordingCompletions.isEmpty else { return }
         let completions = recordingCompletions
         let url = finishedRecordingURL
+        let startPTS = url == nil ? nil : movieStartCapturePTSSeconds
         recordingCompletions.removeAll()
         recordingURL = nil
         finishedRecordingURL = nil
+        movieStartCapturePTSSeconds = nil
         movieHasFinished = false
         movieStopRequested = false
         recordingDelegate.onStart = nil
         recordingDelegate.onComplete = nil
-        DispatchQueue.main.async { completions.forEach { $0(url) } }
+        DispatchQueue.main.async { completions.forEach { $0(url, startPTS) } }
     }
 
     // MARK: - Session setup
@@ -281,12 +288,20 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
 // MARK: - Movie file recording delegate
 
 private final class MovieFileOutputDelegate: NSObject, AVCaptureFileOutputRecordingDelegate {
-    var onStart: (() -> Void)?
+    var onStart: ((Double?) -> Void)?
     var onComplete: ((URL?) -> Void)?
 
     func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL,
                     from connections: [AVCaptureConnection]) {
-        onStart?()
+        // Older iOS has no source timestamp. Never estimate it from callback latency.
+        onStart?(nil)
+    }
+
+    @available(iOS 18.2, *)
+    func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL,
+                    startPTS: CMTime, from connections: [AVCaptureConnection]) {
+        let seconds = startPTS.seconds
+        onStart?(startPTS.isNumeric && seconds.isFinite && seconds >= 0 ? seconds : nil)
     }
 
     func fileOutput(_ output: AVCaptureFileOutput,
@@ -314,6 +329,7 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
             try handler.perform([handPoseRequest])
         } catch {
             publishCalibrationFrame(nil, at: time)
+            onFrame?(CameraMovementFrame(value: nil, fingerTappingAngleDegrees: nil), time)
             return
         }
 
@@ -324,6 +340,7 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
         }
 
         guard let observation = handPoseRequest.results?.first else {
+            onFrame?(CameraMovementFrame(value: nil, fingerTappingAngleDegrees: nil), time)
             setHandVisible(false)
             updateClipped(false, at: time)
             return
@@ -334,8 +351,22 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
         let clipped = isClipped(observation)
         updateClipped(clipped, at: time)
 
-        guard let image = CMSampleBufferGetImageBuffer(sampleBuffer),
-              let value = scalar(from: observation, imageAspectRatio: Double(CVPixelBufferGetWidth(image)) / Double(CVPixelBufferGetHeight(image))),
+        guard let image = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            onFrame?(CameraMovementFrame(value: nil, fingerTappingAngleDegrees: nil), time)
+            setHandVisible(false)
+            return
+        }
+        let aspect = Double(CVPixelBufferGetWidth(image)) / Double(CVPixelBufferGetHeight(image))
+        let frame: CameraMovementFrame
+        if taskType == .fingerTap {
+            frame = .fingerTap(wrist: point(observation, .wrist), middleMCP: point(observation, .middleMCP),
+                thumbTip: point(observation, .thumbTip), indexTip: point(observation, .indexTip), imageAspectRatio: aspect)
+        } else {
+            frame = CameraMovementFrame(value: scalar(from: observation, imageAspectRatio: aspect),
+                                        fingerTappingAngleDegrees: nil)
+        }
+        onFrame?(frame, time)
+        guard let value = frame.value,
               let wrist = try? observation.recognizedPoint(.wrist),
               let mcp   = try? observation.recognizedPoint(.middleMCP)
         else {

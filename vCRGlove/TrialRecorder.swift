@@ -37,12 +37,14 @@ final class TrialRecorder: ObservableObject {
     private let source: SignalSource
     private let stopCondition: StopCondition
     private let measurementVersion: String?
-    private let analyzer = MovementAnalyzer()
+    private let recordsFingerTappingAngles: Bool
+    private let analyzer: MovementAnalyzer
     private var latestSampleElapsed: Double = 0
 
     private var startWallClock: Date?
     private var startMonotonic: Double = 0
     private var buffer: [TimestampedSample] = []
+    private var angleBuffer: [TimestampedAngleSample] = []
     /// Queue-owned recording flag (recordQueue only) — @Published `isRecording`
     /// mirrors it for the UI but is written exclusively on the main thread.
     private var isActive = false
@@ -68,12 +70,15 @@ final class TrialRecorder: ObservableObject {
          side: BodySide,
          source: SignalSource,
          stopCondition: StopCondition,
-         measurementVersion: String? = nil) {
+         measurementVersion: String? = nil,
+         recordsFingerTappingAngles: Bool = false) {
         self.taskType = taskType
         self.side = side
         self.source = source
+        self.analyzer = MovementAnalyzer(config: source == .camera ? .camera : .default)
         self.stopCondition = stopCondition
         self.measurementVersion = measurementVersion
+        self.recordsFingerTappingAngles = recordsFingerTappingAngles && taskType == .fingerTap && source == .camera
     }
 
     // MARK: - Lifecycle
@@ -83,6 +88,7 @@ final class TrialRecorder: ObservableObject {
             guard let self, !self.isActive else { return }
             self.isActive = true
             self.buffer.removeAll(keepingCapacity: true)
+            self.angleBuffer.removeAll(keepingCapacity: true)
             self.currentCycles = 0
             self.samplesSinceLastAnalysis = 0
             self.startWallClock = Date()
@@ -130,13 +136,35 @@ final class TrialRecorder: ObservableObject {
     /// the recorder normalizes it to seconds-since-start internally.
     /// Safe to call from any thread.
     func ingest(value: Double, at monotonicTime: Double) {
+        ingest(value: value, angleDegrees: nil, includesAngleFrame: false, at: monotonicTime)
+    }
+
+    /// One queue operation preserves both values at the final frame/Stop boundary.
+    func ingestCameraFrame(_ frame: CameraMovementFrame, at monotonicTime: Double) {
+        ingest(value: frame.value, angleDegrees: frame.fingerTappingAngleDegrees,
+               includesAngleFrame: true, at: monotonicTime)
+    }
+
+    private func ingest(value: Double?, angleDegrees: Double?, includesAngleFrame: Bool,
+                        at monotonicTime: Double) {
         recordQueue.async { [weak self] in
             guard let self, self.isActive else { return }
             let t = monotonicTime - self.startMonotonic
-            guard t >= 0 else { return }
+            guard t.isFinite, t >= 0 else { return }
 
             if self.stopCondition.mode == .duration && t > self.stopCondition.targetDuration {
                 self._finish()
+                return
+            }
+
+            if includesAngleFrame && self.recordsFingerTappingAngles {
+                let degrees = angleDegrees.flatMap { $0.isFinite && (0...180).contains($0) ? $0 : nil }
+                self.angleBuffer.append(TimestampedAngleSample(t: t, degrees: degrees))
+            }
+            guard let value, value.isFinite else {
+                if self.stopCondition.mode == .duration && t >= self.stopCondition.targetDuration {
+                    self._finish()
+                }
                 return
             }
 
@@ -202,6 +230,7 @@ final class TrialRecorder: ObservableObject {
 
         // Snapshot everything the analysis needs.
         let snapshotBuffer    = buffer
+        let snapshotAngle = recordsFingerTappingAngles ? FingerTappingAngleRecording(samples: angleBuffer) : nil
         let snapshotTaskType  = taskType
         let snapshotSide      = side
         let snapshotSource    = source
@@ -236,7 +265,10 @@ final class TrialRecorder: ObservableObject {
                 samples:       snapshotBuffer,
                 metrics:       metrics,
                 recordedDurationSeconds: snapshotDuration,
-                measurementVersion: self.measurementVersion
+                measurementVersion: self.measurementVersion,
+                fingerTappingAngle: snapshotAngle,
+                fingerTappingAngleMetrics: snapshotAngle.flatMap { FingerTappingAngleAnalyzer.analyze($0) },
+                fingerTappingReferenceSegment: snapshotAngle.flatMap { FingerTappingAngleAnalyzer.firstTenTaps($0) }
             )
 
             print("[PERF] analyzed \(snapshotBuffer.count) samples in \(String(format: "%.3f", analysisElapsed)) s")

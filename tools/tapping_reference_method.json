@@ -1,0 +1,26 @@
+{
+  "paper": "https://doi.org/10.1038/s41746-023-00905-9",
+  "repository": "https://github.com/ROC-HCI/finger-tapping-severity",
+  "revision": "5889255748fe87838428f1cba25481018740f94e",
+  "code_path": "feature_extraction.py",
+  "code_license": "MIT",
+  "reviewed_date": "2026-10-19",
+  "external_pipeline_reproduced": false,
+  "healthy_reference_validated": false,
+  "offline_feature_subset": {
+    "method_version": "roc-hci-angle-feature-subset-v1",
+    "implemented": true,
+    "author_source_sha256": "ebe91bfce1ef3da72b4d27168d6d969639c66d5d2dd7310378b1c70df6f2c9a6",
+    "features": "50 period/frequency/opening-angle/absolute-speed statistics and peak counts",
+    "validation_scope": "same-input numerical parity with pinned selected author routines; not landmark or clinical validation"
+  },
+  "differences": [
+    "Vision versus MediaPipe landmarks and different hand/confidence selection; side is task metadata, not verified anatomy.",
+    "App float-coordinate aspect-correct atan2 geometry versus author integer-pixel acos geometry.",
+    "App timestamp/gap-aware detector versus author interpolation, longest-valid-segment selection and custom peaks.",
+    "Author trims between selected peaks and derives frame duration from video duration/frame count.",
+    "Author angular amplitude uses opening-peak values; app meanAmplitude is peak-to-peak excursion.",
+    "Experimental raw angular velocity here uses actual adjacent timestamps, not author denoised nominal-frame velocity.",
+    "Task duration, demonstration, population coverage and data-use permissions still need a separate assessment."
+  ]
+}

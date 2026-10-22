@@ -246,7 +246,7 @@ Severity:
 1. Calibrate on the physical iPhone and confirm the hand-size result and concise positioning feedback. A calibration suggestion must not block recording.
 2. Record finger tapping and hand opening/closing for each hand. Confirm task/side titles, correct silent demo, countdown, camera framing, accessible Stop/Skip controls and live rhythm. Demo playback must start with recording.
 3. Stop immediately, then after a few seconds, and complete a full timed recording. Each case must leave the recording state and offer clear next actions, even with no analysable signal.
-4. Briefly move the hand out of frame. Check guidance, signal gaps and the continuing 30-second clock. Missing data must not appear as fabricated zero movement.
+4. Briefly move the hand out of frame. Check guidance, signal gaps and the continuing 30-second clock. Missing data must not appear as fabricated zero movement. In a new gap-aware camera recording, confirm lost tracking is not counted as an observed pause/rhythm interval; also hold the hand still while visible and confirm genuinely observed pauses remain measurable. Repeat for tapping and opening/closing. New-build physical verification remains required.
 5. Open a saved recording, return, change tabs and relaunch. Saved trials/movies must remain available without finishing every task in the set. An unfinished draft and navigation restoration are separate behaviours.
 6. Retake one task/hand. The old saved take must remain until its replacement saves successfully; unrelated takes remain unchanged.
 7. Check per-trial timestamps and the chosen stimulation/medication context. Unknown context must remain unknown. Confirm medication is not repeatedly asked on every task page.
@@ -255,6 +255,16 @@ Severity:
 10. Test Watch pronation/supination only on a supported physical pair. If unavailable, mark it deferred and verify that the error and Skip action remain reachable; do not infer Watch success from camera-task tests.
 
 Expected result: completed takes survive navigation/relaunch, Stop never leaves the user stuck, and unavailable analysis does not discard a recording. Record hardware accuracy/timing observations separately from software checks.
+
+Cycle-detector v3 physical check (pending): record steady repetitions, smaller
+repetitions, a visible hold, baseline/hand-position changes and a tracking gap in
+each camera task/hand. Manually count short unambiguous video segments and compare
+with exported-signal events using the matching analysis version; allow for
+video/signal alignment uncertainty at segment edges. Visible partial movements
+are not automatically complete protocol repetitions. Check that a static hold
+does not create extra cycles and that smaller/decreasing excursions are not
+silently interpreted as improvement. Do not infer clinical accuracy from the
+limited development recordings or present pause flags as confirmed freezing.
 
 ### New Trend and Camera Checks (Physical Validation Pending)
 
@@ -266,6 +276,26 @@ Expected result: completed takes survive navigation/relaunch, Stop never leaves 
 - Check historical rate/rhythm lines separately from new methods; historical size remains in history with an older-scale label. Do not expect old and new values to join.
 - Apply 7/30/90-day and reported medication-hour filters before aggregation. Verify selected-day counts against original trials, not session dates. Unknown medication/context must never mean no medication/stimulation.
 - Review English/German layouts at standard and largest text sizes, VoiceOver day selection, legends and reachable history/filter controls. Test after midnight/time-zone changes and on a supported physical Watch pair when available.
+
+### Auxiliary Finger-Tapping Angle (Physical Checks Pending)
+
+- Record both hands through the guided flow and the standalone task route when
+  available. Verify JSON contains a separately versioned `fingerTappingAngle`
+  in degrees, without changing distance samples/metrics or the patient plots.
+- Briefly hide the hand, return and close thumb/index. Check unavailable angle
+  entries remain missing, while a valid zero angle is not discarded. Processed
+  missing frames and unprocessed time gaps are distinct; neither pauses the clock.
+- Stop immediately, stop after a few seconds, finish 30 seconds and Retake.
+  Confirm saved trials retain the right angle channel on reopen, including when
+  their movie is deleted; a failed replacement must not lose the prior take.
+- Export full-session JSON and angle CSV in Settings > Data, then the researcher
+  full-data ZIP. Compare IDs/timestamps, degree units, missing entries and raw
+  JSONL. Old metrics/sample CSV formats must remain unchanged. With only old
+  recordings, the angle CSV action must not appear.
+- Check upright/front-camera geometry at different comfortable distances and
+  hand planes. Mirroring invariance does not identify the correct anatomical
+  hand; inspect side labels against the actual task. Perspective/tracking and
+  normative accuracy are not established by simulator tests.
 
 ## 16. Private Videos and Sharing Smoke Test
 
@@ -288,3 +318,157 @@ Expected result: sharing/deletion is explicit, failure notices preserve retry op
 6. Obtain institutional review of the adapted notice and English legal translation before patient deployment. App-video consent coverage, opt-out and withdrawal handling remain separate pending work.
 
 Expected result: concise study guidance and complete retained legal wording are available offline in both languages. The Info section does not replace study consent or implement future privacy controls.
+
+## Consistent Historical Trends and Study Identity (19 October 2026)
+
+- [ ] Patient chart has no stacked reanalysis, estimated-duration, missing-value
+  count or daily-median footnotes. Metric info retains explanations; the colour
+  legend, separation link and brief clinical disclaimer remain accessible.
+- [ ] With a TEAM ID and research unlock, link your own earlier unassigned test
+  recordings, then reopen Trends. Applicable historical lines must appear.
+  Cancel must not change display links. Remove links to reverse the display
+  change. Future unassigned and already assigned recordings must not be relabelled.
+- [ ] Export JSON/CSV before and after linking: original IDs/data must match.
+  The full research archive must retain the display mapping in its settings snapshot.
+
+- [ ] On iPhone, compare known live-palm camera v1/v2/v3 recordings: complete
+  recordings with the same ID, hand, task, context and protocol share a trend.
+- [ ] Stop a timed camera task after 10 seconds of good tracking. It must use
+  the normal point colour and contribute to the same daily median/line as a
+  completed take. Repeat for tapping and hand opening/closing on both hands.
+- [ ] Lose tracking, then provide at least 10 continuous tracked seconds:
+  gap-aware camera results can still contribute. A five-second take, isolated
+  samples or disconnected fragments with no ten-second stretch must not qualify.
+- [ ] Confirm original session JSON/CSV metrics, versions and samples stay
+  unchanged after opening Results; updated display analysis is labelled.
+- [ ] Unknown methods, different/missing IDs and unusable recordings remain
+  separate. Open the explanation sheet while other trend lines are visible.
+- [ ] In researcher settings, typing an ID without Save does not change Profile.
+  Cancel an assigned-ID change, then confirm it; check persistence after relaunch.
+  Historical recordings must keep their original ID. An assigned ID cannot clear.
+
+Software checks are recorded in the angle audit. These physical-device checks
+remain pending; they do not establish clinical accuracy.
+
+## Offline Angle Comparison (19 October 2026)
+
+Implemented tooling: see [review commands and definitions](../docs/TAPPING_ANGLE_REVIEW.md).
+Ten synthetic regression tests passed, including actual Swift analyzer replay.
+The six-trial export review checked paired signals and associated video files,
+not independent video landmark accuracy. App behaviour is unchanged.
+
+- [ ] Independently annotate tap/cycle events in representative left/right videos,
+  including the final two trials with unmatched events. Establish video/signal
+  timing before comparing annotations; do not assume zero offset.
+- [ ] Verify aperture under hand rotation, camera-distance changes and tracking
+  loss against independent landmarks/annotations, not the shared distance signal.
+- [ ] Check repeatability across phones, lighting, hands and relevant movement
+  impairment before selecting a smoothing/velocity endpoint.
+- [ ] Complete external healthy-cohort protocol, population and permission review
+  before proposing any reference band. No patient norms are currently implemented.
+
+Stage 5 desk assessment is documented in [Healthy references](../docs/HEALTHY_REFERENCE_ASSESSMENT.md).
+The pinned table audit and five synthetic tests passed. Candidate adoption still
+requires control-identity clarification, protocol/estimator bridging, independent
+accuracy checks and intended-use approval; the unchecked gate above remains open.
+
+## ROC-HCI Feature Subset (19 October 2026)
+
+The [offline feature subset](../docs/ROC_TAPPING_FEATURES.md) leaves app capture,
+gap-aware analysis and plots unchanged. Thirty offline tests passed. Selected
+kernel parity passed on 15 synthetic cases and five supported real trials; a
+sixth stress-test trial was rejected for out-of-range cubic interpolation.
+
+- [ ] Review interpolated/selected frame ranges against independent video
+  annotations. Do not treat author gap filling as verified observed motion.
+- [ ] Match recording instructions and feature definitions to the intended
+  healthy cohort; whole 30 s takes are not ten-tap protocol equivalents.
+- [ ] Verify the new camera-study and hand-opening/closing benchmarks before
+  adding any patient bands. No camera or clinical accuracy is established here.
+
+### Independent Video Review (21 October 2026)
+
+- [x] Decode both supplied tapping clips and inspect video-only contact sheets.
+  Complete decoding found 902 frames each; angle streams contain 898/899 entries.
+- [x] Inspect the same 16-18 s interval at full video frame rate before opening
+  its sample/peak arrays. Eight visible closing phases per hand versus eight/three
+  author-derived opening peaks in the nominal signal window. Left edge-on contact
+  is ambiguous; this is not a synchronized clinical repetition-count comparison.
+- [x] Preserve originals and keep private frames/annotations outside Git.
+- [x] Implement an optional first-buffer movie/signal timing anchor for new camera
+  recordings on iOS 18.2+, retaining legacy/failed-inspection fallback.
+- [x] Initial phone-data check: new right-hand tapping and opening/closing movies
+  include anchors, matching JSON/CSV and visible phase agreement in early/late
+  windows. Older clips without timing cannot verify the new implementation.
+- [ ] Independently annotate a protocol-matched palm-facing recording and repeat
+  across views. No healthy band or angle-accuracy claim is approved by this check.
+
+See [review findings and tools](../docs/TAPPING_VIDEO_VALIDATION.md). Eight focused
+review-tool tests cover pixel geometry, missing/zero values, annotation integrity,
+event intervals and input manifests. App unit/UI suites were not rerun because
+this stage changes only offline review tools and documentation.
+
+### Movie Timing Metadata (21 October 2026)
+
+The [timing contract](../docs/MOVEMENT_VIDEO_TIMING.md) leaves task timers, movement
+analysis, stimulation and CSV schemas unchanged. Check source timestamps, not
+callback arrival time or inferred frame indices.
+
+Software verification passed: 234 unit test methods (302 executions), zero
+failures/skips, including signed/invalid offsets, legacy/JSON compatibility,
+metadata retention in an accepted movie/full-data snapshot and timing-inspection
+fallback. All 38 offline tool tests also passed. These checks do not exercise the
+real camera's first-buffer callback.
+
+- [x] Inspect new tapping and opening/closing exports with `video.timing` and map
+  visible events using the documented formula. Initial 21 October right-hand
+  review: 26 annotated phases matched within visual windows or about one frame.
+  Both movies decoded fully and JSON/CSV fields agreed; see the timing contract.
+- [ ] Check early Stop, retake, leaving/relaunch and the researcher's full-data
+  export. Timing must follow the correct accepted movie, not a discarded draft.
+- [ ] Check an older recording and iOS 17-18.1 where available. Missing timing
+  must not prevent saving or be interpreted as zero offset.
+- [ ] Confirm frame alignment across the clip before using it for angle accuracy
+  measurements. Software tests do not replace a camera-device check.
+
+### First-Ten Window And Video Folder (21 October 2026)
+
+- [x] Native regression: 243 methods / 311 executions, no failures/skips.
+  First-ten windows preserve full signals and metrics; gaps/interrupted cycles
+  cannot be stitched or restarted later; copies, legacy decode and JSONL retain
+  the optional metadata correctly.
+- [x] Current saved native summary reproduces exactly in read-only replay of
+  the latest supplied tapping recording. Source exports are not rewritten.
+- [x] Three bilingual simulator UI regressions passed: the Data page links to
+  one Recorded videos folder; playback, multi-select sharing/deletion, relaunch
+  and angle-export visibility remain functional.
+- [x] Offline research tooling: 51 tests passed, including display-orientation
+  handling, timestamp pairing and author-kernel comparisons. No patient bands.
+- [ ] On a phone, save a new full tapping trial and export JSON after relaunch:
+  confirm full 30-second signals plus ten-cycle indices/eleven peak times.
+- [ ] Repeat with early Stop, tracking loss and another hand. Unavailable
+  comparison window must never block saving or remove ordinary results.
+- [ ] Verify the Recorded videos folder count, empty state, long-press selection,
+  sharing and deletion on a physical phone. Grouping does not reduce file sizes.
+- [ ] Independently review first-ten detections and detector/encoding/protocol
+  differences before any healthy-reference feedback. See
+  [reference bridge](../docs/TAPPING_REFERENCE_BRIDGE.md).
+
+### Native Tapping Angle Summary (Earlier 21 October Checks)
+
+See [calculation and compatibility](../docs/NATIVE_TAPPING_ANGLES.md). The new
+angle section is separate from the original distance metrics and daily trends.
+
+- [x] Unit suite: 239 methods / 307 executions, no failures. Known angles/rates,
+  timestamp scaling, gaps, flat signals, optional fields and legacy decoding.
+- [x] Simulator UI: angle section in English/German at the largest app text
+  size; row access verified after removing an overriding section identifier.
+  Existing bilingual video save/playback/share/delete/relaunch regression passed.
+- [ ] On the phone, record both hands; confirm opening angle, angular speed,
+  rate and rhythm appear with units and do not replace existing metrics.
+- [ ] Try a flat hand, lost tracking and early Stop. Missing values must not
+  become fabricated zeros or cycles across gaps.
+- [ ] Accept/retake, relaunch and export JSON/full data. Confirm the correct
+  trial retains its versioned angle summary and original samples.
+- [ ] Compare extracted peaks with timestamp-aligned video; no healthy bands
+  should appear. Clinical and external-control validation remain pending.

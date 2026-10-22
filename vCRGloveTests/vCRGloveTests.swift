@@ -745,6 +745,7 @@ struct MovementVideoStorageTests {
             let restored = try #require(store.sessions.first { $0.id == original.id })
             #expect(restored.trials[0].metrics == original.trials[0].metrics)
             #expect(restored.trials[0].samples == original.trials[0].samples)
+            #expect(restored.trials[0].fingerTappingAngle == original.trials[0].fingerTappingAngle)
             #expect(restored.trials[0].startedAt == original.trials[0].startedAt)
             #expect(FileManager.default.fileExists(atPath: try videos.url(for: original.trials[0]).path)
                     == !selected.contains(original.trials[0].id))
@@ -806,7 +807,8 @@ struct MovementVideoStorageTests {
                        invalid: Bool = false) -> Trial {
         Trial(taskType: .fingerTap, side: side, source: source, stopCondition: .thirtySec,
             samples: [.init(t: 0, value: invalid ? .nan : 0.2)], metrics: .empty,
-            recordedDurationSeconds: 30)
+            recordedDurationSeconds: 30,
+            fingerTappingAngle: source == .camera ? .init(samples: [.init(t: 0, degrees: 0), .init(t: 0.1, degrees: nil)]) : nil)
     }
 
     private func directory() throws -> URL {
@@ -866,6 +868,7 @@ struct MovementVideoStorageTests {
         let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
         let reloaded = try decoder.decode(MovementSession.self, from: Data(line))
         #expect(reloaded.trials[0].video == accepted.video)
+        #expect(reloaded.trials[0].fingerTappingAngle == recording.fingerTappingAngle)
         #expect(FileManager.default.fileExists(atPath: try videos.url(for: reloaded.trials[0]).path))
         #expect(store.sessions.count == 1)
     }
@@ -981,19 +984,60 @@ struct MovementVideoStorageTests {
         let first = try temporaryVideo(in: dir)
         let second = try temporaryVideo(in: dir)
         var draft: MovementVideoDraft? = MovementVideoDraft()
-        draft?.receive(first)
+        draft?.receive(first, captureStartPTSSeconds: 1000)
+        #expect(draft?.captureStartPTSSeconds == 1000)
         draft?.receive(second)
+        #expect(draft?.captureStartPTSSeconds == nil)
         #expect(!FileManager.default.fileExists(atPath: first.path))
         draft = nil
         #expect(!FileManager.default.fileExists(atPath: second.path))
         let missing = MovementVideoDraft()
         missing.receive(nil)
+        #expect(missing.captureStartPTSSeconds == nil)
         #expect(missing.unavailable && missing.messageKey != nil)
         missing.discard()
         #expect(!missing.unavailable && missing.messageKey == nil)
     }
 
     #if DEBUG && targetEnvironment(simulator)
+    @Test @MainActor func timingSurvivesMovieAcceptanceSnapshotAndMissingMetadataFallback() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let source = try await makeMovementVideoTestFixture()
+        defer { try? FileManager.default.removeItem(at: source) }
+        let recording = Trial(taskType: .fingerTap, side: .right, source: .camera,
+            stopCondition: .thirtySec, startUptime: 1000.125,
+            samples: [.init(t: 0, value: 1)], metrics: .empty)
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: dir.appendingPathComponent("videos")))
+        let accepted: MovementSession = try await withCheckedThrowingContinuation { continuation in
+            store.saveAcceptedTrial(recording, in: MovementSession(patientId: "TIMING-TEST"),
+                temporaryVideoURL: source, videoCaptureStartPTSSeconds: 1000) {
+                continuation.resume(with: $0)
+            }
+        }
+        let timing = try #require(accepted.trials[0].video?.timing)
+        #expect(timing.firstFrameTrialTimeSeconds == -0.125)
+        #expect(timing.firstFrameMoviePTSSeconds >= 0)
+        #expect(abs(try #require(timing.movieTime(forTrialTime: 0))
+            - timing.firstFrameMoviePTSSeconds - 0.125) < 1e-10)
+        let destination = dir.appendingPathComponent("snapshot")
+        #expect(try await store.copyExportSnapshot(to: destination).isEmpty)
+        let raw = try Data(contentsOf: destination.appendingPathComponent("tasks/sessions.jsonl"))
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+        let restored = try decoder.decode(MovementSession.self, from: raw)
+        #expect(restored.trials[0].video?.timing == timing)
+        #expect(restored.trials[0].samples == recording.samples)
+
+        // A movie-like file with unreadable timing must still follow existing save behavior.
+        let badMovie = try temporaryVideo(in: dir)
+        let other = Trial(taskType: .handOpenClose, side: .left, source: .camera,
+            stopCondition: .thirtySec, startUptime: 1000, samples: [], metrics: .empty)
+        let reference = try store.videoStore.save(badMovie, for: other, captureStartPTSSeconds: 999)
+        #expect(reference.timing == nil)
+        #expect(FileManager.default.fileExists(atPath: try store.videoStore.url(for: other.withVideo(reference)).path))
+    }
+
     @Test @MainActor func savedMovieRemainsPlayableWithoutAnAudioTrack() async throws {
         let dir = try directory()
         defer { try? FileManager.default.removeItem(at: dir) }
@@ -1274,7 +1318,80 @@ struct AcceptedMovementSessionTests {
     }
 }
 
+struct MovementPersonalProfileTests {
+    private func session(day: Int, rate: Double, context: StimulationContext = .preStim,
+                         medication: MedicationTiming? = nil, angles: Bool = false) -> MovementSession {
+        let samples = (0..<900).map { TimestampedSample(t: Double($0)/30, value: 1+sin(Double($0) * .pi/8)) }
+        let angle = angles ? FingerTappingAngleRecording(samples: (0..<600).map {
+            let t = Double($0)/60
+            return TimestampedAngleSample(t: t, degrees: 20-20*cos(4 * .pi * t))
+        }) : nil
+        let trial = Trial(taskType: .fingerTap, side: .right, source: .camera, stopCondition: .thirtySec,
+            startedAt: Date(timeIntervalSince1970: Double(day)*86400+43200), samples: samples,
+            metrics: MovementMetrics(cycleCount: 20, frequencyHz: rate, meanAmplitude: 1,
+                amplitudeDecrementSlope: 0, rhythmCV: 0.1, pauseCount: 0, onsetLatencySec: 0, qualityIndex: 0.8),
+            medicationTiming: medication, recordedDurationSeconds: 30, fingerTappingAngle: angle)
+        return MovementSession(patientId: "PROFILE-TEST", stimulationContext: context, trials: [trial])
+    }
+    private func profile(_ sessions: [MovementSession]) -> MovementPersonalProfile {
+        let summary = MovementTrendSummary(sessions: sessions, task: .fingerTap, side: .right, metric: .frequency)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return MovementPersonalProfile(recordings: summary.recordings, task: .fingerTap, calendar: calendar)
+    }
+    @Test func personalTypicalUsesDailyMediansAndMatchingContext() throws {
+        let sessions = [session(day: 1, rate: 1), session(day: 1, rate: 1), session(day: 1, rate: 1),
+            session(day: 2, rate: 5), session(day: 2, rate: 99, context: .postStim),
+            session(day: 2, rate: 88, medication: .init(status: .noneToday,
+                confirmedAt: Date(timeIntervalSince1970: 2*86400+43200))), session(day: 3, rate: 3)]
+        let result = profile(sessions)
+        let rate = try #require(result.entries.first { $0.metric == .rate })
+        #expect(rate.latest == 3 && rate.typical == 3 && rate.previousDays == 2)
+        #expect(result.entries.first { $0.metric == .size }?.latest == nil)
+        #expect(sessions.allSatisfy { $0.trials[0].fingerTappingReferenceSegment == nil })
+    }
+    @Test func personalTypicalLimitsHistoryAndKeepsAngleSpeedSeparate() throws {
+        let history = (0...10).map { session(day: $0, rate: Double($0+1), angles: $0 == 10) }
+        let result = profile(history)
+        let rate = try #require(result.entries.first { $0.metric == .rate })
+        #expect(rate.latest == 11 && rate.typical == 7 && rate.previousDays == 7)
+        let speed = try #require(result.entries.first { $0.metric == .angularSpeed })
+        #expect((speed.latest ?? 0) > 0 && speed.typical == nil)
+        #expect(profile([history.last!]).entries.allSatisfy { $0.typical == nil })
+        #expect(profile([]).recording == nil)
+    }
+}
+
 struct MovementTrendAvailabilityTests {
+    @Test func studyComparisonSelectsLatestUsableMatchingHandAndFiltersWithoutMetricGating() {
+        func session(_ date: Double, side: BodySide = .right, angles: Bool = true,
+                     context: StimulationContext = .preStim) -> MovementSession {
+            let signal = angles ? FingerTappingAngleRecording(samples: (0..<600).map {
+                let t = Double($0)/60
+                return TimestampedAngleSample(t: t, degrees: 20-20*cos(4 * .pi * t))
+            }) : nil
+            let trial = Trial(taskType: .fingerTap, side: side, source: .camera,
+                              stopCondition: .thirtySec, startedAt: Date(timeIntervalSince1970: date),
+                              samples: [], metrics: .empty, fingerTappingAngle: signal)
+            return MovementSession(patientId: "TEST", stimulationContext: context, trials: [trial])
+        }
+        let sessions = [session(100), session(200, context: .postStim),
+                        session(300, side: .left), session(400, angles: false)]
+        let right = MovementTrendSummary(sessions: sessions, task: .fingerTap, side: .right, metric: .amplitude)
+        #expect(right.latestStudyComparisonTrial?.startedAt == Date(timeIntervalSince1970: 200))
+        #expect(right.days.isEmpty)
+        let left = MovementTrendSummary(sessions: sessions, task: .fingerTap, side: .left, metric: .frequency)
+        #expect(left.latestStudyComparisonTrial?.side == .left)
+        #expect(left.latestStudyComparisonTrial?.startedAt == Date(timeIntervalSince1970: 300))
+        let filtered = MovementTrendSummary(sessions: sessions, task: .fingerTap, side: .right,
+            metric: .rhythm, filters: .init(context: .preStim))
+        #expect(filtered.latestStudyComparisonTrial?.startedAt == Date(timeIntervalSince1970: 100))
+        let excluded = MovementTrendSummary(sessions: sessions, task: .fingerTap, side: .right,
+            metric: .frequency, filters: .init(context: .noStimPlanned))
+        #expect(excluded.latestStudyComparisonTrial == nil)
+        #expect(sessions.allSatisfy { $0.trials[0].fingerTappingReferenceSegment == nil })
+    }
+
     private func trial(cycles: Int = 5, samples: [TimestampedSample]? = nil,
                        date: Date = Date(timeIntervalSince1970: 100),
                        task: MovementTaskType = .fingerTap, side: BodySide = .right) -> Trial {
@@ -1381,6 +1498,59 @@ struct MovementTrendAvailabilityTests {
 }
 
 struct MovementDailyTrendTests {
+    @Test func explicitTestLinksRestoreHistoricalLinesWithoutRewritingRecords() throws {
+        let a = MovementSession(patientId: "unset", stimulationContext: .preStim, trials: [trial(version: nil)])
+        let b = MovementSession(patientId: "unset", stimulationContext: .preStim, trials: [trial(day: 1, version: nil)])
+        let assigned = MovementSession(patientId: "TEAM-EXAMPLE", stimulationContext: .preStim, trials: [trial(day: 2)])
+        let sessions = [a, b, assigned]
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let original = try encoder.encode(sessions)
+        var links = MovementTrendIdentityLinks()
+        links.linkUnassignedTests(sessions, to: "TEAM-EXAMPLE")
+        let restored = MovementTrendIdentityLinks(data: try encoder.encode(links))
+        #expect(restored == links)
+        let linked = MovementTrendSummary(sessions: sessions, task: .fingerTap, side: .right,
+                                         metric: .frequency, calendar: calendar, identityLinks: restored)
+        #expect(linked.canShowTrend)
+        #expect(linked.days.filter { $0.connects }.count == 3)
+        #expect(Set(linked.days.map(\.seriesID)).count == 2) // Unknown old capture method still differs.
+        #expect(linked.recordings.filter { $0.originalParticipantID == "unset" }.allSatisfy { $0.participantID == "TEAM-EXAMPLE" })
+        #expect(!summary(sessions).canShowTrend)
+        #expect(try encoder.encode(sessions) == original)
+    }
+
+    @Test func testLinksAreSnapshotsAndNeverRelabelAssignedOrFutureRecordings() {
+        let old = MovementSession(patientId: "unset", trials: [trial()])
+        let assigned = MovementSession(patientId: "ANOTHER-ID", trials: [trial()])
+        let future = MovementSession(patientId: "unset", trials: [trial(day: 1)])
+        var links = MovementTrendIdentityLinks()
+        links.linkUnassignedTests([old, assigned], to: "TEAM-FIRST")
+        #expect(links.displayID(for: old, trial: old.trials[0]) == "TEAM-FIRST")
+        #expect(links.displayID(for: assigned, trial: assigned.trials[0]) == "ANOTHER-ID")
+        #expect(links.displayID(for: future, trial: future.trials[0]) == "unset")
+        var extended = old
+        extended.trials.append(future.trials[0])
+        #expect(links.displayID(for: extended, trial: future.trials[0]) == "unset")
+        links.linkUnassignedTests([old], to: "TEAM-SECOND")
+        #expect(links.displayID(for: old, trial: old.trials[0]) == "TEAM-FIRST")
+        #expect(MovementTrendIdentityLinks().displayID(for: old, trial: old.trials[0]) == "unset")
+        let reassigned = MovementSession(id: old.id, patientId: "ASSIGNED-ID", trials: old.trials)
+        #expect(links.displayID(for: reassigned, trial: reassigned.trials[0]) == "ASSIGNED-ID")
+    }
+
+    @Test func testLinksRejectParticipantTargetsAndCorruptData() {
+        let old = MovementSession(patientId: "unset", trials: [trial()])
+        for target in ["", "unset", "PAT-EXAMPLE", "TEAM-", "TEAM-ONE TWO"] {
+            var links = MovementTrendIdentityLinks()
+            links.linkUnassignedTests([old], to: target)
+            #expect(links.sessions.isEmpty)
+            #expect(links.displayID(for: old, trial: old.trials[0]) == "unset")
+        }
+        #expect(MovementTrendIdentityLinks(data: Data("invalid".utf8)).sessions.isEmpty)
+        #expect(FullDataExporter.settingsKeys.contains("movementTrendIdentityLinks"))
+    }
+
     private var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
@@ -1395,7 +1565,7 @@ struct MovementDailyTrendTests {
                        medication: MedicationTiming? = nil) -> Trial {
         Trial(taskType: .fingerTap, side: .right, source: source, stopCondition: stop,
               startedAt: base.addingTimeInterval(Double(day) * 86400 + offset),
-              samples: samples ?? (0..<60).map { .init(t: Double($0) / 2, value: sin(Double($0))) },
+              samples: samples ?? (0..<900).map { .init(t: Double($0) / 30, value: sin(Double($0) * 2 * .pi * 4 / 30)) },
               metrics: MovementMetrics(cycleCount: 12, frequencyHz: rate, meanAmplitude: 0.2,
                                        amplitudeDecrementSlope: -0.01, rhythmCV: 0,
                                        pauseCount: 0, onsetLatencySec: 0, qualityIndex: 0),
@@ -1471,7 +1641,7 @@ struct MovementDailyTrendTests {
     @Test func protocolVersionAndSourceAreNeverMixed() {
         let result = summary([session(trial()), session(trial(day: 1, version: nil)),
                               session(trial(day: 2, duration: 15, stop: .fifteenSec,
-                                            samples: (0..<30).map { .init(t: Double($0) / 2, value: sin(Double($0))) })),
+                                            samples: (0..<450).map { .init(t: Double($0) / 30, value: sin(Double($0) * 2 * .pi * 4 / 30)) })),
                               session(trial(day: 3, source: .watchMotion))])
         #expect(result.days.count == 4)
         #expect(Set(result.days.map(\.seriesID)).count == 4)
@@ -1495,6 +1665,85 @@ struct MovementDailyTrendTests {
         #expect(size.recordings.count == 2)
         #expect(size.points.count == 2) // Stored values stay accessible in history.
         #expect(summary([session(trial()), session(trial(day: 1))], metric: .amplitude).canShowTrend)
+    }
+
+    @Test func compatibleLivePalmVersionsUseOneAnalysisAndLineWithoutHidingSize() {
+        let sessions = [session(trial(version: MovementMeasurementVersion.cameraBeforeGapAwareness)),
+                        session(trial(day: 1, version: MovementMeasurementVersion.cameraBeforeGapAwareness)),
+                        session(trial(day: 2, version: MovementMeasurementVersion.cameraBeforeLocalExcursions)),
+                        session(trial(day: 3, version: MovementMeasurementVersion.cameraBeforeLocalExcursions)),
+                        session(trial(day: 4)), session(trial(day: 5))]
+        for metric in [TrendMetric.frequency, .amplitude, .rhythm] {
+            let result = summary(sessions, metric: metric)
+            #expect(result.days.count == 6)
+            #expect(result.days.allSatisfy { $0.connects })
+            #expect(Set(result.days.map(\.seriesID)).count == 1)
+            #expect(result.recordings.filter { $0.measurement.recalculated }.count == 4)
+            #expect(result.canShowTrend)
+        }
+    }
+
+    @Test func displayReanalysisPreservesOriginalRecordsAndMetadata() throws {
+        let raw = (0..<900).map { TimestampedSample(t: Double($0) / 30, value: 1 + sin(Double($0) * 2 * .pi * 4 / 30)) }
+        let original = Trial(taskType: .fingerTap, side: .right, source: .camera, stopCondition: .thirtySec,
+                             startedAt: base, samples: raw, metrics: .empty,
+                             medicationTiming: .init(status: .unsure), recordedDurationSeconds: 30,
+                             video: .init(fileName: "fixture.mov", byteCount: 42),
+                             measurementVersion: MovementMeasurementVersion.cameraBeforeLocalExcursions,
+                             fingerTappingAngle: .init(samples: [.init(t: 1, degrees: 30)]))
+        let sessions = [session(original)]
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let before = try encoder.encode(sessions)
+        let result = summary(sessions)
+        let expected = MovementAnalyzer(config: .camera).analyze(raw)
+        #expect(result.recordings[0].availability.value == expected.frequencyHz)
+        #expect(result.recordings[0].measurement.metrics == expected)
+        #expect(result.recordings[0].measurement.version == MovementMeasurementVersion.camera)
+        #expect(result.recordings[0].trial == original)
+        #expect(result.recordings[0].trial.metrics == .empty)
+        #expect(try encoder.encode(sessions) == before)
+    }
+
+    @Test func legacyUnknownAndOtherSourcesAreNotReinterpreted() {
+        for recording in [trial(version: nil), trial(version: "future-camera-method"),
+                          trial(version: MovementMeasurementVersion.cameraBeforeGapAwareness, source: .watchMotion),
+                          trial(version: MovementMeasurementVersion.cameraBeforeGapAwareness, source: .synthetic)] {
+            let display = MovementTrendMeasurement(trial: recording)
+            #expect(!display.recalculated)
+            #expect(display.metrics == recording.metrics)
+            #expect(display.version == recording.measurementVersion)
+        }
+    }
+
+    @Test func recalculationDoesNotCreateValuesFromMissingOrFlatSignal() {
+        for samples in [[], (0..<900).map { TimestampedSample(t: Double($0) / 30, value: 1) }] {
+            let result = summary([session(trial(version: MovementMeasurementVersion.cameraBeforeGapAwareness, samples: samples))])
+            #expect(result.points.isEmpty)
+            #expect(result.unavailableCount == 1)
+        }
+    }
+
+    @Test func missingIdentityNeverCreatesACombinedTrend() {
+        for id in ["", "unset", "  "] {
+            let records = [MovementSession(patientId: id, stimulationContext: .preStim, trials: [trial()]),
+                           MovementSession(patientId: id, stimulationContext: .preStim, trials: [trial(day: 1)])]
+            let result = summary(records)
+            #expect(!result.canShowTrend)
+            #expect(result.days.allSatisfy { !$0.connects })
+            #expect(result.separationExplanationKeys.contains("Study ID missing: shown separately."))
+        }
+    }
+
+    @Test func remainingSeparationReasonsAppearEvenWhenOtherLinesExist() {
+        let records = [session(trial()), session(trial(day: 1)), session(trial(day: 2, version: nil)),
+                       MovementSession(patientId: "OTHER", stimulationContext: .preStim, trials: [trial(day: 3)])]
+        let result = summary(records)
+        #expect(result.canShowTrend)
+        #expect(result.noTrendExplanationKey == nil)
+        #expect(result.separationExplanationKeys.contains("Recordings with different study IDs are kept separate."))
+        #expect(result.separationExplanationKeys.contains("Earlier and current measurement methods are kept separate."))
+        #expect(result.separationReason(for: result.recordings[0]) == nil)
     }
 
     private func legacySamples(start: Double = 0.02, end: Double = 30.02) -> [TimestampedSample] {
@@ -1601,16 +1850,64 @@ struct MovementDailyTrendTests {
         #expect(summary([session(trial()), session(trial(day: 1, samples: [])), session(trial(day: 2))]).noTrendExplanationKey == "An intervening day with incomplete capture separates these trend segments.")
     }
 
-    @Test func partialUnknownAndGappedRecordingsDoNotBiasCompleteDailyMedian() {
-        let partialSamples = (0..<10).map { TimestampedSample(t: Double($0) / 2, value: sin(Double($0))) }
-        let gapSamples = (0..<60).filter { !(10...20).contains($0) }.map {
-            TimestampedSample(t: Double($0) / 2, value: sin(Double($0)))
+    @Test func belowMinimumAndUnknownTakesStaySeparateWhileUsableGapsContribute() {
+        let partialSamples = (0..<150).map { TimestampedSample(t: Double($0) / 30, value: sin(Double($0) * 2 * .pi * 4 / 30)) }
+        let gapSamples = (0..<900).filter { !(150...300).contains($0) }.map {
+            TimestampedSample(t: Double($0) / 30, value: sin(Double($0) * 2 * .pi * 4 / 30))
         }
         let result = summary([session(trial(rate: 2)), session(trial(rate: 9, duration: 5, samples: partialSamples)),
                               session(trial(rate: 9, duration: nil)), session(trial(rate: 9, samples: gapSamples))])
-        #expect(result.days.count == 4)
-        #expect(result.days.filter(\.connects).map(\.median) == [2])
-        #expect(result.recordings.filter { $0.cautionKey != nil }.count == 3)
+        #expect(result.days.count == 3)
+        #expect(result.days.filter(\.connects).map(\.median) == [5.5])
+        #expect(result.recordings.filter { $0.cautionKey != nil }.count == 2)
+    }
+
+    @Test(arguments: [TrendMetric.frequency, .amplitude, .rhythm])
+    func tenSecondTakesContributeToNormalMediansAndLines(metric: TrendMetric) throws {
+        let tenSeconds = (0..<300).map {
+            TimestampedSample(t: Double($0) / 30, value: sin(Double($0) * 2 * .pi * 4 / 30))
+        }
+        let sessions = [session(trial(rate: 2)),
+                        session(trial(offset: 100, rate: 4, duration: 10, samples: tenSeconds)),
+                        session(trial(day: 1, duration: 10, samples: tenSeconds))]
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let before = try encoder.encode(sessions)
+        let result = summary(sessions, metric: metric)
+        #expect(result.days.count == 2)
+        #expect(result.days.first?.recordings.count == 2)
+        #expect(result.days.allSatisfy { $0.connects })
+        #expect(result.recordings.allSatisfy { $0.cautionKey == nil })
+        #expect(result.canShowTrend)
+        if metric == .frequency { #expect(result.days.first?.median == 3) }
+        #expect(try encoder.encode(sessions) == before)
+    }
+
+    @Test func trackingTimeCannotBeInventedFromElapsedDurationOrAcrossGaps() {
+        let indices = (0..<900).filter { $0 < 240 || ($0 >= 330 && $0 < 570) || $0 >= 660 }
+        let fragmented: [TimestampedSample] = indices.map {
+            TimestampedSample(t: Double($0) / 30, value: sin(Double($0) * 2 * .pi * 4 / 30))
+        }
+        let tiny = (0..<150).map {
+            TimestampedSample(t: Double($0) / 30, value: sin(Double($0) * 2 * .pi * 4 / 30))
+        }
+        for samples in [fragmented, tiny, []] {
+            let result = summary([session(trial(samples: samples))])
+            #expect(result.recordings[0].cautionKey != nil)
+            #expect(result.days.allSatisfy { !$0.connects })
+        }
+    }
+
+    @Test func gapAwareTakesCanUseTenGoodSecondsWithoutReinterpretingLegacyMetrics() {
+        let samples = (0..<900).filter { $0 < 180 || $0 >= 450 }.map {
+            TimestampedSample(t: Double($0) / 30, value: sin(Double($0) * 2 * .pi * 4 / 30))
+        }
+        let result = summary([session(trial(samples: samples)), session(trial(day: 1, samples: samples))])
+        #expect(result.recordings.allSatisfy { $0.hasSignalGaps })
+        #expect(result.recordings.allSatisfy { $0.cautionKey == nil })
+        #expect(result.canShowTrend)
+        let legacy = summary([session(trial(version: nil, samples: samples))])
+        #expect(legacy.recordings[0].cautionKey != nil)
     }
 
     @Test func unavailableInterveningRecordingBreaksLineWithoutInventingZero() {
@@ -1703,7 +2000,146 @@ struct CameraMovementNormalizationTests {
     }
 }
 
+struct FingerTappingAngleTests {
+    @Test func frameMeasurementsRemainIndependentAndMatchExistingDistance() throws {
+        let wrist = CGPoint(x: 0.5, y: 0.2)
+        let mcp = CGPoint(x: 0.5, y: 0.4)
+        let thumb = CGPoint(x: 0.3, y: 0.6)
+        let index = CGPoint(x: 0.6, y: 0.7)
+        let frame = CameraMovementFrame.fingerTap(wrist: wrist, middleMCP: mcp, thumbTip: thumb,
+                                                 indexTip: index, imageAspectRatio: 9.0 / 16)
+        #expect(frame.value == CameraMovementSignal.value(task: .fingerTap, wrist: wrist, middleMCP: mcp,
+            fingertips: [thumb, index], imageAspectRatio: 9.0 / 16))
+        #expect(frame.fingerTappingAngleDegrees != nil)
+        let noPalm = CameraMovementFrame.fingerTap(wrist: wrist, middleMCP: nil, thumbTip: thumb,
+                                                  indexTip: index, imageAspectRatio: 9.0 / 16)
+        #expect(noPalm.value == nil && noPalm.fingerTappingAngleDegrees == frame.fingerTappingAngleDegrees)
+        let degenerateAngle = CameraMovementFrame.fingerTap(wrist: wrist, middleMCP: mcp, thumbTip: wrist,
+                                                           indexTip: index, imageAspectRatio: 9.0 / 16)
+        #expect(degenerateAngle.value != nil && degenerateAngle.fingerTappingAngleDegrees == nil)
+        let missingTip = CameraMovementFrame.fingerTap(wrist: wrist, middleMCP: mcp, thumbTip: nil,
+                                                      indexTip: index, imageAspectRatio: 9.0 / 16)
+        #expect(missingTip.value == nil && missingTip.fingerTappingAngleDegrees == nil)
+    }
+
+    @Test(arguments: [0.0, 30, 60, 90, 120, 179.999999, 180])
+    func knownAnglesAreInDegrees(_ degrees: Double) throws {
+        let radians = degrees * .pi / 180
+        let angle = try #require(FingerTappingAngle.degrees(
+            wrist: .zero, thumbTip: CGPoint(x: 1, y: 0),
+            indexTip: CGPoint(x: cos(radians), y: sin(radians)), imageAspectRatio: 1))
+        #expect(abs(angle - degrees) < 1e-10)
+        #expect((0...180).contains(angle))
+    }
+
+    @Test func imageTransformationsAndTipOrderPreserveAngle() throws {
+        let wrist = CGPoint(x: 0.1, y: -0.2)
+        let thumb = CGPoint(x: 0.4, y: 0.2)
+        let index = CGPoint(x: -0.2, y: 0.6)
+        let expected = try #require(FingerTappingAngle.degrees(
+            wrist: wrist, thumbTip: thumb, indexTip: index, imageAspectRatio: 1))
+        for aspect in [9.0 / 16, 1, 16.0 / 9] {
+            for scale in [0.001, 0.25, 1, 10] {
+                for rotation in [0.0, .pi / 7, .pi / 2, .pi, -.pi / 3] {
+                    for mirrored in [false, true] {
+                        func transform(_ point: CGPoint) -> CGPoint {
+                            let x = (mirrored ? -point.x : point.x) * scale
+                            let y = point.y * scale
+                            return CGPoint(x: (x * cos(rotation) - y * sin(rotation) + 0.5) / aspect,
+                                           y: x * sin(rotation) + y * cos(rotation) + 0.4)
+                        }
+                        for swapped in [false, true] {
+                            let result = try #require(FingerTappingAngle.degrees(
+                                wrist: transform(wrist), thumbTip: transform(swapped ? index : thumb),
+                                indexTip: transform(swapped ? thumb : index), imageAspectRatio: aspect))
+                            #expect(abs(result - expected) < 1e-9)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test func aspectCorrectionRestoresPixelGeometry() throws {
+        // These normalized vectors are perpendicular only after correcting x by width/height.
+        let result = try #require(FingerTappingAngle.degrees(
+            wrist: CGPoint(x: 0.5, y: 0.5), thumbTip: CGPoint(x: 0.75, y: 0.75),
+            indexTip: CGPoint(x: 0.25, y: 0.75), imageAspectRatio: 1))
+        #expect(abs(result - 90) < 1e-10)
+        let portrait = try #require(FingerTappingAngle.degrees(
+            wrist: CGPoint(x: 0.5, y: 0.5), thumbTip: CGPoint(x: 0.75, y: 0.75),
+            indexTip: CGPoint(x: 0.25, y: 0.75), imageAspectRatio: 0.5))
+        #expect(abs(portrait - 53.13010235415598) < 1e-10)
+    }
+
+    @Test func touchingTipsAreValidZeroButWristCoincidenceIsMissing() {
+        let wrist = CGPoint(x: 0.2, y: 0.3)
+        let tip = CGPoint(x: 0.4, y: 0.8)
+        #expect(FingerTappingAngle.degrees(wrist: wrist, thumbTip: tip, indexTip: tip,
+                                          imageAspectRatio: 9.0 / 16) == 0)
+        #expect(FingerTappingAngle.degrees(wrist: wrist, thumbTip: wrist, indexTip: tip,
+                                          imageAspectRatio: 1) == nil)
+        #expect(FingerTappingAngle.degrees(wrist: wrist, thumbTip: tip, indexTip: wrist,
+                                          imageAspectRatio: 1) == nil)
+        #expect(FingerTappingAngle.degrees(wrist: wrist, thumbTip: wrist, indexTip: wrist,
+                                          imageAspectRatio: 1) == nil)
+    }
+
+    @Test(arguments: [0.0, -1, Double.nan, .infinity, -.infinity])
+    func invalidAspectIsMissing(_ aspect: Double) {
+        #expect(FingerTappingAngle.degrees(wrist: .zero, thumbTip: CGPoint(x: 1, y: 0),
+                                          indexTip: CGPoint(x: 0, y: 1), imageAspectRatio: aspect) == nil)
+    }
+
+    @Test(arguments: [Double.nan, .infinity, -.infinity])
+    func nonFiniteCoordinateIsMissing(_ invalid: Double) {
+        let points = [CGPoint.zero, CGPoint(x: 1, y: 0), CGPoint(x: 0, y: 1)]
+        for joint in points.indices {
+            for isX in [false, true] {
+                var corrupted = points
+                corrupted[joint] = isX ? CGPoint(x: invalid, y: points[joint].y)
+                    : CGPoint(x: points[joint].x, y: invalid)
+                #expect(FingerTappingAngle.degrees(wrist: corrupted[0], thumbTip: corrupted[1],
+                    indexTip: corrupted[2], imageAspectRatio: 1) == nil)
+            }
+        }
+    }
+
+    @Test func vectorLengthsDoNotCreateAnAmplitudeThresholdOrNumericOverflow() throws {
+        for length in [1e-200, 1e-20, 1.0, 1e200] {
+            let result = try #require(FingerTappingAngle.degrees(
+                wrist: .zero, thumbTip: CGPoint(x: length, y: 0),
+                indexTip: CGPoint(x: 0, y: length), imageAspectRatio: 1))
+            #expect(abs(result - 90) < 1e-10)
+        }
+        let unequal = try #require(FingerTappingAngle.degrees(
+            wrist: .zero, thumbTip: CGPoint(x: 1e200, y: 1e200),
+            indexTip: CGPoint(x: -1e-200, y: 1e-200), imageAspectRatio: 1))
+        #expect(abs(unequal - 90) < 1e-10)
+        let nearlyClosed = try #require(FingerTappingAngle.degrees(
+            wrist: .zero, thumbTip: CGPoint(x: 1, y: 0),
+            indexTip: CGPoint(x: 1, y: 1e-12), imageAspectRatio: 1))
+        #expect(nearlyClosed > 0 && nearlyClosed < 1e-9)
+    }
+
+    @Test func unrepresentableCoordinateArithmeticIsMissing() {
+        let huge = Double.greatestFiniteMagnitude
+        #expect(FingerTappingAngle.degrees(wrist: CGPoint(x: -huge, y: 0),
+            thumbTip: CGPoint(x: huge, y: 0), indexTip: CGPoint(x: 0, y: 1), imageAspectRatio: 1) == nil)
+        #expect(FingerTappingAngle.degrees(wrist: .zero,
+            thumbTip: CGPoint(x: huge, y: 0), indexTip: CGPoint(x: 0, y: 1), imageAspectRatio: 2) == nil)
+    }
+}
+
 struct MovementTrendFilterTests {
+    @Test func contextMenuOmitsBaselineWithoutDroppingHistoricalData() {
+        #expect(!MovementTrendFilters.contextChoices.contains(.baseline))
+        #expect(StimulationContext.patientChoices.allSatisfy(MovementTrendFilters.contextChoices.contains))
+        #expect(MovementTrendFilters.contextChoices.contains(.unspecified))
+        #expect(includes(trial(), filters: .init(), context: .baseline))
+        #expect(StimulationContext(rawValue: "baseline") == .baseline)
+    }
+
     private var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!

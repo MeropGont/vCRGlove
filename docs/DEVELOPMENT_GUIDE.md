@@ -37,6 +37,21 @@ Tab order is always vCR, Journal, Movement, Settings. Researcher unlock never ad
 
 Language refresh retains the selected tab and General route in app-owned state above `.id(appSettings.language)`. It stays in Settings > General; relaunch starts normally. Profile shows the study ID only; avatar customization is deferred.
 
+Research study-ID edits are staged until Save. Changing an assigned ID requires
+confirmation; an assigned ID cannot be cleared. Cancel/back leaves it unchanged.
+Only future recordings use a confirmed new ID; historical records are never
+relabelled or automatically merged. Optional usernames remain deferred and must
+not become research identity keys. Profile's ID remains read-only.
+
+For a TEAM ID, unlocked Research Admin offers an explicit, reversible display
+link for the researcher's own earlier unassigned tests. Confirming snapshots
+existing session/trial UUIDs only; it never automatically links future tests or
+assigned identities. `movementTrendIdentityLinks` stores the local JSON mapping
+in app preferences. Results observes it, while session stores and JSON/CSV
+exports retain original IDs. The full research archive includes the mapping in
+`study-settings.plist` for provenance. Do not bundle real session IDs or enable
+automatic `unset` aliases for participants.
+
 ## Behaviour to Preserve
 
 - Patient stimulation offers 4 hours or two 2-hour sessions. One disconnected glove does not end stimulation on the other; losing both interrupts the session. Verify actual hardware behaviour, not just the displayed state.

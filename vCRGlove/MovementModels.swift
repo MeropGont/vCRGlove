@@ -208,11 +208,52 @@ struct MovementMetrics: Codable, Equatable {
 struct MovementVideoReference: Codable, Equatable {
     let fileName: String
     let byteCount: Int64
+    /// Absent for older recordings or when a reliable first-buffer timestamp is unavailable.
+    let timing: MovementVideoTiming?
+
+    init(fileName: String, byteCount: Int64, timing: MovementVideoTiming? = nil) {
+        self.fileName = fileName
+        self.byteCount = byteCount
+        self.timing = timing
+    }
+}
+
+/// Relates the capture output's first buffer to the saved movie's first video sample.
+/// Trial-relative time uses the same subtraction as TrialRecorder, not callback arrival time.
+struct MovementVideoTiming: Codable, Equatable {
+    let version: Int
+    let method: String
+    let firstFrameTrialTimeSeconds: Double
+    let firstFrameMoviePTSSeconds: Double
+
+    static func make(captureStartPTS: Double?, trialStartUptime: Double?,
+                     firstMoviePTS: Double?) -> Self? {
+        guard let captureStartPTS, let trialStartUptime, let firstMoviePTS,
+              captureStartPTS.isFinite, captureStartPTS >= 0,
+              trialStartUptime.isFinite, trialStartUptime >= 0,
+              firstMoviePTS.isFinite, firstMoviePTS >= 0 else { return nil }
+        let relative = captureStartPTS - trialStartUptime
+        guard relative.isFinite else { return nil }
+        return Self(version: 1, method: "avcapture-first-buffer-pts-v1",
+                    firstFrameTrialTimeSeconds: relative,
+                    firstFrameMoviePTSSeconds: firstMoviePTS)
+    }
+
+    /// A negative result is outside the retained movie, not a frame to clamp to zero.
+    func movieTime(forTrialTime time: Double) -> Double? {
+        guard version == 1, method == "avcapture-first-buffer-pts-v1", time.isFinite,
+              firstFrameTrialTimeSeconds.isFinite,
+              firstFrameMoviePTSSeconds.isFinite, firstFrameMoviePTSSeconds >= 0 else { return nil }
+        let mapped = time - firstFrameTrialTimeSeconds + firstFrameMoviePTSSeconds
+        return mapped.isFinite ? mapped : nil
+    }
 }
 
 /// Versions describe the signal and analyzer used, not clinical validity.
 enum MovementMeasurementVersion {
-    static let camera = "camera-live-palm-aspect-v2-analysis-v1"
+    static let cameraBeforeGapAwareness = "camera-live-palm-aspect-v2-analysis-v1"
+    static let cameraBeforeLocalExcursions = "camera-live-palm-aspect-v2-analysis-v2-gap-aware"
+    static let camera = "camera-live-palm-aspect-v2-analysis-v3-local-excursions"
     static let watch = "watch-rotation-rate-v1-analysis-v1"
 }
 
@@ -243,6 +284,108 @@ enum CameraMovementSignal {
     }
 }
 
+/// Projected thumb-wrist-index aperture in degrees, not a 3-D joint angle.
+/// Auxiliary geometry only; the existing distance signal remains unchanged.
+enum FingerTappingAngle {
+    static func degrees(wrist: CGPoint, thumbTip: CGPoint, indexTip: CGPoint,
+                        imageAspectRatio: Double) -> Double? {
+        guard imageAspectRatio.isFinite, imageAspectRatio > 0,
+              [wrist, thumbTip, indexTip].allSatisfy({ $0.x.isFinite && $0.y.isFinite }) else { return nil }
+
+        func direction(to tip: CGPoint) -> (x: Double, y: Double)? {
+            let x = Double(tip.x - wrist.x) * imageAspectRatio
+            let y = Double(tip.y - wrist.y)
+            let scale = max(abs(x), abs(y))
+            guard x.isFinite, y.isFinite, scale > 0 else { return nil }
+            // Independent rescaling preserves direction without squared-length overflow/underflow.
+            return (x / scale, y / scale)
+        }
+
+        guard let thumb = direction(to: thumbTip), let index = direction(to: indexTip) else { return nil }
+        let cross = thumb.x * index.y - thumb.y * index.x
+        let dot = thumb.x * index.x + thumb.y * index.y
+        return atan2(abs(cross), dot) * 180 / .pi
+    }
+}
+
+/// Both measurements from one processed camera frame; nil is unavailable, not zero.
+struct CameraMovementFrame {
+    let value: Double?
+    let fingerTappingAngleDegrees: Double?
+
+    static func fingerTap(wrist: CGPoint?, middleMCP: CGPoint?, thumbTip: CGPoint?, indexTip: CGPoint?,
+                          imageAspectRatio: Double) -> Self {
+        guard let wrist, let thumbTip, let indexTip else {
+            return Self(value: nil, fingerTappingAngleDegrees: nil)
+        }
+        let value = middleMCP.flatMap {
+            CameraMovementSignal.value(task: .fingerTap, wrist: wrist, middleMCP: $0,
+                fingertips: [thumbTip, indexTip], imageAspectRatio: imageAspectRatio)
+        }
+        return Self(value: value, fingerTappingAngleDegrees: FingerTappingAngle.degrees(
+            wrist: wrist, thumbTip: thumbTip, indexTip: indexTip, imageAspectRatio: imageAspectRatio))
+    }
+}
+
+struct TimestampedAngleSample: Codable, Equatable {
+    let t: Double
+    /// Absent/null means tracking or geometry was unavailable for this frame.
+    let degrees: Double?
+}
+
+/// An auxiliary signal, never input to the existing distance metrics.
+struct FingerTappingAngleRecording: Codable, Equatable {
+    static let currentVersion = "vision-thumb-wrist-index-angle-aspect-v1"
+    let measurementVersion: String
+    let unit: String
+    let timeReference: String
+    let samples: [TimestampedAngleSample]
+
+    init(samples: [TimestampedAngleSample]) {
+        measurementVersion = Self.currentVersion
+        unit = "degrees"
+        timeReference = "seconds_since_trial_start"
+        self.samples = samples
+    }
+}
+
+/// Descriptive projected-angle measurements, not a normative or clinical score.
+struct FingerTappingAngleMetrics: Codable, Equatable {
+    static let currentVersion = "vision-angle-timestamp-gap-aware-v1"
+    let calculationVersion: String
+    let intervalCount: Int
+    let openingPeakCount: Int
+    let trackedSeconds: Double
+    let meanOpeningAngleDegrees: Double?
+    let meanAbsoluteAngularSpeedDegreesPerSecond: Double?
+    let meanRateHz: Double?
+    let periodCV: Double?
+}
+
+/// Additional research-comparison window into the unchanged full angle array.
+struct FingerTappingReferenceSegment: Codable, Equatable {
+    static let currentVersion = "vision-first-ten-consecutive-complete-taps-v1"
+    let selectionVersion: String
+    let sourceAngleVersion: String
+    let detectorVersion: String
+    let completedTapCount: Int
+    let firstSampleIndex: Int
+    let endSampleIndexExclusive: Int
+    let startTrialTimeSeconds: Double
+    let endTrialTimeSeconds: Double
+    let openingPeakTimes: [Double]
+}
+
+/// Descriptive study context, not healthy thresholds or a clinical target.
+enum FingerTappingStudyReference {
+    // ROC-HCI revision 5889255748fe87838428f1cba25481018740f94e,
+    // CSV SHA256 93d590875d535d9e134d093903d2b15138f06d105e34e5c954be114b188e20b6.
+    // frequency_mean_trimmed, all diagnosed=no rows, 78 recordings per hand.
+    static func medianRate(for side: BodySide) -> Double {
+        side == .left ? 3.9151882425 : 4.05034882
+    }
+}
+
 /// A single recording of one task on one hand.
 struct Trial: Identifiable, Codable, Equatable {
     let id: UUID
@@ -266,6 +409,29 @@ struct Trial: Identifiable, Codable, Equatable {
     let video: MovementVideoReference?
     /// Nil on historical recordings. Never infer a version or rewrite their values.
     let measurementVersion: String?
+    /// Nil for historical trials and tasks/sources without auxiliary angle capture.
+    let fingerTappingAngle: FingerTappingAngleRecording?
+    let fingerTappingAngleMetrics: FingerTappingAngleMetrics?
+    let fingerTappingReferenceSegment: FingerTappingReferenceSegment?
+
+    /// Display-only replay for legacy angle recordings; never rewrites saved data.
+    var displayedFirstTenTappingRate: Double? {
+        guard taskType == .fingerTap, source == .camera, let recording = fingerTappingAngle,
+              let selected = FingerTappingAngleAnalyzer.firstTenTaps(recording),
+              fingerTappingReferenceSegment == nil || fingerTappingReferenceSegment == selected else { return nil }
+        let periods = zip(selected.openingPeakTimes, selected.openingPeakTimes.dropFirst()).map { $1 - $0 }
+        guard periods.count == 10, periods.allSatisfy({ $0.isFinite && $0 >= 0.15 }) else { return nil }
+        return periods.map { 1 / $0 }.reduce(0, +) / Double(periods.count)
+    }
+
+    /// Historical angle captures can be reviewed without mutating their saved records.
+    var displayedFingerTappingAngleMetrics: FingerTappingAngleMetrics? {
+        guard taskType == .fingerTap, source == .camera else { return nil }
+        if let saved = fingerTappingAngleMetrics {
+            return saved.calculationVersion == FingerTappingAngleMetrics.currentVersion ? saved : nil
+        }
+        return fingerTappingAngle.flatMap { FingerTappingAngleAnalyzer.analyze($0) }
+    }
 
     init(id: UUID = UUID(),
          taskType: MovementTaskType,
@@ -279,7 +445,10 @@ struct Trial: Identifiable, Codable, Equatable {
          medicationTiming: MedicationTiming? = nil,
          recordedDurationSeconds: Double? = nil,
          video: MovementVideoReference? = nil,
-         measurementVersion: String? = nil) {
+         measurementVersion: String? = nil,
+         fingerTappingAngle: FingerTappingAngleRecording? = nil,
+         fingerTappingAngleMetrics: FingerTappingAngleMetrics? = nil,
+         fingerTappingReferenceSegment: FingerTappingReferenceSegment? = nil) {
         self.id = id
         self.taskType = taskType
         self.side = side
@@ -293,6 +462,9 @@ struct Trial: Identifiable, Codable, Equatable {
         self.recordedDurationSeconds = recordedDurationSeconds
         self.video = video
         self.measurementVersion = measurementVersion
+        self.fingerTappingAngle = fingerTappingAngle
+        self.fingerTappingAngleMetrics = fingerTappingAngleMetrics
+        self.fingerTappingReferenceSegment = fingerTappingReferenceSegment
     }
 
     func withMedicationTiming(_ timing: MedicationTiming?) -> Self {
@@ -301,7 +473,9 @@ struct Trial: Identifiable, Codable, Equatable {
              samples: samples, metrics: metrics,
              medicationTiming: timing?.forRecording(at: startedAt),
              recordedDurationSeconds: recordedDurationSeconds, video: video,
-             measurementVersion: measurementVersion)
+             measurementVersion: measurementVersion, fingerTappingAngle: fingerTappingAngle,
+             fingerTappingAngleMetrics: fingerTappingAngleMetrics,
+             fingerTappingReferenceSegment: fingerTappingReferenceSegment)
     }
 
     func withVideo(_ video: MovementVideoReference?) -> Self {
@@ -309,7 +483,52 @@ struct Trial: Identifiable, Codable, Equatable {
              stopCondition: stopCondition, startedAt: startedAt, startUptime: startUptime,
              samples: samples, metrics: metrics, medicationTiming: medicationTiming,
              recordedDurationSeconds: recordedDurationSeconds, video: video,
-             measurementVersion: measurementVersion)
+             measurementVersion: measurementVersion, fingerTappingAngle: fingerTappingAngle,
+             fingerTappingAngleMetrics: fingerTappingAngleMetrics,
+             fingerTappingReferenceSegment: fingerTappingReferenceSegment)
+    }
+}
+
+/// Explicit local display links for a researcher's own earlier unassigned tests.
+/// Original session IDs/ownership and exported records are never rewritten.
+struct MovementTrendIdentityLinks: Codable, Equatable {
+    struct Link: Codable, Equatable {
+        let teamID: String
+        let trialIDs: Set<UUID>
+    }
+    private(set) var sessions: [String: Link] = [:]
+
+    init() {}
+
+    init(data: Data) {
+        self = (try? JSONDecoder().decode(Self.self, from: data)) ?? Self()
+    }
+
+    static func isUnassigned(_ id: String) -> Bool {
+        let value = id.trimmingCharacters(in: .whitespacesAndNewlines)
+        return value.isEmpty || value.lowercased() == "unset"
+    }
+
+    static func isTeamID(_ id: String) -> Bool {
+        id.uppercased().hasPrefix("TEAM-") && id.count > 5 && !id.contains(where: \.isWhitespace)
+    }
+
+    func canLink(_ session: MovementSession) -> Bool {
+        Self.isUnassigned(session.patientId) && sessions[session.id.uuidString] == nil && !session.trials.isEmpty
+    }
+
+    mutating func linkUnassignedTests(_ recordings: [MovementSession], to teamID: String) {
+        guard Self.isTeamID(teamID) else { return }
+        for session in recordings where canLink(session) {
+            sessions[session.id.uuidString] = Link(teamID: teamID, trialIDs: Set(session.trials.map(\.id)))
+        }
+    }
+
+    func displayID(for session: MovementSession, trial: Trial) -> String {
+        guard Self.isUnassigned(session.patientId),
+              let link = sessions[session.id.uuidString], link.trialIDs.contains(trial.id),
+              Self.isTeamID(link.teamID) else { return session.patientId }
+        return link.teamID
     }
 }
 

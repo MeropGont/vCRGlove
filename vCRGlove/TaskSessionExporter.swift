@@ -17,7 +17,13 @@ enum TaskSessionExporter {
 
     enum ExportError: LocalizedError {
         case nothingToExport
-        var errorDescription: String? { "There are no recorded sessions to export." }
+        case noAngleRecordings
+        var errorDescription: String? {
+            switch self {
+            case .nothingToExport: return "There are no recorded sessions to export."
+            case .noAngleRecordings: return "No finger-tapping angle recordings are available to export."
+            }
+        }
     }
 
     // MARK: - Public API
@@ -90,6 +96,28 @@ enum TaskSessionExporter {
             }
         }
         return try write(Data(rows.joined(separator: "\n").utf8), name: "samples", ext: "csv")
+    }
+
+    /// Separate units/schema: existing raw-sample and metrics CSVs stay unchanged.
+    static func exportFingerTappingAnglesCSV(_ sessions: [MovementSession]) throws -> URL {
+        guard !sessions.isEmpty else { throw ExportError.nothingToExport }
+        var rows = ["session_id,trial_id,task,side,t_sec,angle_degrees,angle_valid,measurement_version,unit,time_reference"]
+        var hasRecording = false
+        for session in sessions {
+            for trial in session.trials {
+                guard let recording = trial.fingerTappingAngle else { continue }
+                hasRecording = true
+                for sample in recording.samples {
+                    let fields = [session.id.uuidString, trial.id.uuidString, trial.taskType.rawValue,
+                        trial.side.rawValue, String(sample.t), sample.degrees.map { String($0) } ?? "",
+                        sample.degrees == nil ? "false" : "true", quote(recording.measurementVersion),
+                        quote(recording.unit), quote(recording.timeReference)]
+                    rows.append(fields.joined(separator: ","))
+                }
+            }
+        }
+        guard hasRecording else { throw ExportError.noAngleRecordings }
+        return try write(Data(rows.joined(separator: "\n").utf8), name: "finger-tapping-angles", ext: "csv")
     }
 
     // MARK: - Helpers

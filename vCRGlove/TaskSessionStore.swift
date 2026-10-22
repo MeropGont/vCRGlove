@@ -11,6 +11,7 @@
 //
 
 import Foundation
+import AVFoundation
 
 /// Only accepted videos live here. The directory is neither temporary nor exposed by Files sharing.
 final class MovementVideoStore: Sendable {
@@ -39,7 +40,8 @@ final class MovementVideoStore: Sendable {
         return try root().appendingPathComponent(video.fileName)
     }
 
-    func save(_ temporaryURL: URL, for trial: Trial) throws -> MovementVideoReference {
+    func save(_ temporaryURL: URL, for trial: Trial,
+              captureStartPTSSeconds: Double? = nil) throws -> MovementVideoReference {
         guard trial.source == .camera, trial.taskType.preferredSource == .camera else {
             throw VideoError.invalidReference
         }
@@ -54,7 +56,14 @@ final class MovementVideoStore: Sendable {
         var values = URLResourceValues()
         values.isExcludedFromBackup = true
         try directory.setResourceValues(values)
-        let reference = MovementVideoReference(fileName: "\(trial.id.uuidString).mov", byteCount: size.int64Value)
+        // Reading timing is optional and never blocks saving a usable measurement/movie.
+        let timing: MovementVideoTiming?
+        if let captureStartPTSSeconds, captureStartPTSSeconds.isFinite, trial.startUptime != nil {
+            timing = MovementVideoTiming.make(captureStartPTS: captureStartPTSSeconds,
+                trialStartUptime: trial.startUptime, firstMoviePTS: Self.firstVideoPTS(at: temporaryURL))
+        } else { timing = nil }
+        let reference = MovementVideoReference(fileName: "\(trial.id.uuidString).mov",
+                                               byteCount: size.int64Value, timing: timing)
         var destination = directory.appendingPathComponent(reference.fileName)
         try FileManager.default.copyItem(at: temporaryURL, to: destination)
         do {
@@ -66,6 +75,22 @@ final class MovementVideoStore: Sendable {
             try? FileManager.default.removeItem(at: destination)
             throw error
         }
+    }
+
+    /// Reads the first compressed video sample only; no pixel decoding or full-video scan.
+    private static func firstVideoPTS(at url: URL) -> Double? {
+        let asset = AVURLAsset(url: url)
+        guard let track = asset.tracks(withMediaType: .video).first,
+              let reader = try? AVAssetReader(asset: asset) else { return nil }
+        let output = AVAssetReaderTrackOutput(track: track, outputSettings: nil)
+        guard reader.canAdd(output) else { return nil }
+        reader.add(output)
+        guard reader.startReading() else { return nil }
+        defer { reader.cancelReading() }
+        guard let sample = output.copyNextSampleBuffer() else { return nil }
+        let pts = CMSampleBufferGetPresentationTimeStamp(sample)
+        let seconds = pts.seconds
+        return pts.isNumeric && seconds.isFinite && seconds >= 0 ? seconds : nil
     }
 
     func remove(_ trial: Trial) {
@@ -114,6 +139,7 @@ final class MovementVideoStore: Sendable {
 final class MovementVideoDraft: ObservableObject {
     @Published private(set) var url: URL?
     @Published private(set) var unavailable = false
+    private(set) var captureStartPTSSeconds: Double?
 
     var messageKey: String? {
         if url != nil { return "Video stays in the app when you save." }
@@ -121,19 +147,22 @@ final class MovementVideoDraft: ObservableObject {
         return nil
     }
 
-    func receive(_ url: URL?) {
+    func receive(_ url: URL?, captureStartPTSSeconds: Double? = nil) {
         if self.url == url {
+            self.captureStartPTSSeconds = url == nil ? nil : captureStartPTSSeconds
             unavailable = url == nil
             return
         }
         discard()
         self.url = url
+        self.captureStartPTSSeconds = url == nil ? nil : captureStartPTSSeconds
         unavailable = url == nil
     }
 
     func discard() {
         if let url { try? FileManager.default.removeItem(at: url) }
         url = nil
+        captureStartPTSSeconds = nil
         unavailable = false
     }
 
@@ -219,6 +248,7 @@ final class TaskSessionStore: ObservableObject {
     /// Commit the movie before the JSONL reference. Roll back a new movie on failure,
     /// but keep the temporary source so the patient can retry without re-recording.
     func saveAcceptedTrial(_ trial: Trial, in session: MovementSession, temporaryVideoURL: URL?,
+                           videoCaptureStartPTSSeconds: Double? = nil,
                            completion: @escaping (Result<MovementSession, Error>) -> Void) {
         ioQueue.async {
             var accepted = trial
@@ -230,7 +260,8 @@ final class TaskSessionStore: ObservableObject {
                        Self.deletedVideoIDs(in: try Data(contentsOf: file)).contains(trial.id) {
                         throw MovementVideoStore.VideoError.invalidReference
                     }
-                    accepted = trial.withVideo(try self.videoStore.save(temporaryVideoURL, for: trial))
+                    accepted = trial.withVideo(try self.videoStore.save(temporaryVideoURL, for: trial,
+                        captureStartPTSSeconds: videoCaptureStartPTSSeconds))
                     copiedVideo = true
                 }
                 var updated = session

@@ -24,6 +24,14 @@ Prefer a document reader? Open the [PDF handbook](vCRGlove_Handbook.pdf). It con
 | Daily trends and filters | [Results](MOVEMENT_RESULTS.md) | Implemented; camera/clinical validation remains pending |
 | Private recordings and deletion | [Video storage](MOVEMENT_VIDEO_STORAGE.md) | Implemented; verified backup and retention remain pending |
 | Task-specific composite measures | [Research review](MOVEMENT_COMPOSITE_RESEARCH.md) | Proposal, not a validated score |
+| Auxiliary tapping angles | [Stages and validation](FINGER_TAPPING_ANGLE_AUDIT.md) | Capture/storage/export implemented; physical and external-reference validation pending |
+| In-app tapping angle measurements | [Definitions and compatibility](NATIVE_TAPPING_ANGLES.md) | Additive angle summary; existing trends unchanged; healthy-reference validation pending |
+| Offline angle comparison | [Run and interpret the review](TAPPING_ANGLE_REVIEW.md) | Six-trial paired-channel review complete; broader accuracy validation pending |
+| Author-derived tapping features | [ROC-HCI feature subset](ROC_TAPPING_FEATURES.md) | Separate offline kernel verified against pinned code; no patient bands |
+| Reference-pipeline bridge | [Paired landmarks and first ten taps](TAPPING_REFERENCE_BRIDGE.md) | Comparison-window metadata implemented; research validation is not a healthy reference band |
+| Independent tapping-video review | [Findings and review tools](TAPPING_VIDEO_VALIDATION.md) | Initial stress-test review complete; broader camera accuracy/orientation validation remains |
+| Camera movie/signal alignment | [Timing metadata](MOVEMENT_VIDEO_TIMING.md) | Anchor implemented; initial two-clip phone check passed; broader repeatability/lifecycle checks pending |
+| Healthy movement references | [Dataset and protocol assessment](HEALTHY_REFERENCE_ASSESSMENT.md) | Research review complete; external controls not yet validated for patient bands |
 | Journal redesign | [Stages and verification](JOURNAL_REDESIGN.md) | Stages 1/2 implemented; device review pending |
 | Journal design rationale | [Original proposal](JOURNAL_REVIEW_PROPOSAL.md) | Design history, not the current screen specification |
 | Medication/activity integration | [Apple Health review](APPLE_HEALTH_RESEARCH.md) | Decision pending; no integration added |

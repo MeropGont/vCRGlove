@@ -78,14 +78,26 @@ struct FullDataExportTests {
         let store = TaskSessionStore(storageURL: root.appendingPathComponent("sessions.jsonl"),
             videoStore: MovementVideoStore(directory: root.appendingPathComponent("videos")))
         let session = MovementSession(patientId: "QUEUED-TEST")
+        let angles = FingerTappingAngleRecording(samples: (0..<300).map {
+            let time = Double($0) / 30
+            return TimestampedAngleSample(t: time, degrees: 20 - 20 * cos(4 * .pi * time))
+        })
+        let angleMetrics = FingerTappingAngleAnalyzer.analyze(angles)
+        let referenceSegment = try #require(FingerTappingAngleAnalyzer.firstTenTaps(angles))
         let trial = Trial(taskType: .fingerTap, side: .left, source: .camera,
-            stopCondition: .thirtySec, samples: [], metrics: .empty)
+            stopCondition: .thirtySec, samples: [], metrics: .empty, fingerTappingAngle: angles,
+            fingerTappingAngleMetrics: angleMetrics, fingerTappingReferenceSegment: referenceSegment)
         store.saveAcceptedTrial(trial, in: session, temporaryVideoURL: nil) { _ in }
         let destination = root.appendingPathComponent("snapshot")
         #expect(try await store.copyExportSnapshot(to: destination).isEmpty)
         let raw = try String(contentsOf: destination.appendingPathComponent("tasks/sessions.jsonl"), encoding: .utf8)
         #expect(raw.contains("QUEUED-TEST"))
         #expect(raw.contains(trial.id.uuidString))
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+        let restored = try decoder.decode(MovementSession.self, from: Data(raw.utf8))
+        #expect(restored.trials[0].fingerTappingAngle == angles)
+        #expect(restored.trials[0].fingerTappingAngleMetrics == angleMetrics)
+        #expect(restored.trials[0].fingerTappingReferenceSegment == referenceSegment)
     }
 
     @Test func interruptedCleanupDoesNotTouchUnrelatedFiles() throws {
@@ -181,6 +193,113 @@ final class FullDataArchiveTests: XCTestCase {
 
 @Suite(.serialized)
 struct TaskSessionExporterTests {
+
+    @Test func videoTimingUsesSourceTimestampAndPreservesSignedOffsets() throws {
+        let timing = try #require(MovementVideoTiming.make(captureStartPTS: 1000,
+            trialStartUptime: 1000.125, firstMoviePTS: 0.02))
+        #expect(timing.firstFrameTrialTimeSeconds == -0.125)
+        #expect(abs(try #require(timing.movieTime(forTrialTime: 0)) - 0.145) < 1e-10)
+        #expect(timing.movieTime(forTrialTime: -0.5)! < 0)
+        let afterStart = try #require(MovementVideoTiming.make(captureStartPTS: 1001,
+            trialStartUptime: 1000, firstMoviePTS: 0))
+        #expect(afterStart.movieTime(forTrialTime: 0) == -1)
+        #expect(afterStart.movieTime(forTrialTime: 1) == 0)
+    }
+
+    @Test func videoTimingDoesNotInventMissingOrUnsupportedAnchors() throws {
+        #expect(MovementVideoTiming.make(captureStartPTS: nil, trialStartUptime: 1, firstMoviePTS: 0) == nil)
+        #expect(MovementVideoTiming.make(captureStartPTS: 1, trialStartUptime: nil, firstMoviePTS: 0) == nil)
+        #expect(MovementVideoTiming.make(captureStartPTS: 1, trialStartUptime: 1, firstMoviePTS: nil) == nil)
+        for bad in [Double.nan, .infinity, -1] {
+            #expect(MovementVideoTiming.make(captureStartPTS: bad, trialStartUptime: 1, firstMoviePTS: 0) == nil)
+            #expect(MovementVideoTiming.make(captureStartPTS: 1, trialStartUptime: bad, firstMoviePTS: 0) == nil)
+            #expect(MovementVideoTiming.make(captureStartPTS: 1, trialStartUptime: 1, firstMoviePTS: bad) == nil)
+        }
+        let unknown = MovementVideoTiming(version: 99, method: "future", firstFrameTrialTimeSeconds: 0,
+                                         firstFrameMoviePTSSeconds: 0)
+        #expect(unknown.movieTime(forTrialTime: 0) == nil)
+        let timing = try #require(MovementVideoTiming.make(captureStartPTS: 1, trialStartUptime: 1, firstMoviePTS: 0))
+        #expect(timing.movieTime(forTrialTime: .nan) == nil)
+    }
+
+    @Test func videoTimingSurvivesCopiesAndJSONWithoutChangingSamplesOrCSVs() throws {
+        let original = makeSessions()[0].trials[0]
+        let timing = try #require(MovementVideoTiming.make(captureStartPTS: 1000,
+            trialStartUptime: 1000.1, firstMoviePTS: 0))
+        let linked = original.withVideo(.init(fileName: "\(original.id).mov", byteCount: 100, timing: timing))
+            .withMedicationTiming(.init(status: .unsure))
+        #expect(linked.video?.timing == timing)
+        #expect(linked.samples == original.samples && linked.metrics == original.metrics)
+        let encoder = JSONEncoder()
+        let bytes = try encoder.encode(linked)
+        #expect(try JSONDecoder().decode(Trial.self, from: bytes).video?.timing == timing)
+        var legacy = try #require(JSONSerialization.jsonObject(with: bytes) as? [String: Any])
+        var video = try #require(legacy["video"] as? [String: Any])
+        video.removeValue(forKey: "timing")
+        legacy["video"] = video
+        let old = try JSONDecoder().decode(Trial.self, from: JSONSerialization.data(withJSONObject: legacy))
+        #expect(old.video?.timing == nil && old.video?.fileName == linked.video?.fileName)
+        let session = MovementSession(patientId: "TIMING-TEST", trials: [linked])
+        let url = try TaskSessionExporter.exportJSON([session])
+        defer { try? FileManager.default.removeItem(at: url) }
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+        let restored = try decoder.decode([MovementSession].self, from: Data(contentsOf: url))
+        #expect(restored[0].trials[0].video?.timing == timing)
+        #expect(linked.withVideo(nil).video == nil)
+    }
+
+    @Test func angleChannelSurvivesCopiesJSONAndLegacyDecodeWithoutChangingOtherCSVs() throws {
+        let original = makeSessions()[0].trials[0]
+        let angles = FingerTappingAngleRecording(samples: [.init(t: 0.1, degrees: 0), .init(t: 0.2, degrees: nil)])
+        let angleMetrics = FingerTappingAngleAnalyzer.analyze(angles)
+        let trial = Trial(taskType: .fingerTap, side: .right, source: .camera, stopCondition: .thirtySec,
+            samples: original.samples, metrics: original.metrics, measurementVersion: MovementMeasurementVersion.camera,
+            fingerTappingAngle: angles, fingerTappingAngleMetrics: angleMetrics)
+        let copied = trial.withMedicationTiming(.init(status: .unsure)).withVideo(.init(fileName: "example.mov", byteCount: 1))
+        #expect(copied.fingerTappingAngle == angles)
+        let data = try JSONEncoder().encode(copied)
+        #expect(try JSONDecoder().decode(Trial.self, from: data) == copied)
+        var legacy = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        legacy.removeValue(forKey: "fingerTappingAngle")
+        let decodedLegacy = try JSONDecoder().decode(Trial.self, from: JSONSerialization.data(withJSONObject: legacy))
+        #expect(decodedLegacy.fingerTappingAngle == nil && decodedLegacy.samples == trial.samples)
+
+        let session = MovementSession(patientId: "ANGLE-TEST", trials: [copied])
+        let url = try TaskSessionExporter.exportJSON([session])
+        defer { try? FileManager.default.removeItem(at: url) }
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+        let restored = try decoder.decode([MovementSession].self, from: Data(contentsOf: url))
+        #expect(restored[0].trials[0].fingerTappingAngle == angles)
+        #expect(restored[0].trials[0].fingerTappingAngleMetrics == angleMetrics)
+        let samples = try TaskSessionExporter.exportSamplesCSV([session])
+        defer { try? FileManager.default.removeItem(at: samples) }
+        let rows = try String(contentsOf: samples, encoding: .utf8).split(separator: "\n")
+        #expect(rows.first == "session_id,trial_id,task,side,t_sec,value")
+        #expect(rows.count == trial.samples.count + 1)
+        let metrics = try TaskSessionExporter.exportMetricsCSV([session])
+        defer { try? FileManager.default.removeItem(at: metrics) }
+        #expect(try String(contentsOf: metrics, encoding: .utf8).split(separator: "\n")[0].split(separator: ",").count == 29)
+    }
+
+    @Test func angleCSVPreservesMissingVersusZeroAndExplicitUnits() throws {
+        let trial = Trial(taskType: .fingerTap, side: .left, source: .camera, stopCondition: .thirtySec,
+            samples: [], metrics: .empty, fingerTappingAngle: .init(samples: [
+                .init(t: 0.1, degrees: 0), .init(t: 0.2, degrees: nil), .init(t: 0.3, degrees: 90)]))
+        let url = try TaskSessionExporter.exportFingerTappingAnglesCSV([.init(patientId: "TEST", trials: [trial])])
+        defer { try? FileManager.default.removeItem(at: url) }
+        let rows = try String(contentsOf: url, encoding: .utf8).split(separator: "\n").map {
+            $0.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+        }
+        #expect(rows.count == 4 && rows.allSatisfy { $0.count == 10 })
+        #expect(rows[1][5] == "0.0" && rows[1][6] == "true")
+        #expect(rows[2][5].isEmpty && rows[2][6] == "false")
+        #expect(rows[3][5] == "90.0" && rows[3][6] == "true")
+        #expect(rows[1][7] == "\"\(FingerTappingAngleRecording.currentVersion)\"")
+        #expect(rows[1][8] == "\"degrees\"" && rows[1][9] == "\"seconds_since_trial_start\"")
+        #expect(throws: TaskSessionExporter.ExportError.self) {
+            try TaskSessionExporter.exportFingerTappingAnglesCSV(makeSessions())
+        }
+    }
 
     private func makeSessions() -> [MovementSession] {
         var gen = SyntheticSignalGenerator(params: .healthy, seed: 5)

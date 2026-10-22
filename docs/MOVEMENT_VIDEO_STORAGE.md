@@ -8,7 +8,7 @@ Implemented 8 October 2026. Physical-camera verification remains pending.
 - In the guided session, each completed take is saved locally with its movie before the user continues. Save & Continue and Save & Finish reuse that checkpoint rather than creating duplicates. Automatic saving never requests upload; explicit Finish retains the existing upload behavior.
 - Retake keeps the saved take until its replacement is saved successfully. Replacing a take removes only the previous video for that task/hand, after the measurement write succeeds. Back during an unfinished recording still discards its temporary draft.
 - Opening a video, Trends, or another tab preserves the current session page, including its summary. Relaunch loads recordings from disk; restoring the exact in-progress navigation page after process termination is not implemented.
-- Saved videos can be reviewed from the session summary or directly in Settings > Data. Results also has a Data shortcut. Open a video normally; its player has Share and Delete actions. Playback does not export the file. Sharing opens the system share sheet only after an explicit tap. Shared copies leave the app's protection and should go only to approved study destinations.
+- Saved videos can be reviewed from the session summary or in Settings > Data > Recorded videos. The Data page shows one folder row and the video count instead of the whole video list; measurement exports remain on the Data page. Results also has a Data shortcut. Open a video normally; its player has Share and Delete actions. Playback does not export the file. Sharing opens the system share sheet only after an explicit tap. Shared copies leave the app's protection and should go only to approved study destinations.
 - No Photos authorization, automatic Photos saving or binary video upload is performed. Optional patient-approved Photos export is a separate pending step.
 
 ## Storage And Failures
@@ -45,6 +45,16 @@ Partial file failures retain their references and are reported, not silently
 treated as success. This removes in-app files, not a forensic secure-wipe guarantee.
 
 Videos live in Application Support/vcr/tasks/videos, outside Documents and Files sharing. Filenames contain only the trial UUID. Trial JSONL includes an optional relative video reference and byte count; existing recordings without that field still load. Task, hand, recording time, stimulation context and medication remain linked through the trial record, not embedded identifying movie metadata.
+
+The Recorded videos folder screen is UI organisation only. It does not move,
+compress or delete existing files and does not reduce their storage size.
+Long-press selection and batch share/delete remain inside this screen.
+
+New iOS 18.2+ camera recordings also retain optional
+[movie/signal timing metadata](MOVEMENT_VIDEO_TIMING.md) in that reference. It
+maps sample times to movie presentation times without estimating callback delay.
+Older recordings and unavailable timing remain readable without an inferred
+offset. Removing the video removes its reference and timing together.
 
 The app copies the movie first, then atomically writes the accepted session JSONL. If that fails, the new private copy is removed and the temporary clip remains available for retry. The result screen stays open. Save without video is an explicit fallback, not a silent omission. A camera movie failure still allows the raw measurement to be saved and shows a concise notice.
 

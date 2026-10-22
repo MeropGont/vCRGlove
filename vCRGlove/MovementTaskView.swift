@@ -427,8 +427,8 @@ struct MovementTaskView: View {
         let group = DispatchGroup()
         if let cam {
             group.enter()
-            cam.finishMeasurement { url in
-                if captureAttemptID == attemptID { videoDraft.receive(url) }
+            cam.finishMeasurement { url, startPTS in
+                if captureAttemptID == attemptID { videoDraft.receive(url, captureStartPTSSeconds: startPTS) }
                 else if let url { try? FileManager.default.removeItem(at: url) }
                 group.leave()
             }
@@ -458,7 +458,8 @@ struct MovementTaskView: View {
                               source: activeSignalSource,
                               stopCondition: stopCondition,
                               measurementVersion: cameraCapture != nil ? MovementMeasurementVersion.camera
-                                  : (watchCapture != nil ? MovementMeasurementVersion.watch : nil))
+                                  : (watchCapture != nil ? MovementMeasurementVersion.watch : nil),
+                              recordsFingerTappingAngles: cameraCapture != nil)
         r.onComplete = { trial in
             guard captureAttemptID == attemptID else { return }
             completedTrial = trial.withMedicationTiming(medicationSnapshot)
@@ -474,8 +475,8 @@ struct MovementTaskView: View {
         recorder = r
         phase = .recording
         if let cameraCapture {
+            cameraCapture.onFrame = { frame, time in r.ingestCameraFrame(frame, at: time) }
             cameraCapture.onSample = { [signalMonitor] value, time in
-                r.ingest(value: value, at: time)
                 signalMonitor.ingest(value: value, at: time)
             }
         } else if let watchCapture {
@@ -516,7 +517,8 @@ struct MovementTaskView: View {
         )
         isSaving = true
         TaskSessionStore.shared.saveAcceptedTrial(trial, in: session,
-            temporaryVideoURL: includeVideo ? videoDraft.url : nil) { result in
+            temporaryVideoURL: includeVideo ? videoDraft.url : nil,
+            videoCaptureStartPTSSeconds: includeVideo ? videoDraft.captureStartPTSSeconds : nil) { result in
             isSaving = false
             switch result {
             case .success(let saved):
@@ -1221,6 +1223,7 @@ struct MovementTrialResultView: View {
     var showsTrendsHint = false
     var recordingIsSaved = false
     @State private var confirmsRetake = false
+    @State private var showsStudyInfo = false
 
     private var feedback: MovementRecordingFeedback { MovementRecordingFeedback(trial: trial) }
 
@@ -1293,6 +1296,24 @@ struct MovementTrialResultView: View {
                 Text(L10n("These values describe this recording only. They are not a clinical rating."))
             }
 
+            if let angles = trial.displayedFingerTappingAngleMetrics {
+                Section {
+                    angleMetricRow("Opening angle", value: angles.meanOpeningAngleDegrees, unit: "°")
+                    angleMetricRow("Angular speed", value: angles.meanAbsoluteAngularSpeedDegreesPerSecond, unit: "°/s")
+                    angleMetricRow("Angle-based tapping rate", value: angles.meanRateHz, unit: L10n("Taps/second"))
+                    angleMetricRow("Angle-based rhythm variability", value: angles.periodCV.map { $0 * 100 }, unit: "%")
+                } header: {
+                    Text(L10n("Tapping angles"))
+                } footer: {
+                    Text(L10n("Camera-view angles, not joint angles. Hand position affects these values."))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            if trial.taskType == .fingerTap, trial.source == .camera, trial.fingerTappingAngle != nil {
+                MovementStudyComparisonSection(trial: trial, onInfo: { showsStudyInfo = true })
+            }
+
             Section {
                 RawSignalPlotView(samples: trial.samples)
                     .frame(height: 180)
@@ -1358,6 +1379,14 @@ struct MovementTrialResultView: View {
         }
         .navigationTitle(L10n("Result"))
         .navigationBarBackButtonHidden(true)
+        .sheet(isPresented: $showsStudyInfo) { MovementStudyComparisonInfoView() }
+    }
+
+    private func angleMetricRow(_ label: String, value: Double?, unit: String) -> some View {
+        metricRow(label, value.map {
+            String(format: "%.1f", locale: Locale(identifier: AppSettings.shared.language.rawValue), $0) + " " + unit
+        } ?? L10n("Value unavailable"))
+        .accessibilityIdentifier("movementAngleMetric-\(label)")
     }
 
     private func metricRow(_ label: String, _ value: String) -> some View {
@@ -1382,6 +1411,113 @@ struct MovementTrialResultView: View {
         metricRow(label, metric.availability(for: trial).value.map { metric.formatted($0) }
                   ?? L10n("Value unavailable"))
             .accessibilityIdentifier("movementResultMetric-\(metric.rawValue)")
+    }
+}
+
+struct MovementStudyComparisonSection: View {
+    let trial: Trial?
+    var showsRecordingDate = false
+    var onInfo: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        Section {
+            if let trial, let rate = trial.displayedFirstTenTappingRate {
+                if showsRecordingDate {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(L10n("Latest available comparison")).foregroundStyle(.secondary)
+                        Text(trial.startedAt, format: .dateTime.day().month().year().hour().minute())
+                    }
+                    .accessibilityIdentifier("movementStudyRecordingDate")
+                }
+                studyRateRow("Your first 10 taps", rate: rate, identifier: "movementStudyYourRate")
+                studyRateRow("Study median", rate: FingerTappingStudyReference.medianRate(for: trial.side),
+                             identifier: "movementStudyMedian")
+            } else {
+                Text(L10n("Study comparison unavailable for this recording."))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("movementStudyUnavailable")
+            }
+        } header: {
+            HStack {
+                Text(L10n("Study comparison"))
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+                Spacer()
+                Button(action: onInfo) {
+                    Image(systemName: "info.circle").frame(minWidth: 44, minHeight: 44)
+                }
+                .accessibilityLabel(L10n("About this study comparison"))
+                .accessibilityIdentifier("movementStudyInfo")
+            }
+        } footer: {
+            Text(L10n("For context, not a target or a clinical assessment."))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func studyRateRow(_ label: String, rate: Double, identifier: String) -> some View {
+        let value = String(format: "%.2f", locale: Locale(identifier: AppSettings.shared.language.rawValue), rate)
+            + " " + L10n("Taps/second")
+        return Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L10n(label)).foregroundStyle(.secondary)
+                    Text(value)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                LabeledContent(L10n(label), value: value)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(L10n(label))
+        .accessibilityValue(value)
+        .accessibilityIdentifier(identifier)
+    }
+}
+
+struct MovementResearchComparisonView: View {
+    let trial: Trial?
+    @State private var showsInfo = false
+
+    var body: some View {
+        Form {
+            MovementStudyComparisonSection(trial: trial, showsRecordingDate: true, onInfo: { showsInfo = true })
+        }
+        .navigationTitle(L10n("Research comparison"))
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showsInfo) { MovementStudyComparisonInfoView() }
+    }
+}
+
+struct MovementStudyComparisonInfoView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Text(L10n("Your rate uses the first 10 complete detected taps. The study median comes from 78 recordings of the same hand from people who reported no Parkinson's diagnosis."))
+                    Text(L10n("The study requested ten taps and used a different camera and detection method. Our recording lasts 30 seconds. These values are not directly interchangeable or adjusted for age; the study median is not a healthy cutoff."))
+                }
+                Section {
+                    Text("Islam et al., npj Digital Medicine (2023)")
+                    Link(L10n("Read the study"), destination: URL(string: "https://doi.org/10.1038/s41746-023-00905-9")!)
+                }
+            }
+            .navigationTitle(L10n("Study comparison"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n("Done")) { dismiss() }
+                        .accessibilityIdentifier("movementStudyInfoDone")
+                }
+            }
+        }
     }
 }
 
@@ -1708,13 +1844,21 @@ struct MovementSessionFlowView: View {
                 default: samples = (0...300).map { .init(t: Double($0) / 10, value: sin(Double($0) / 3)) }
                 }
                 let hasVideo = arguments.contains("--ui-test-private-video")
-                let trial = Trial(taskType: .fingerTap, side: .right, source: hasVideo ? .camera : .synthetic,
+                let hasAngles = arguments.contains("--ui-test-angle-metrics")
+                let angleFrameCount = arguments.contains("--ui-test-angle-brief") ? 120 : 600
+                let angleRecording = hasAngles ? FingerTappingAngleRecording(samples: (0..<angleFrameCount).map {
+                    let time = Double($0) / 60
+                    return TimestampedAngleSample(t: time, degrees: 20 - 20 * cos(4 * .pi * time))
+                }) : nil
+                let trial = Trial(taskType: .fingerTap, side: .right, source: hasVideo || hasAngles ? .camera : .synthetic,
                     stopCondition: .thirtySec,
                     samples: samples,
                     metrics: MovementMetrics(cycleCount: scenario == "noCycles" ? 0 : 15, frequencyHz: 2, meanAmplitude: 0.2,
                         amplitudeDecrementSlope: 0, rhythmCV: 0.1, pauseCount: 0,
                         onsetLatencySec: 0.2, qualityIndex: scenario == "lowIndex" ? 0 : 0.8),
-                    recordedDurationSeconds: scenario == "trailingGap" ? 30 : nil)
+                    recordedDurationSeconds: scenario == "trailingGap" ? 30 : nil,
+                    fingerTappingAngle: angleRecording,
+                    fingerTappingAngleMetrics: angleRecording.flatMap { FingerTappingAngleAnalyzer.analyze($0) })
                 if hasVideo {
                     Task { @MainActor in
                         do {
@@ -2239,7 +2383,8 @@ struct MovementSessionFlowView: View {
         pendingSaveFinishes = finish
         isSaving = true
         sessionStore.saveAcceptedTrial(trial, in: session,
-            temporaryVideoURL: includeVideo ? videoDraft.url : nil) { result in
+            temporaryVideoURL: includeVideo ? videoDraft.url : nil,
+            videoCaptureStartPTSSeconds: includeVideo ? videoDraft.captureStartPTSSeconds : nil) { result in
             isSaving = false
             switch result {
             case .success(let session):
@@ -2387,6 +2532,7 @@ struct MovementSessionFlowView: View {
         recorder?.finish()
         syntheticSource?.stop()
         cameraCapture?.onSample = nil
+        cameraCapture?.onFrame = nil
         watchCapture?.onSample = nil
         // Keep the live preview attached until its capture session has actually stopped.
         let group = DispatchGroup()
@@ -2508,8 +2654,8 @@ struct MovementSessionFlowView: View {
         let group = DispatchGroup()
         if let cam {
             group.enter()
-            cam.finishMeasurement { url in
-                if captureAttemptID == attemptID { videoDraft.receive(url) }
+            cam.finishMeasurement { url, startPTS in
+                if captureAttemptID == attemptID { videoDraft.receive(url, captureStartPTSSeconds: startPTS) }
                 else if let url { try? FileManager.default.removeItem(at: url) }
                 group.leave()
             }
@@ -2540,7 +2686,8 @@ struct MovementSessionFlowView: View {
                               source: activeSignalSource,
                               stopCondition: stopCondition,
                               measurementVersion: cameraCapture != nil ? MovementMeasurementVersion.camera
-                                  : (watchCapture != nil ? MovementMeasurementVersion.watch : nil))
+                                  : (watchCapture != nil ? MovementMeasurementVersion.watch : nil),
+                              recordsFingerTappingAngles: cameraCapture != nil)
         r.onComplete = { trial in
             print("[PERF] flow received trial for step \(self.currentStepIndex + 1)")
             EventStore.shared.append(
@@ -2568,8 +2715,8 @@ struct MovementSessionFlowView: View {
         phase = .recording(step: step)
 
         if let cameraCapture {
+            cameraCapture.onFrame = { frame, time in r.ingestCameraFrame(frame, at: time) }
             cameraCapture.onSample = { [signalMonitor] value, time in
-                r.ingest(value: value, at: time)
                 signalMonitor.ingest(value: value, at: time)
             }
         } else if let watchCapture {

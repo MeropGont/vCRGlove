@@ -1,0 +1,6 @@
+# Separate local research environment; never install into the iOS target.
+mediapipe==0.10.21
+numpy==1.26.4
+opencv-contrib-python==4.11.0.86
+pandas==2.2.3
+scipy==1.16.3

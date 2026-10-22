@@ -13,6 +13,158 @@ import Foundation
 
 struct TrialRecorderTests {
 
+    @Test @MainActor func cameraUsesGapAwarenessButWatchKeepsExistingAnalysis() async throws {
+        for source in [SignalSource.camera, .watchMotion] {
+            let trial = try await cameraTrial(source: source) { recorder, start in
+                for i in 0..<300 where !(90..<180).contains(i) {
+                    recorder.ingest(value: 1 + sin(Double(i) * 2 * .pi * 4 / 30),
+                                    at: start + 0.05 + Double(i) / 30)
+                }
+            }
+            let expected = MovementAnalyzer(config: source == .camera ? .camera : .default).analyze(trial.samples)
+            #expect(trial.metrics == expected)
+            #expect(source == .camera ? trial.metrics.pauseCount == 0 : trial.metrics.pauseCount > 0)
+        }
+    }
+
+    @MainActor private func cameraTrial(task: MovementTaskType = .fingerTap, source: SignalSource = .camera,
+                                       enabled: Bool = true,
+                                       feed: (TrialRecorder, Double) -> Void) async throws -> Trial {
+        let recorder = TrialRecorder(taskType: task, side: .right, source: source,
+            stopCondition: .thirtySec, measurementVersion: MovementMeasurementVersion.camera,
+            recordsFingerTappingAngles: enabled)
+        var trials: [Trial] = []
+        recorder.onComplete = { trials.append($0) }
+        recorder.start()
+        for _ in 0..<200 where !recorder.isRecording { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(recorder.isRecording)
+        feed(recorder, ProcessInfo.processInfo.systemUptime)
+        recorder.finish()
+        recorder.finish()
+        for _ in 0..<200 where trials.isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(trials.count == 1)
+        return try #require(trials.first)
+    }
+
+    @Test @MainActor func cameraAnglesAlignWithDistanceAndDoNotChangeMetrics() async throws {
+        let trial = try await cameraTrial { recorder, start in
+            for i in 0..<90 {
+                let value = sin(Double(i) * 2 * .pi / 10) + 1
+                recorder.ingestCameraFrame(.init(value: value, fingerTappingAngleDegrees: Double(i)),
+                                           at: start + 0.05 + Double(i) / 30)
+            }
+        }
+        let recording = try #require(trial.fingerTappingAngle)
+        #expect(recording.samples.count == 90 && trial.samples.count == 90)
+        #expect(recording.samples.map(\.t) == trial.samples.map(\.t))
+        #expect(recording.samples.last?.degrees == 89)
+        #expect(recording.unit == "degrees" && recording.timeReference == "seconds_since_trial_start")
+        #expect(recording.measurementVersion == FingerTappingAngleRecording.currentVersion)
+        #expect(trial.measurementVersion == MovementMeasurementVersion.camera)
+        #expect(trial.metrics == MovementAnalyzer(config: .camera).analyze(trial.samples))
+        #expect(trial.fingerTappingAngleMetrics == FingerTappingAngleAnalyzer.analyze(recording))
+        #expect(trial.fingerTappingAngleMetrics?.calculationVersion == FingerTappingAngleMetrics.currentVersion)
+        #expect(trial.fingerTappingReferenceSegment == nil)
+    }
+
+    @Test @MainActor func cameraTrialPersistsFirstTenTapWindowAlongsideFullSignal() async throws {
+        let trial = try await cameraTrial { recorder, start in
+            for i in 0..<400 {
+                let time = Double(i) / 60
+                recorder.ingestCameraFrame(.init(value: 1 + sin(4 * .pi * time),
+                    fingerTappingAngleDegrees: 20 - 20 * cos(4 * .pi * time)), at: start + 0.05 + time)
+            }
+        }
+        let segment = try #require(trial.fingerTappingReferenceSegment)
+        #expect(segment.completedTapCount == 10)
+        #expect(segment.endSampleIndexExclusive < trial.fingerTappingAngle!.samples.count)
+        #expect(trial.fingerTappingAngle?.samples.count == 400)
+        #expect(trial.samples.count == 400)
+        #expect(trial.metrics == MovementAnalyzer(config: .camera).analyze(trial.samples))
+    }
+
+    @Test @MainActor func missingAndInvalidAnglesAreNotZeroAndDoNotDropDistance() async throws {
+        let trial = try await cameraTrial { recorder, start in
+            let angles: [Double?] = [0, nil, .nan, .infinity, -1, 181, 180]
+            for (i, angle) in angles.enumerated() {
+                recorder.ingestCameraFrame(.init(value: Double(i), fingerTappingAngleDegrees: angle),
+                                           at: start + 0.05 + Double(i) / 30)
+            }
+            recorder.ingestCameraFrame(.init(value: nil, fingerTappingAngleDegrees: 45), at: start + 0.4)
+            recorder.ingestCameraFrame(.init(value: nil, fingerTappingAngleDegrees: nil), at: start + 0.5)
+        }
+        let angles = try #require(trial.fingerTappingAngle).samples
+        #expect(trial.samples.map(\.value) == [0, 1, 2, 3, 4, 5, 6])
+        #expect(angles.map(\.degrees) == [0, nil, nil, nil, nil, nil, 180, 45, nil])
+        #expect(trial.metrics == MovementAnalyzer(config: .camera).analyze(trial.samples))
+    }
+
+    @Test @MainActor func cameraFramesOutsideRecordingAndAfterStopAreExcluded() async throws {
+        let trial = try await cameraTrial { recorder, start in
+            recorder.ingestCameraFrame(.init(value: 99, fingerTappingAngleDegrees: 99), at: start - 10)
+            recorder.ingestCameraFrame(.init(value: 99, fingerTappingAngleDegrees: 99), at: .nan)
+            recorder.ingestCameraFrame(.init(value: 1, fingerTappingAngleDegrees: 30), at: start + 0.05)
+            recorder.ingestCameraFrame(.init(value: 2, fingerTappingAngleDegrees: 60), at: start + 29.9)
+            recorder.ingestCameraFrame(.init(value: 99, fingerTappingAngleDegrees: 99), at: start + 31)
+            recorder.ingestCameraFrame(.init(value: 99, fingerTappingAngleDegrees: 99), at: start + 32)
+        }
+        #expect(trial.samples.map(\.value) == [1, 2])
+        let angles = try #require(trial.fingerTappingAngle).samples
+        #expect(angles.map(\.degrees) == [30, 60])
+        #expect(angles.map(\.t) == trial.samples.map(\.t))
+        #expect(angles.allSatisfy { $0.t >= 0 && $0.t <= 30 })
+    }
+
+    @Test @MainActor func angleOnlyRecordingStillCompletesAndLegacyAndOtherSourcesStayUnchanged() async throws {
+        let empty = try await cameraTrial { _, _ in }
+        #expect(empty.samples.isEmpty && empty.fingerTappingAngle?.samples.isEmpty == true)
+        let angleOnly = try await cameraTrial { recorder, start in
+            recorder.ingestCameraFrame(.init(value: nil, fingerTappingAngleDegrees: 45), at: start + 0.05)
+        }
+        #expect(angleOnly.samples.isEmpty && angleOnly.metrics == .empty)
+        #expect(angleOnly.fingerTappingAngle?.samples.map(\.degrees) == [45])
+        for (task, source, enabled) in [
+            (MovementTaskType.fingerTap, SignalSource.camera, false),
+            (.handOpenClose, .camera, true), (.pronationSupination, .watchMotion, true),
+            (.fingerTap, .synthetic, true)
+        ] {
+            let trial = try await cameraTrial(task: task, source: source, enabled: enabled) { recorder, start in
+                recorder.ingestCameraFrame(.init(value: 1, fingerTappingAngleDegrees: 90), at: start + 0.05)
+            }
+            #expect(trial.fingerTappingAngle == nil && trial.samples.count == 1)
+            #expect(trial.fingerTappingAngleMetrics == nil)
+        }
+    }
+
+    @Test @MainActor func manualStopRejectsLateCameraFrames() async throws {
+        let trial = try await cameraTrial { recorder, start in
+            recorder.ingestCameraFrame(.init(value: 1, fingerTappingAngleDegrees: 30), at: start + 0.05)
+            recorder.finish()
+            recorder.ingestCameraFrame(.init(value: 9, fingerTappingAngleDegrees: 90), at: start + 0.1)
+        }
+        #expect(trial.samples.map(\.value) == [1])
+        #expect(trial.fingerTappingAngle?.samples.map(\.degrees) == [30])
+    }
+
+    @Test @MainActor func restartingRecorderClearsAngleBufferAndKeepsCompletedSnapshot() async throws {
+        let recorder = TrialRecorder(taskType: .fingerTap, side: .left, source: .camera,
+                                     stopCondition: .thirtySec, recordsFingerTappingAngles: true)
+        var trials: [Trial] = []
+        recorder.onComplete = { trials.append($0) }
+        for i in 0..<2 {
+            recorder.start()
+            for _ in 0..<200 where !recorder.isRecording { try await Task.sleep(for: .milliseconds(10)) }
+            recorder.ingestCameraFrame(.init(value: Double(i), fingerTappingAngleDegrees: Double(i) * 90),
+                                       at: ProcessInfo.processInfo.systemUptime + 0.05)
+            recorder.finish()
+            for _ in 0..<200 where trials.count <= i { try await Task.sleep(for: .milliseconds(10)) }
+        }
+        #expect(trials.count == 2)
+        #expect(trials.first?.fingerTappingAngle?.samples.map(\.degrees) == [0])
+        #expect(trials.last?.fingerTappingAngle?.samples.map(\.degrees) == [90])
+    }
+
     @Test(arguments: [false, true])
     @MainActor func manualStopCompletesExactlyOnceIncludingEmptyRecording(withSample: Bool) async throws {
         let recorder = TrialRecorder(taskType: .fingerTap, side: .right, source: .camera,

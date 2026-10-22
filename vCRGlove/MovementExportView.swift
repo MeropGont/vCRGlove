@@ -11,6 +11,7 @@ import SwiftUI
 import AVKit
 
 struct MovementExportView: View {
+    private let showsVideoLibrary: Bool
     @ObservedObject private var store = TaskSessionStore.shared
 
     @State private var lastExport: URL?
@@ -20,6 +21,10 @@ struct MovementExportView: View {
     @State private var confirmingDeletion = false
     @State private var isDeleting = false
     @State private var message: String?
+
+    init(showsVideoLibrary: Bool = false) {
+        self.showsVideoLibrary = showsVideoLibrary
+    }
 
     private var trialCount: Int { store.sessions.reduce(0) { $0 + $1.trials.count } }
     private var videos: [Trial] {
@@ -33,50 +38,74 @@ struct MovementExportView: View {
 
     var body: some View {
         Form {
-            Section {
-                LabeledContent(L10n("Sessions"), value: "\(store.sessions.count)")
-                LabeledContent(L10n("Trials"), value: "\(trialCount)")
-            } header: {
-                Text(L10n("Recorded data"))
-            }
-
-            videoSection
-
-            Section {
-                exportButton(L10n("JSON (full sessions)"), systemImage: "doc.badge.gearshape") {
-                    try TaskSessionExporter.exportJSON(store.sessions)
+            if showsVideoLibrary {
+                videoSection
+            } else {
+                Section {
+                    LabeledContent(L10n("Sessions"), value: "\(store.sessions.count)")
+                    LabeledContent(L10n("Trials"), value: "\(trialCount)")
+                } header: {
+                    Text(L10n("Recorded data"))
                 }
-                exportButton(L10n("CSV — metrics per trial"), systemImage: "tablecells") {
-                    try TaskSessionExporter.exportMetricsCSV(store.sessions)
-                }
-                exportButton(L10n("CSV — raw samples"), systemImage: "waveform.path") {
-                    try TaskSessionExporter.exportSamplesCSV(store.sessions)
-                }
-            } header: {
-                Text(L10n("Export"))
-            } footer: {
-                Text(L10n("Files are saved to vcr/tasks/exports and can also be accessed from the Files app."))
-            }
 
-            if let url = lastExport {
-                Section(L10n("Last export")) {
-                    LabeledContent(L10n("File"), value: url.lastPathComponent)
-                    ShareLink(item: url) {
-                        Label(L10n("Share…"), systemImage: "square.and.arrow.up")
+                Section {
+                    NavigationLink {
+                        MovementExportView(showsVideoLibrary: true)
+                    } label: {
+                        HStack {
+                            Label(L10n("Recorded videos"), systemImage: "folder")
+                            Spacer()
+                            Text(videos.count, format: .number).foregroundStyle(.secondary)
+                        }
+                    }
+                    .accessibilityIdentifier("movementVideoLibrary")
+                    .accessibilityValue("\(videos.count)")
+                }
+
+                Section {
+                    exportButton(L10n("JSON (full sessions)"), systemImage: "doc.badge.gearshape") {
+                        try TaskSessionExporter.exportJSON(store.sessions)
+                    }
+                    exportButton(L10n("CSV — metrics per trial"), systemImage: "tablecells") {
+                        try TaskSessionExporter.exportMetricsCSV(store.sessions)
+                    }
+                    exportButton(L10n("CSV — raw samples"), systemImage: "waveform.path") {
+                        try TaskSessionExporter.exportSamplesCSV(store.sessions)
+                    }
+                    if store.sessions.contains(where: { $0.trials.contains(where: { $0.fingerTappingAngle != nil }) }) {
+                        exportButton(L10n("CSV — finger-tapping angles"), systemImage: "angle") {
+                            try TaskSessionExporter.exportFingerTappingAnglesCSV(store.sessions)
+                        }
+                        .accessibilityIdentifier("movementExportAngles")
+                    }
+                } header: {
+                    Text(L10n("Export"))
+                } footer: {
+                    Text(L10n("Files are saved to vcr/tasks/exports and can also be accessed from the Files app."))
+                }
+
+                if let url = lastExport {
+                    Section(L10n("Last export")) {
+                        LabeledContent(L10n("File"), value: url.lastPathComponent)
+                            .accessibilityIdentifier("movementLastExportFile")
+                        ShareLink(item: url) {
+                            Label(L10n("Share…"), systemImage: "square.and.arrow.up")
+                        }
+                        .accessibilityIdentifier("movementShareLastExport")
+                    }
+                }
+
+                if let errorMessage {
+                    Section {
+                        Text(L10n(errorMessage))
+                            .foregroundStyle(.red)
                     }
                 }
             }
-
-            if let errorMessage {
-                Section {
-                    Text(L10n(errorMessage))
-                        .foregroundStyle(.red)
-                }
-            }
         }
-        .navigationTitle(L10n("Data"))
+        .navigationTitle(L10n(showsVideoLibrary ? "Recorded videos" : "Data"))
         .toolbar {
-            if isSelecting {
+            if showsVideoLibrary && isSelecting {
                 ToolbarItem(id: "shareSelectedVideos", placement: .topBarTrailing) {
                     ShareLink(items: selectedURLs) { Image(systemName: "square.and.arrow.up") }
                         .disabled(selection.isEmpty || selectedURLs.count != selection.count || isDeleting)
@@ -97,7 +126,7 @@ struct MovementExportView: View {
                         .disabled(isDeleting)
                         .accessibilityIdentifier("movementFinishSelection")
                 }
-            } else if !videos.isEmpty {
+            } else if showsVideoLibrary && !videos.isEmpty {
                 ToolbarItem(id: "beginVideoSelection", placement: .topBarTrailing) {
                     Button(L10n("Select")) { isSelecting = true }
                         .accessibilityIdentifier("movementSelectVideos")
@@ -120,7 +149,8 @@ struct MovementExportView: View {
                     let movie = try await makeMovementVideoTestFixture()
                     let trial = Trial(taskType: .fingerTap, side: index.isMultiple(of: 2) ? .right : .left,
                         source: .camera, stopCondition: .thirtySec,
-                        startedAt: Date().addingTimeInterval(Double(-index) * 3600), samples: [], metrics: .empty)
+                        startedAt: Date().addingTimeInterval(Double(-index) * 3600), samples: [], metrics: .empty,
+                        fingerTappingAngle: .init(samples: [.init(t: 0, degrees: 0), .init(t: 0.1, degrees: nil)]))
                     let session = MovementSession(patientId: "UI-FIXTURE", trials: [])
                     let _: MovementSession = try await withCheckedThrowingContinuation { continuation in
                         store.saveAcceptedTrial(trial, in: session, temporaryVideoURL: movie) {

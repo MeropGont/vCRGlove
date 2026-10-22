@@ -1,192 +1,65 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "A line needs matching recordings on at least two different days." : {
+    "Latest matching recording" : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Für eine Linie sind vergleichbare Aufnahmen an mindestens zwei verschiedenen Tagen nötig."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A line needs matching recordings on at least two different days."
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Latest matching recording" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzte passende Aufnahme" } } }
     },
-    "An intervening day with incomplete capture separates these trend segments." : {
+    "Your recent typical" : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ein Tag mit unvollständigen Aufnahmen dazwischen trennt diese Verlaufsabschnitte."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "An intervening day with incomplete capture separates these trend segments."
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your recent typical" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Zuletzt für Sie typisch" } } }
     },
-    "Approx. %.1f seconds (estimated from signal)" : {
+    "Your movement pattern" : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ca. %.1f Sekunden (aus dem Signal geschätzt)"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Approx. %.1f seconds (estimated from signal)"
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your movement pattern" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Ihr Bewegungsmuster" } } }
     },
-    "Different test protocols or recording sources are kept separate." : {
+    "About your movement pattern" : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unterschiedliche Testprotokolle oder Aufnahmequellen bleiben getrennt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Different test protocols or recording sources are kept separate."
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "About your movement pattern" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Informationen zu Ihrem Bewegungsmuster" } } }
     },
-    "Each stimulation timing needs matching recordings on at least two days." : {
+    "Finger movement speed" : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Für jeden Stimulationszeitpunkt sind vergleichbare Aufnahmen an mindestens zwei Tagen nötig."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Each stimulation timing needs matching recordings on at least two days."
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Finger movement speed" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Geschwindigkeit der Fingerbewegung" } } }
     },
-    "Earlier and current measurement methods are kept separate." : {
+    "Research comparison" : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Frühere und aktuelle Messverfahren bleiben getrennt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Earlier and current measurement methods are kept separate."
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Research comparison" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Forschungsvergleich" } } }
     },
-    "Earlier durations estimated from signal timestamps." : {
+    "Compare with research recordings" : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dauer älterer Aufnahmen aus Signalzeitstempeln geschätzt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Earlier durations estimated from signal timestamps."
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Compare with research recordings" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Mit Forschungsaufnahmen vergleichen" } } }
     },
-    "Incomplete capture or unknown duration keeps these points separate." : {
+    "Your recent typical: %@ · %d earlier day(s)" : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unvollständige Aufnahmen oder eine unbekannte Dauer verhindern die Verbindung dieser Punkte."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Incomplete capture or unknown duration keeps these points separate."
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your recent typical: %@ · %d earlier day(s)" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Zuletzt typisch für Sie: %@ · %d frühere Tage" } } }
     },
-    "Only one day has comparable complete recordings. Other points remain separate." : {
+    "As you record on more days under similar conditions, your personal comparison will appear here." : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nur an einem Tag liegen vergleichbare vollständige Aufnahmen vor. Andere Punkte bleiben getrennt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Only one day has comparable complete recordings. Other points remain separate."
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "As you record on more days under similar conditions, your personal comparison will appear here." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Wenn Sie an weiteren Tagen unter ähnlichen Bedingungen aufnehmen, erscheint hier Ihr persönlicher Vergleich." } } }
     },
-    "Recordings with different study IDs are kept separate." : {
+    "Your movement pattern will appear after a usable recording." : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aufnahmen mit unterschiedlichen Studien-IDs bleiben getrennt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recordings with different study IDs are kept separate."
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your movement pattern will appear after a usable recording." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Nach einer auswertbaren Aufnahme erscheint hier Ihr Bewegungsmuster." } } }
     },
-    "Recordings with unspecified or historical stimulation timing stay separate." : {
+    "Rate counts repetitions per second. Rhythm variability describes how evenly they repeat: lower values mean more even intervals. Movement size describes how widely you moved, relative to your palm." : {
       "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aufnahmen mit nicht angegebenem oder früherem Stimulationszeitpunkt bleiben getrennt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recordings with unspecified or historical stimulation timing stay separate."
-          }
-        }
-      }
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Rate counts repetitions per second. Rhythm variability describes how evenly they repeat: lower values mean more even intervals. Movement size describes how widely you moved, relative to your palm." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Die Wiederholungsrate zählt Wiederholungen pro Sekunde. Die Rhythmusvariabilität beschreibt deren Gleichmäßigkeit: Niedrigere Werte bedeuten gleichmäßigere Zeitabstände. Die Bewegungsgröße beschreibt, wie weit Sie sich bewegt haben, bezogen auf Ihre Handfläche." } } }
+    },
+    "Finger movement speed describes how quickly the camera-view finger angle changes. It is different from tapping rate and is affected by hand position and tracking." : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Finger movement speed describes how quickly the camera-view finger angle changes. It is different from tapping rate and is affected by hand position and tracking." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Die Geschwindigkeit der Fingerbewegung beschreibt, wie schnell sich der Fingerwinkel im Kamerabild ändert. Sie unterscheidet sich von der Tipprate und wird durch Handposition und Erkennung beeinflusst." } } }
+    },
+    "Your recent typical values are medians from up to seven earlier matching recording days. We keep hand, stimulation timing, reported medication status and recording method separate. Filters apply; days with repeated recordings receive equal weight." : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your recent typical values are medians from up to seven earlier matching recording days. We keep hand, stimulation timing, reported medication status and recording method separate. Filters apply; days with repeated recordings receive equal weight." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Ihre zuletzt typischen Werte sind Mediane aus bis zu sieben früheren passenden Aufnahmetagen. Hand, Stimulationszeitpunkt, angegebener Medikamentenstatus und Aufnahmemethode werden getrennt betrachtet. Die Filter gelten auch hier; Tage mit mehreren Aufnahmen werden gleich gewichtet." } } }
+    },
+    "These measures help describe your movement pattern. Faster or larger does not automatically mean better, and small differences may reflect normal recording variation." : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "These measures help describe your movement pattern. Faster or larger does not automatically mean better, and small differences may reflect normal recording variation." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese Messwerte helfen, Ihr Bewegungsmuster zu beschreiben. Schneller oder größer bedeutet nicht automatisch besser; kleine Unterschiede können durch normale Schwankungen bei der Aufnahme entstehen." } } }
+    },
+    "Latest available comparison" : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Latest available comparison" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzter verfügbarer Vergleich" } } }
     },
     " Hz" : {
 
@@ -854,6 +727,23 @@
         }
       }
     },
+    "A line needs matching recordings on at least two different days." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für eine Linie sind vergleichbare Aufnahmen an mindestens zwei verschiedenen Tagen nötig."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A line needs matching recordings on at least two different days."
+          }
+        }
+      }
+    },
     "A little" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -909,6 +799,23 @@
         }
       }
     },
+    "A study ID cannot be cleared once assigned." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine zugewiesene Studien-ID kann nicht geleert werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A study ID cannot be cleared once assigned."
+          }
+        }
+      }
+    },
     "About these tasks" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -933,6 +840,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "About this metric"
+          }
+        }
+      }
+    },
+    "About this study comparison" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informationen zum Studienvergleich"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About this study comparison"
           }
         }
       }
@@ -1166,6 +1090,23 @@
         }
       }
     },
+    "An intervening day with incomplete capture separates these trend segments." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Tag mit unvollständigen Aufnahmen dazwischen trennt diese Verlaufsabschnitte."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An intervening day with incomplete capture separates these trend segments."
+          }
+        }
+      }
+    },
     "Analysing movement…" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1173,6 +1114,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bewegung wird analysiert…"
+          }
+        }
+      }
+    },
+    "Angle-based rhythm variability" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winkelbasierte Rhythmusschwankung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Angle-based rhythm variability"
+          }
+        }
+      }
+    },
+    "Angle-based tapping rate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winkelbasierte Tipprate"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Angle-based tapping rate"
+          }
+        }
+      }
+    },
+    "Angular speed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winkelgeschwindigkeit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Angular speed"
           }
         }
       }
@@ -1265,6 +1257,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "App-Version"
+          }
+        }
+      }
+    },
+    "Approx. %.1f seconds (estimated from signal)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ca. %.1f Sekunden (aus dem Signal geschätzt)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approx. %.1f seconds (estimated from signal)"
           }
         }
       }
@@ -1583,12 +1592,63 @@
         }
       }
     },
+    "Camera-view angles, not joint angles. Hand position affects these values." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winkel im Kamerabild, keine Gelenkwinkel. Die Handposition beeinflusst diese Werte."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera-view angles, not joint angles. Hand position affects these values."
+          }
+        }
+      }
+    },
+    "Camera-view angles, not joint angles. Hand position affects these values. Healthy-reference comparison is not yet available." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winkel im Kamerabild, keine Gelenkwinkel. Die Handposition beeinflusst diese Werte. Ein Vergleich mit gesunden Referenzwerten ist noch nicht verfügbar."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera-view angles, not joint angles. Hand position affects these values. Healthy-reference comparison is not yet available."
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abbrechen"
+          }
+        }
+      }
+    },
+    "Change ID" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID ändern"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change ID"
           }
         }
       }
@@ -1606,6 +1666,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Change in movement size per repetition, relative to its average. Negative values mean size decreased during the recording."
+          }
+        }
+      }
+    },
+    "Change study ID?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studien-ID ändern?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change study ID?"
           }
         }
       }
@@ -1827,6 +1904,23 @@
         }
       }
     },
+    "Confirm these unassigned recordings are your own tests. Only trend display changes. Saved data stays unchanged." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestätigen Sie, dass diese Aufnahmen ohne Studien-ID Ihre eigenen Tests sind. Nur die Verlaufsanzeige ändert sich. Gespeicherte Daten bleiben unverändert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm these unassigned recordings are your own tests. Only trend display changes. Saved data stays unchanged."
+          }
+        }
+      }
+    },
     "Connect at least one glove to begin" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1932,6 +2026,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Krämpfe"
+          }
+        }
+      }
+    },
+    "CSV — finger-tapping angles" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV — Finger-Tapping-Winkel"
           }
         }
       }
@@ -2309,6 +2414,23 @@
         }
       }
     },
+    "Different test protocols or recording sources are kept separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterschiedliche Testprotokolle oder Aufnahmequellen bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different test protocols or recording sources are kept separate."
+          }
+        }
+      }
+    },
     "Discard" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2425,6 +2547,57 @@
         }
       }
     },
+    "Each stimulation timing needs matching recordings on at least two days." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für jeden Stimulationszeitpunkt sind vergleichbare Aufnahmen an mindestens zwei Tagen nötig."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each stimulation timing needs matching recordings on at least two days."
+          }
+        }
+      }
+    },
+    "Earlier and current measurement methods are kept separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frühere und aktuelle Messverfahren bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier and current measurement methods are kept separate."
+          }
+        }
+      }
+    },
+    "Earlier durations estimated from signal timestamps." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dauer älterer Aufnahmen aus Signalzeitstempeln geschätzt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier durations estimated from signal timestamps."
+          }
+        }
+      }
+    },
     "Earlier measurement method" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2438,6 +2611,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Earlier measurement method"
+          }
+        }
+      }
+    },
+    "Earlier or different measurement method" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Früheres oder anderes Messverfahren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier or different measurement method"
+          }
+        }
+      }
+    },
+    "Earlier recordings reanalysed for this trend." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frühere Aufnahmen für diesen Verlauf neu ausgewertet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier recordings reanalysed for this trend."
+          }
+        }
+      }
+    },
+    "Earlier test linked for display only" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Früherer Test nur für die Anzeige zugeordnet"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier test linked for display only"
           }
         }
       }
@@ -2621,6 +2845,40 @@
         }
       }
     },
+    "Faded points: incomplete or uncertain recordings." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blasse Punkte: unvollständige oder unsichere Aufnahmen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faded points: incomplete or uncertain recordings."
+          }
+        }
+      }
+    },
+    "Faded points: some recordings cannot be compared directly." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blasse Punkte: Manche Aufnahmen sind nicht direkt vergleichbar."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faded points: some recordings cannot be compared directly."
+          }
+        }
+      }
+    },
     "Fall / near fall" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2738,6 +2996,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Schriftgröße"
+          }
+        }
+      }
+    },
+    "For context, not a target or a clinical assessment." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zur Einordnung, nicht als Zielwert oder klinische Beurteilung."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For context, not a target or a clinical assessment."
           }
         }
       }
@@ -3466,6 +3741,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In the calendar you can see at a glance on which days you wrote a journal or did a movement test. A dark green circle means: There is measurement data on this day."
+          }
+        }
+      }
+    },
+    "Incomplete capture or unknown duration keeps these points separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unvollständige Aufnahmen oder eine unbekannte Dauer verhindern die Verbindung dieser Punkte."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incomplete capture or unknown duration keeps these points separate."
           }
         }
       }
@@ -4210,6 +4502,9 @@
         }
       }
     },
+    "Islam et al., npj Digital Medicine (2023)" : {
+
+    },
     "Jeden Tag können Sie einchecken: Stimmung, Symptome, Medikamente und Notizen. Das Journal hilft Ihnen und Ihrem Arzt, Verläufe zu erkennen." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4685,6 +4980,23 @@
         }
       }
     },
+    "Less than 10 seconds of usable tracking: shown separately." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weniger als 10 Sekunden nutzbare Erfassung: separat dargestellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Less than 10 seconds of usable tracking: shown separately."
+          }
+        }
+      }
+    },
     "Let's do today’s movement task" : {
       "localizations" : {
         "de" : {
@@ -4702,6 +5014,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Noch einmal versuchen"
+          }
+        }
+      }
+    },
+    "Link earlier test recordings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frühere Testaufnahmen zuordnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link earlier test recordings"
+          }
+        }
+      }
+    },
+    "Link test recordings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testaufnahmen zuordnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link test recordings"
+          }
+        }
+      }
+    },
+    "Link your earlier tests?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eigene frühere Tests zuordnen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link your earlier tests?"
           }
         }
       }
@@ -5222,6 +5585,23 @@
         }
       }
     },
+    "New recordings will use the new ID. Saved recordings keep their original IDs and stay separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Aufnahmen erhalten die neue ID. Gespeicherte Aufnahmen behalten ihre ursprünglichen IDs und bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New recordings will use the new ID. Saved recordings keep their original IDs and stay separate."
+          }
+        }
+      }
+    },
     "Next month" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5306,6 +5686,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Noch keine Einträge"
+          }
+        }
+      }
+    },
+    "No finger-tapping angle recordings are available to export." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es sind keine Finger-Tapping-Winkelaufnahmen zum Exportieren vorhanden."
           }
         }
       }
@@ -5738,6 +6129,40 @@
         }
       }
     },
+    "Only for your own earlier unassigned tests. Changes trend display, not saved data." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur für Ihre eigenen früheren Tests ohne Studien-ID. Ändert die Verlaufsanzeige, nicht die gespeicherten Daten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only for your own earlier unassigned tests. Changes trend display, not saved data."
+          }
+        }
+      }
+    },
+    "Only one day has comparable complete recordings. Other points remain separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur an einem Tag liegen vergleichbare vollständige Aufnahmen vor. Andere Punkte bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only one day has comparable complete recordings. Other points remain separate."
+          }
+        }
+      }
+    },
     "Only one glove connects" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5924,6 +6349,23 @@
         }
       }
     },
+    "Opening angle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnungswinkel"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opening angle"
+          }
+        }
+      }
+    },
     "Optional note" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6002,6 +6444,7 @@
       }
     },
     "Patient ID" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6467,6 +6910,23 @@
         }
       }
     },
+    "Read the study" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studie lesen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read the study"
+          }
+        }
+      }
+    },
     "Ready" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6666,6 +7126,40 @@
         }
       }
     },
+    "Recordings with different study IDs are kept separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahmen mit unterschiedlichen Studien-IDs bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordings with different study IDs are kept separate."
+          }
+        }
+      }
+    },
+    "Recordings with unspecified or historical stimulation timing stay separate." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahmen mit nicht angegebenem oder früherem Stimulationszeitpunkt bleiben getrennt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordings with unspecified or historical stimulation timing stay separate."
+          }
+        }
+      }
+    },
     "Refresh Diagnostics" : {
       "localizations" : {
         "de" : {
@@ -6741,6 +7235,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erinnerungen"
+          }
+        }
+      }
+    },
+    "Remove test display links" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anzeige-Zuordnungen der Tests aufheben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove test display links"
           }
         }
       }
@@ -7727,6 +8238,23 @@
         }
       }
     },
+    "Separate points" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einzelne Punkte"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separate points"
+          }
+        }
+      }
+    },
     "Separate points may have a different protocol or method, incomplete capture, or unknown context." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8539,6 +9067,91 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Studie"
+          }
+        }
+      }
+    },
+    "Study comparison" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studienvergleich"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Study comparison"
+          }
+        }
+      }
+    },
+    "Study comparison unavailable for this recording." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für diese Aufnahme ist kein Studienvergleich verfügbar."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Study comparison unavailable for this recording."
+          }
+        }
+      }
+    },
+    "Study ID" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studien-ID"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Study ID"
+          }
+        }
+      }
+    },
+    "Study ID missing: shown separately." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studien-ID fehlt: separat dargestellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Study ID missing: shown separately."
+          }
+        }
+      }
+    },
+    "Study median" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studienmedian"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Study median"
           }
         }
       }
@@ -9602,6 +10215,23 @@
         }
       }
     },
+    "Tapping angles" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finger-Tapping-Winkel"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tapping angles"
+          }
+        }
+      }
+    },
     "Tapping rate" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9727,6 +10357,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Die Aufnahmen können Ihnen helfen, Veränderungen Ihrer Bewegung zu verfolgen. Sie ergänzen eine klinische Untersuchung, liefern aber keinen MDS-UPDRS-Punktwert."
+          }
+        }
+      }
+    },
+    "The study requested ten taps and used a different camera and detection method. Our recording lasts 30 seconds. These values are not directly interchangeable or adjusted for age; the study median is not a healthy cutoff." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In der Studie wurden zehn Taps mit einer anderen Kamera und Erkennungsmethode erfasst. Unsere Aufnahme dauert 30 Sekunden. Die Werte sind nicht direkt austauschbar und nicht altersbereinigt; der Studienmedian ist kein Grenzwert für gesunde Bewegung."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The study requested ten taps and used a different camera and detection method. Our recording lasts 30 seconds. These values are not directly interchangeable or adjusted for age; the study median is not a healthy cutoff."
           }
         }
       }
@@ -10336,6 +10983,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Under “vCR” you start your vibration therapy. The app guides you through the session and remembers when you had a treatment."
+          }
+        }
+      }
+    },
+    "Updated analysis for this trend. Original values are unchanged." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Auswertung für diesen Verlauf. Die Originalwerte bleiben unverändert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated analysis for this trend. Original values are unchanged."
           }
         }
       }
@@ -10969,6 +11633,23 @@
         }
       }
     },
+    "Why some points are separate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum manche Punkte einzeln stehen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Why some points are separate"
+          }
+        }
+      }
+    },
     "Willkommen bei vCRGlove" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11019,6 +11700,23 @@
         }
       }
     },
+    "Your first 10 taps" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre ersten 10 Taps"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your first 10 taps"
+          }
+        }
+      }
+    },
     "Your gloves are ready when you are" : {
       "localizations" : {
         "de" : {
@@ -11036,6 +11734,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ihr letzter Check-in erscheint hier."
+          }
+        }
+      }
+    },
+    "Your rate uses the first 10 complete detected taps. The study median comes from 78 recordings of the same hand from people who reported no Parkinson's diagnosis." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre Tipprate wird aus den ersten 10 vollständig erkannten Taps berechnet. Der Studienmedian stammt aus 78 Aufnahmen derselben Hand von Personen, die keine Parkinson-Diagnose angegeben haben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your rate uses the first 10 complete detected taps. The study median comes from 78 recordings of the same hand from people who reported no Parkinson's diagnosis."
           }
         }
       }

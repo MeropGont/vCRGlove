@@ -229,6 +229,7 @@ private struct ProfileSettingsView: View {
                     Text(patientID.isEmpty ? L10n("Not set") : patientID)
                         .font(.headline)
                         .foregroundStyle(patientID.isEmpty ? .secondary : .primary)
+                        .accessibilityIdentifier("profileStudyID")
                 }
 
                 Text(L10n("This ID is set by the research team."))
@@ -272,7 +273,9 @@ private struct GeneralSettingsView: View {
 
 private struct ResearchAdminSettingsView: View {
     @ObservedObject var vm: GloveVM
+    @ObservedObject private var movementStore = TaskSessionStore.shared
     @Binding var patientID: String
+    @AppStorage("movementTrendIdentityLinks") private var identityLinksData = Data()
 
     @AppStorage("studyStartDate") private var studyStartDateString = ""
     @AppStorage("debugVerboseBLELogging") private var debugVerboseBLELogging = false
@@ -290,6 +293,21 @@ private struct ResearchAdminSettingsView: View {
     @State private var sharingPackage: FullDataExporter.Package?
     @State private var showExportError = false
     @State private var showMissingExportVideos = false
+    @State private var studyIDDraft: String?
+    @State private var showStudyIDConfirmation = false
+    @State private var showTestLinkConfirmation = false
+    @State private var pendingTestLinks: MovementTrendIdentityLinks?
+    @FocusState private var studyIDFocused: Bool
+
+    private var proposedStudyID: String {
+        (studyIDDraft ?? patientID).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var validStudyID: Bool {
+        !proposedStudyID.isEmpty || patientID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var identityLinks: MovementTrendIdentityLinks { MovementTrendIdentityLinks(data: identityLinksData) }
 
     private var studyStartDate: Binding<Date> {
         Binding(
@@ -340,10 +358,46 @@ private struct ResearchAdminSettingsView: View {
                 Text(L10n(vm.hasStimulationSession ? "research.export.stop" : "research.export.explanation"))
             }
 
+            if MovementTrendIdentityLinks.isTeamID(patientID) {
+                Section {
+                    Button {
+                        var links = identityLinks
+                        links.linkUnassignedTests(movementStore.sessions, to: patientID)
+                        pendingTestLinks = links
+                        showTestLinkConfirmation = true
+                    } label: {
+                        Label(L10n("Link earlier test recordings"), systemImage: "link")
+                    }
+                    .disabled(!vm.researchUnlocked || !movementStore.sessions.contains(where: identityLinks.canLink))
+                    .accessibilityIdentifier("researchLinkEarlierTests")
+                    if !identityLinks.sessions.isEmpty {
+                        Button {
+                            identityLinksData = Data()
+                            EventStore.shared.append(type: "admin_action", tag: "Research", message: "Test display links removed")
+                        } label: {
+                            Label(L10n("Remove test display links"), systemImage: "arrow.uturn.backward")
+                        }
+                        .disabled(!vm.researchUnlocked)
+                        .accessibilityIdentifier("researchRemoveTestLinks")
+                    }
+                } footer: {
+                    Text(L10n("Only for your own earlier unassigned tests. Changes trend display, not saved data."))
+                }
+            }
+
             Section("Study") {
-                TextField("Patient ID", text: $patientID)
+                TextField(L10n("Study ID"), text: Binding(
+                    get: { studyIDDraft ?? patientID }, set: { studyIDDraft = $0 }))
                     .textInputAutocapitalization(.characters)
                     .autocorrectionDisabled()
+                    .focused($studyIDFocused)
+                    .submitLabel(.done)
+                    .onSubmit { studyIDFocused = false }
+                    .accessibilityIdentifier("researchStudyID")
+                if !validStudyID {
+                    Text(L10n("A study ID cannot be cleared once assigned."))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
 
                 DatePicker("Study start date", selection: studyStartDate, displayedComponents: .date)
 
@@ -375,10 +429,16 @@ private struct ResearchAdminSettingsView: View {
                 }
 
                 Button {
-                    saveStudyMetadata()
+                    if proposedStudyID != patientID && !patientID.isEmpty {
+                        showStudyIDConfirmation = true
+                    } else {
+                        saveStudyMetadata()
+                    }
                 } label: {
                     Label("Save Study Metadata", systemImage: "checkmark.circle")
                 }
+                .disabled(!validStudyID || !vm.researchUnlocked)
+                .accessibilityIdentifier("researchSaveMetadata")
 
                 if let saveMessage {
                     Text(saveMessage)
@@ -442,6 +502,27 @@ private struct ResearchAdminSettingsView: View {
             }
         }
         .navigationTitle("Research Admin")
+        .alert(L10n("Change study ID?"), isPresented: $showStudyIDConfirmation) {
+            Button(L10n("Change ID")) { saveStudyMetadata() }
+                .accessibilityIdentifier("researchConfirmStudyID")
+            Button(L10n("Cancel"), role: .cancel) {}
+        } message: {
+            Text(L10n("New recordings will use the new ID. Saved recordings keep their original IDs and stay separate."))
+        }
+        .alert(L10n("Link your earlier tests?"), isPresented: $showTestLinkConfirmation) {
+            Button(L10n("Link test recordings")) {
+                guard vm.researchUnlocked, MovementTrendIdentityLinks.isTeamID(patientID),
+                      let links = pendingTestLinks, let data = try? JSONEncoder().encode(links) else { return }
+                identityLinksData = data
+                pendingTestLinks = nil
+                EventStore.shared.append(type: "admin_metadata", tag: "Research", message: "Test display links saved",
+                    details: ["linkedSessions": String(links.sessions.count), "displayStudyID": patientID])
+            }
+            .accessibilityIdentifier("researchConfirmTestLinks")
+            Button(L10n("Cancel"), role: .cancel) { pendingTestLinks = nil }
+        } message: {
+            Text(L10n("Confirm these unassigned recordings are your own tests. Only trend display changes. Saved data stays unchanged."))
+        }
         .task(id: exportPreparation) {
             guard exportPreparation != nil else { return }
             defer { isPreparingExport = false; exportPreparation = nil }
@@ -583,6 +664,10 @@ private struct ResearchAdminSettingsView: View {
     }
 
     private func saveStudyMetadata() {
+        guard validStudyID, vm.researchUnlocked else { return }
+        let previousID = patientID
+        patientID = proposedStudyID
+        studyIDDraft = nil
         let startDate = Self.dateOnlyFormatter.string(from: studyStartDate.wrappedValue)
 
         EventStore.shared.append(
@@ -591,6 +676,8 @@ private struct ResearchAdminSettingsView: View {
             message: "Study metadata saved",
             details: [
                 "patientID": patientID,
+                "previousPatientID": previousID,
+                "studyIDChanged": String(previousID != patientID),
                 "studyStartDate": startDate,
                 "hasPatientNotes": String(!patientStudyNotes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty),
                 "hasDeviceAssignmentNotes": String(!deviceAssignmentNotes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty),
