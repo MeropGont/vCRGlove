@@ -2,6 +2,10 @@
 
 Implementation dated 15 October 2026, following the user's content approval and contact/video clarifications. This is an information-only feature, not a consent or permissions workflow.
 
+23 October: the non-legal Devices/app video explanation now describes the approved
+hand-focused crop and measurement-only fallback when no reliable crop is available,
+in English and German. The German legal notice and its approved translation are unchanged.
+
 ## Patient Pages
 
 Settings > Information about the study (Informationen zur Studie) opens six topics: the study, participation, devices/app, safety and voluntary participation, data protection, and finally Contact. Devices and app also contains the factual app-data/video explanation. Native scrolling pages support the app's English/German language choice and text-size setting.
@@ -26,7 +30,14 @@ Local comparison materials and source paths remain in Git-ignored `QA/study_info
 
 The Devices and app topic separately explains actual app behaviour: silent camera-task movies, private local storage, no automatic Photos copy/upload, exclusion from automatic backup, explicit sharing and deletion that keeps movement measurements. Calibration and Watch tasks do not save movies. This text is separate from the reproduced legal privacy notice.
 
-Removing lab-video text does not remove app-video recording or establish consent for it. Opening the Movement tab is not recorded research consent. This change adds no consent acceptance, withdrawal action, video opt-out, upload, retention policy or face masking. App-video consent/ethics coverage and the pending patient controls must be resolved before deployment. If face masking is later implemented, update the factual privacy explanation and study information to describe its actual scope and limitations.
+Removing lab-video text does not remove app-video recording or establish consent for it. Opening the Movement tab is not recorded research consent. This information feature adds no consent acceptance, withdrawal action, video opt-out, upload or retention policy. App-video consent/ethics coverage and the pending patient controls must be resolved before deployment.
+
+22 October: the separate face-masking pipeline adds a bilingual factual paragraph
+to Devices and app. It describes new-video on-device masking, temporary-original
+deletion, measurement-only saving on processing failure, unchanged older videos
+and the absence of any anonymity guarantee. Retained German legal wording and
+its approved English translation are unchanged. See
+[video storage](MOVEMENT_VIDEO_STORAGE.md#face-masking-22-october-2026).
 
 ## Verification
 

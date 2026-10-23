@@ -210,11 +210,18 @@ struct MovementVideoReference: Codable, Equatable {
     let byteCount: Int64
     /// Absent for older recordings or when a reliable first-buffer timestamp is unavailable.
     let timing: MovementVideoTiming?
+    /// Processing version, not an anonymity guarantee (v2 adds compact regions and brief tracking).
+    let faceMaskingVersion: Int?
+    /// Requested source crop in upright normalized coordinates; pixel edges round outward.
+    let normalizedSourceCrop: CGRect?
 
-    init(fileName: String, byteCount: Int64, timing: MovementVideoTiming? = nil) {
+    init(fileName: String, byteCount: Int64, timing: MovementVideoTiming? = nil, faceMaskingVersion: Int? = nil,
+         normalizedSourceCrop: CGRect? = nil) {
         self.fileName = fileName
         self.byteCount = byteCount
         self.timing = timing
+        self.faceMaskingVersion = faceMaskingVersion
+        self.normalizedSourceCrop = normalizedSourceCrop
     }
 }
 

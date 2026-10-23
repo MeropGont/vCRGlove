@@ -34,6 +34,28 @@ duplicate generic recording-details block occupies the main results page.
 
 ## Comparability
 
+### Personal Comparison Window (23 October)
+
+The movement-pattern section now offers previous recording day, recent seven
+recording days, past one/three/seven calendar months and whole study. The selected
+window persists on the device. Whole study uses all available earlier matching
+days, not a seven-day cap; calendar windows are anchored to the latest displayed
+recording day. Each day contributes one median, regardless of repeat count.
+
+The comparison window is independent of the chart's date period. The chart
+selects the latest eligible date for display; prior comparison history can extend
+back beyond that chart period. Context, medication, task/hand, identity, recording
+version/protocol and usability matching remain in place. Selecting a longer
+window does not make incompatible or unavailable data comparable. No data or
+clinical score changes. The previously reviewed graph/profile medication-matching
+inconsistency and more specific missing-comparison explanations are still pending.
+
+Focused checks cover whole-history medians, previous-day mode, month boundaries,
+seven-month inclusion and leap-year dates. Physical study-length data validation
+and the proposed broader results redesign are separate work.
+The English and large-text German selector UI checks passed, and captured
+screenshots were inspected for wrapping.
+
 The stimulation filter omits the obsolete Baseline choice. Historical baseline
 records remain readable and available under All stimulation timings; their
 context is never reinterpreted as no stimulation planned.

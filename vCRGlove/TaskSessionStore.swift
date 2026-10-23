@@ -12,6 +12,7 @@
 
 import Foundation
 import AVFoundation
+import UIKit
 
 /// Only accepted videos live here. The directory is neither temporary nor exposed by Files sharing.
 final class MovementVideoStore: Sendable {
@@ -41,7 +42,7 @@ final class MovementVideoStore: Sendable {
     }
 
     func save(_ temporaryURL: URL, for trial: Trial,
-              captureStartPTSSeconds: Double? = nil) throws -> MovementVideoReference {
+              captureStartPTSSeconds: Double? = nil, normalizedSourceCrop: CGRect? = nil) throws -> MovementVideoReference {
         guard trial.source == .camera, trial.taskType.preferredSource == .camera else {
             throw VideoError.invalidReference
         }
@@ -63,7 +64,9 @@ final class MovementVideoStore: Sendable {
                 trialStartUptime: trial.startUptime, firstMoviePTS: Self.firstVideoPTS(at: temporaryURL))
         } else { timing = nil }
         let reference = MovementVideoReference(fileName: "\(trial.id.uuidString).mov",
-                                               byteCount: size.int64Value, timing: timing)
+            byteCount: size.int64Value, timing: timing,
+            faceMaskingVersion: MovementFaceMasker.isProcessedFile(temporaryURL) ? MovementFaceMasker.version : nil,
+            normalizedSourceCrop: normalizedSourceCrop)
         var destination = directory.appendingPathComponent(reference.fileName)
         try FileManager.default.copyItem(at: temporaryURL, to: destination)
         do {
@@ -78,7 +81,7 @@ final class MovementVideoStore: Sendable {
     }
 
     /// Reads the first compressed video sample only; no pixel decoding or full-video scan.
-    private static func firstVideoPTS(at url: URL) -> Double? {
+    static func firstVideoPTS(at url: URL) -> Double? {
         let asset = AVURLAsset(url: url)
         guard let track = asset.tracks(withMediaType: .video).first,
               let reader = try? AVAssetReader(asset: asset) else { return nil }
@@ -140,6 +143,7 @@ final class MovementVideoDraft: ObservableObject {
     @Published private(set) var url: URL?
     @Published private(set) var unavailable = false
     private(set) var captureStartPTSSeconds: Double?
+    private(set) var normalizedHandCrop: CGRect?
 
     var messageKey: String? {
         if url != nil { return "Video stays in the app when you save." }
@@ -147,7 +151,8 @@ final class MovementVideoDraft: ObservableObject {
         return nil
     }
 
-    func receive(_ url: URL?, captureStartPTSSeconds: Double? = nil) {
+    func receive(_ url: URL?, captureStartPTSSeconds: Double? = nil, normalizedHandCrop: CGRect? = nil) {
+        self.normalizedHandCrop = url == nil ? nil : normalizedHandCrop
         if self.url == url {
             self.captureStartPTSSeconds = url == nil ? nil : captureStartPTSSeconds
             unavailable = url == nil
@@ -156,6 +161,7 @@ final class MovementVideoDraft: ObservableObject {
         discard()
         self.url = url
         self.captureStartPTSSeconds = url == nil ? nil : captureStartPTSSeconds
+        self.normalizedHandCrop = url == nil ? nil : normalizedHandCrop
         unavailable = url == nil
     }
 
@@ -163,6 +169,7 @@ final class MovementVideoDraft: ObservableObject {
         if let url { try? FileManager.default.removeItem(at: url) }
         url = nil
         captureStartPTSSeconds = nil
+        normalizedHandCrop = nil
         unavailable = false
     }
 
@@ -172,6 +179,15 @@ final class MovementVideoDraft: ObservableObject {
 }
 
 final class TaskSessionStore: ObservableObject {
+    enum VideoPreparationState { case queued, preparing, unavailable }
+    typealias VideoProcessor = @Sendable (URL, CGRect?) async throws -> URL
+    private struct VideoJob {
+        let sessionID: UUID
+        let trialID: UUID
+        let source: URL
+        let captureStartPTS: Double?
+        let handCrop: CGRect
+    }
     static let shared: TaskSessionStore = {
         #if DEBUG && targetEnvironment(simulator)
         let arguments = ProcessInfo.processInfo.arguments
@@ -192,6 +208,10 @@ final class TaskSessionStore: ObservableObject {
     }()
 
     @Published private(set) var sessions: [MovementSession] = []
+    @Published private(set) var videoPreparationStates: [UUID: VideoPreparationState] = [:]
+    private var videoJobs: [VideoJob] = []
+    private var videoWorker: Task<Void, Never>?
+    private let videoProcessor: VideoProcessor
 
     private let encoder: JSONEncoder = {
         let e = JSONEncoder()
@@ -210,9 +230,11 @@ final class TaskSessionStore: ObservableObject {
     private let storageURL: URL?
     let videoStore: MovementVideoStore
 
-    init(storageURL: URL? = nil, videoStore: MovementVideoStore = .shared) {
+    init(storageURL: URL? = nil, videoStore: MovementVideoStore = .shared,
+         videoProcessor: @escaping VideoProcessor = { try await MovementFaceMasker.consume($0, handCrop: $1) }) {
         self.storageURL = storageURL
         self.videoStore = videoStore
+        self.videoProcessor = videoProcessor
         load()
     }
 
@@ -249,15 +271,32 @@ final class TaskSessionStore: ObservableObject {
     /// but keep the temporary source so the patient can retry without re-recording.
     func saveAcceptedTrial(_ trial: Trial, in session: MovementSession, temporaryVideoURL: URL?,
                            videoCaptureStartPTSSeconds: Double? = nil,
+                           normalizedHandCrop: CGRect? = nil,
+                           deferVideoProcessing: Bool = false,
                            completion: @escaping (Result<MovementSession, Error>) -> Void) {
+        if deferVideoProcessing, let source = temporaryVideoURL,
+           !MovementFaceMasker.isProcessedFile(source) {
+            // Commit measurements before handing the draft to the app-owned queue.
+            saveAcceptedTrial(trial, in: session, temporaryVideoURL: nil) { result in
+                if case .success = result {
+                    self.enqueueVideo(source, sessionID: session.id, trialID: trial.id,
+                        captureStartPTS: videoCaptureStartPTSSeconds, handCrop: normalizedHandCrop)
+                }
+                completion(result)
+            }
+            return
+        }
         ioQueue.async {
             var accepted = trial
             var copiedVideo = false
             do {
+                let file = try self.fileURL()
+                let existing = FileManager.default.fileExists(atPath: file.path) ? try Data(contentsOf: file) : Data()
+                let previousTrials = existing.split(separator: 0x0A).compactMap {
+                    try? self.decoder.decode(MovementSession.self, from: Data($0))
+                }.first(where: { $0.id == session.id })?.trials ?? session.trials
                 if let temporaryVideoURL {
-                    let file = try self.fileURL()
-                    if FileManager.default.fileExists(atPath: file.path),
-                       Self.deletedVideoIDs(in: try Data(contentsOf: file)).contains(trial.id) {
+                    if Self.deletedVideoIDs(in: existing).contains(trial.id) {
                         throw MovementVideoStore.VideoError.invalidReference
                     }
                     accepted = trial.withVideo(try self.videoStore.save(temporaryVideoURL, for: trial,
@@ -268,7 +307,7 @@ final class TaskSessionStore: ObservableObject {
                 updated.accept(accepted)
                 updated = try self.writeSession(updated)
                 if let temporaryVideoURL { try? FileManager.default.removeItem(at: temporaryVideoURL) }
-                for previous in session.trials where previous.taskType == trial.taskType
+                for previous in previousTrials where previous.taskType == trial.taskType
                     && previous.side == trial.side && previous.id != trial.id {
                     self.videoStore.remove(previous)
                 }
@@ -285,6 +324,99 @@ final class TaskSessionStore: ObservableObject {
             } catch {
                 if copiedVideo { self.videoStore.remove(accepted) }
                 DispatchQueue.main.async { completion(.failure(error)) }
+            }
+        }
+    }
+
+    /// Transfer ownership before the recording view clears its draft or disappears.
+    private func enqueueVideo(_ source: URL, sessionID: UUID, trialID: UUID, captureStartPTS: Double?, handCrop: CGRect?) {
+        dispatchPrecondition(condition: .onQueue(.main))
+        guard let handCrop else {
+            try? FileManager.default.removeItem(at: source)
+            videoPreparationStates[trialID] = .unavailable
+            return
+        }
+        do {
+            let owned = try MovementFaceMasker.recordingURL()
+            try FileManager.default.moveItem(at: source, to: owned)
+            videoPreparationStates[trialID] = .queued
+            videoJobs.append(VideoJob(sessionID: sessionID, trialID: trialID,
+                source: owned, captureStartPTS: captureStartPTS, handCrop: handCrop))
+            startVideoWorkerIfNeeded()
+        } catch {
+            try? FileManager.default.removeItem(at: source)
+            videoPreparationStates[trialID] = .unavailable
+        }
+    }
+
+    private func startVideoWorkerIfNeeded() {
+        dispatchPrecondition(condition: .onQueue(.main))
+        guard videoWorker == nil, !videoJobs.isEmpty else { return }
+        videoWorker = Task { @MainActor in
+            while !videoJobs.isEmpty {
+                let job = videoJobs.removeFirst()
+                videoPreparationStates[job.trialID] = .preparing
+                let processor = videoProcessor
+                let processing = Task.detached(priority: .utility) { try await processor(job.source, job.handCrop) }
+                let backgroundID = UIApplication.shared.beginBackgroundTask(withName: "Prepare movement video") {
+                    processing.cancel()
+                    // Do not leave more unprocessed originals queued after background time expires.
+                    for waiting in self.videoJobs {
+                        try? FileManager.default.removeItem(at: waiting.source)
+                        self.videoPreparationStates[waiting.trialID] = .unavailable
+                    }
+                    self.videoJobs.removeAll()
+                }
+                do {
+                    let output = try await processing.value
+                    defer { try? FileManager.default.removeItem(at: output) }
+                    try Task.checkCancellation()
+                    if processing.isCancelled { throw CancellationError() }
+                    _ = try await attachPreparedVideo(output, job: job)
+                    videoPreparationStates.removeValue(forKey: job.trialID)
+                } catch {
+                    videoPreparationStates[job.trialID] = .unavailable
+                }
+                try? FileManager.default.removeItem(at: job.source)
+                if backgroundID != .invalid { UIApplication.shared.endBackgroundTask(backgroundID) }
+            }
+            videoWorker = nil
+        }
+    }
+
+    private func attachPreparedVideo(_ output: URL, job: VideoJob) async throws -> MovementSession {
+        try await withCheckedThrowingContinuation { continuation in
+            ioQueue.async {
+                var copiedTrial: Trial?
+                do {
+                    // Read the current record: never reinsert a discarded/retaken take or
+                    // overwrite tasks completed while its movie was processing.
+                    let data = try Data(contentsOf: self.fileURL())
+                    guard MovementFaceMasker.isProcessedFile(output),
+                          !Self.deletedVideoIDs(in: data).contains(job.trialID),
+                          var session = data.split(separator: 0x0A).compactMap({
+                              try? self.decoder.decode(MovementSession.self, from: Data($0))
+                          }).first(where: { $0.id == job.sessionID }),
+                          let index = session.trials.firstIndex(where: { $0.id == job.trialID }),
+                          session.trials[index].video == nil else {
+                        throw MovementVideoStore.VideoError.invalidReference
+                    }
+                    let trial = session.trials[index]
+                    let accepted = trial.withVideo(try self.videoStore.save(output, for: trial,
+                        captureStartPTSSeconds: job.captureStartPTS, normalizedSourceCrop: job.handCrop))
+                    copiedTrial = accepted
+                    session.trials[index] = accepted
+                    let saved = try self.writeSession(session)
+                    // Publish in the same I/O-to-main order as ordinary saves, not
+                    // later when the worker's awaiting task happens to resume.
+                    DispatchQueue.main.async {
+                        self.publish(saved)
+                        continuation.resume(returning: saved)
+                    }
+                } catch {
+                    if let copiedTrial { self.videoStore.remove(copiedTrial) }
+                    continuation.resume(throwing: error)
+                }
             }
         }
     }
@@ -382,6 +514,11 @@ final class TaskSessionStore: ObservableObject {
                        let deletedAt = old["videoDeletedAt"] as? String {
                         newTrials[index].removeValue(forKey: "video")
                         newTrials[index]["videoDeletedAt"] = deletedAt
+                    } else if newTrials[index]["video"] == nil,
+                              let old = oldTrials.first(where: { $0["id"] as? String == newTrials[index]["id"] as? String }),
+                              let video = old["video"] {
+                        // The flow may still hold a checkpoint from before deferred masking finished.
+                        newTrials[index]["video"] = video
                     }
                 }
                 encodedObject["trials"] = newTrials

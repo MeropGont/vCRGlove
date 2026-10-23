@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D02200000000000000000001 /* MovementFaceMasker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02200000000000000000002 /* MovementFaceMasker.swift */; };
 		D01200000000000000000001 /* MovementDemonstrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01200000000000000000002 /* MovementDemonstrationView.swift */; };
 		D01200000000000000000003 /* hand_videos in Resources */ = {isa = PBXBuildFile; fileRef = D01200000000000000000004 /* hand_videos */; };
 		A92985732FBB473200B0F0FB /* DailyCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A929855F2FBB473200B0F0FB /* DailyCheckInView.swift */; };
@@ -118,6 +119,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D02200000000000000000002 /* MovementFaceMasker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementFaceMasker.swift; sourceTree = "<group>"; };
 		D01200000000000000000002 /* MovementDemonstrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementDemonstrationView.swift; sourceTree = "<group>"; };
 		D01200000000000000000004 /* hand_videos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources/hand_videos; sourceTree = "<group>"; };
 		A929855D2FBB473200B0F0FB /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
@@ -273,6 +275,7 @@
 				A92985712FBB473200B0F0FB /* ResearchTools.swift */,
 				D01500000000000000000002 /* StimulationProfile.swift */,
 				D01500000000000000000004 /* FullDataExporter.swift */,
+				D02200000000000000000002 /* MovementFaceMasker.swift */,
 				A9A51D2D303C656B00E69380 /* VisionHandPoseCapture.swift */,
 				A9A51D2E303C656B00E69380 /* WatchMotionCapture.swift */,
 			);
@@ -668,6 +671,7 @@
 				A92985832FBB473200B0F0FB /* ResearchTools.swift in Sources */,
 				D01500000000000000000001 /* StimulationProfile.swift in Sources */,
 				D01500000000000000000003 /* FullDataExporter.swift in Sources */,
+				D02200000000000000000001 /* MovementFaceMasker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -35,6 +35,11 @@ struct MovementExportView: View {
     private var selectedURLs: [URL] {
         (try? store.videoStore.shareURLs(for: videos.filter { selection.contains($0.id) })) ?? []
     }
+    private var preparingVideos: [Trial] {
+        store.sessions.flatMap(\.trials).filter {
+            $0.video == nil && store.videoPreparationStates[$0.id] != nil
+        }.sorted { $0.startedAt > $1.startedAt }
+    }
 
     var body: some View {
         Form {
@@ -55,6 +60,9 @@ struct MovementExportView: View {
                         HStack {
                             Label(L10n("Recorded videos"), systemImage: "folder")
                             Spacer()
+                            if preparingVideos.contains(where: { store.videoPreparationStates[$0.id] != .unavailable }) {
+                                ProgressView().accessibilityLabel(L10n("Preparing video…"))
+                            }
                             Text(videos.count, format: .number).foregroundStyle(.secondary)
                         }
                     }
@@ -179,6 +187,21 @@ struct MovementExportView: View {
 
     private var videoSection: some View {
         Section {
+                ForEach(preparingVideos) { trial in
+                    VStack(alignment: .leading, spacing: 6) {
+                        videoLabel(trial)
+                        if store.videoPreparationStates[trial.id] == .unavailable {
+                            Label(L10n("Video not saved. Your measurement is saved."), systemImage: "video.slash")
+                                .font(.subheadline).foregroundStyle(.secondary)
+                        } else {
+                            HStack {
+                                ProgressView()
+                                Text(L10n("Preparing video…")).font(.subheadline).foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .accessibilityIdentifier("movementPreparingVideo_\(trial.id)")
+                }
                 ForEach(videos) { trial in
                     if isSelecting {
                         Button {
@@ -212,7 +235,7 @@ struct MovementExportView: View {
                         }
                     }
                 }
-                if videos.isEmpty {
+                if videos.isEmpty && preparingVideos.isEmpty {
                     Label(L10n("No saved videos yet"), systemImage: "video.slash")
                         .accessibilityIdentifier("movementNoSavedVideos")
                 }
@@ -220,6 +243,9 @@ struct MovementExportView: View {
             } header: {
                 Text(L10n("Recorded videos"))
             } footer: {
+                if preparingVideos.contains(where: { store.videoPreparationStates[$0.id] != .unavailable }) {
+                    Text(L10n("You can continue your tasks. Keep the app open until videos are ready."))
+                }
                 Text(L10n("Deleting videos keeps your movement measurements. Copies you already shared are not deleted."))
             }
     }
@@ -365,23 +391,27 @@ struct MovementVideoPlayerView: View {
 
 #if DEBUG && targetEnvironment(simulator)
 /// A silent, generated movie for simulator storage/playback tests, never a patient recording.
-func makeMovementVideoTestFixture() async throws -> URL {
+func makeMovementVideoTestFixture(width: Int = 64, height: Int = 64,
+                                  transform: CGAffineTransform = .identity,
+                                  startPTS: CMTime = .zero,
+                                  frameStep: CMTime = CMTime(value: 1, timescale: 10)) async throws -> URL {
     let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         .appendingPathExtension("mov")
     do {
         let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
         let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
-            AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: 64, AVVideoHeightKey: 64])
+            AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: width, AVVideoHeightKey: height])
+        input.transform = transform
         let adapter = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input,
             sourcePixelBufferAttributes: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
-                                         kCVPixelBufferWidthKey as String: 64,
-                                         kCVPixelBufferHeightKey as String: 64])
+                                         kCVPixelBufferWidthKey as String: width,
+                                         kCVPixelBufferHeightKey as String: height])
         writer.add(input)
         guard writer.startWriting() else { throw writer.error ?? MovementVideoStore.VideoError.unavailable }
         writer.startSession(atSourceTime: .zero)
         for frame in 0..<3 {
             var buffer: CVPixelBuffer?
-            guard CVPixelBufferCreate(kCFAllocatorDefault, 64, 64, kCVPixelFormatType_32BGRA,
+            guard CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA,
                                       nil, &buffer) == kCVReturnSuccess, let buffer else {
                 throw MovementVideoStore.VideoError.unavailable
             }
@@ -393,7 +423,7 @@ func makeMovementVideoTestFixture() async throws -> URL {
             for _ in 0..<100 where !input.isReadyForMoreMediaData {
                 try await Task.sleep(for: .milliseconds(10))
             }
-            guard adapter.append(buffer, withPresentationTime: CMTime(value: Int64(frame), timescale: 10)) else {
+            guard adapter.append(buffer, withPresentationTime: startPTS + CMTimeMultiply(frameStep, multiplier: Int32(frame))) else {
                 throw writer.error ?? MovementVideoStore.VideoError.unavailable
             }
         }

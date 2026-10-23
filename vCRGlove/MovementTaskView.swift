@@ -428,7 +428,9 @@ struct MovementTaskView: View {
         if let cam {
             group.enter()
             cam.finishMeasurement { url, startPTS in
-                if captureAttemptID == attemptID { videoDraft.receive(url, captureStartPTSSeconds: startPTS) }
+                if captureAttemptID == attemptID {
+                    videoDraft.receive(url, captureStartPTSSeconds: startPTS, normalizedHandCrop: cam.completedHandCrop)
+                }
                 else if let url { try? FileManager.default.removeItem(at: url) }
                 group.leave()
             }
@@ -518,7 +520,9 @@ struct MovementTaskView: View {
         isSaving = true
         TaskSessionStore.shared.saveAcceptedTrial(trial, in: session,
             temporaryVideoURL: includeVideo ? videoDraft.url : nil,
-            videoCaptureStartPTSSeconds: includeVideo ? videoDraft.captureStartPTSSeconds : nil) { result in
+            videoCaptureStartPTSSeconds: includeVideo ? videoDraft.captureStartPTSSeconds : nil,
+            normalizedHandCrop: includeVideo ? videoDraft.normalizedHandCrop : nil,
+            deferVideoProcessing: true) { result in
             isSaving = false
             switch result {
             case .success(let saved):
@@ -889,7 +893,8 @@ private struct CameraMovementRecordingView<Controls: View>: View {
                 Group {
                     if let capture {
                         MovementCameraPreview(capture: capture, taskType: taskType,
-                                              side: side, showsDetectionHints: showsDetectionHints)
+                                              side: side, showsDetectionHints: showsDetectionHints,
+                                              isFinishingRecording: isFinishingRecording)
                     } else {
                         #if DEBUG && targetEnvironment(simulator)
                         // Layout fixture only; synthetic recording remains unchanged.
@@ -899,7 +904,7 @@ private struct CameraMovementRecordingView<Controls: View>: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .background(Color(.secondarySystemBackground))
                         #else
-                        ProgressView(L10n("Starting camera…"))
+                        ProgressView(L10n(isFinishingRecording ? "Finishing recording…" : "Starting camera…"))
                         #endif
                     }
                 }
@@ -977,6 +982,7 @@ private struct MovementCameraPreview: View {
     let taskType: MovementTaskType
     let side: BodySide
     let showsDetectionHints: Bool
+    var isFinishingRecording = false
 
     var body: some View {
         if capture.isSessionRunning {
@@ -1000,7 +1006,7 @@ private struct MovementCameraPreview: View {
                     }
                 }
         } else {
-            ProgressView(L10n("Starting camera…"))
+            ProgressView(L10n(isFinishingRecording ? "Finishing recording…" : "Starting camera…"))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
@@ -1862,7 +1868,8 @@ struct MovementSessionFlowView: View {
                 if hasVideo {
                     Task { @MainActor in
                         do {
-                            let url = try await makeMovementVideoTestFixture()
+                            let raw = try await makeMovementVideoTestFixture()
+                            let url = try await MovementFaceMasker.consume(raw) { _ in [] }
                             videoDraft.receive(url)
                             if arguments.contains("--ui-test-video-save-failure") {
                                 try? FileManager.default.removeItem(at: url)
@@ -2347,7 +2354,7 @@ struct MovementSessionFlowView: View {
                 discardTitle: "Retake",
                 onSaveAndFinish: isLastStep ? nil : { acceptTrial(trial, finish: true) },
                 isSaving: isSaving,
-                videoMessage: isSaved(trial) ? savedVideoMessage : videoDraft.messageKey,
+                videoMessage: isSaved(trial) ? savedVideoMessageFor(trial) : videoDraft.messageKey,
                 showsTrendsHint: true,
                 recordingIsSaved: isSaved(trial)
             )
@@ -2357,6 +2364,18 @@ struct MovementSessionFlowView: View {
 
     private func isSaved(_ trial: Trial) -> Bool {
         savedSession?.trials.contains(where: { $0.id == trial.id }) == true
+    }
+
+    private func savedVideoMessageFor(_ trial: Trial) -> String? {
+        switch sessionStore.videoPreparationStates[trial.id] {
+        case .queued, .preparing: return "Video is being prepared. Find it later in Settings > Data."
+        case .unavailable: return "Video not saved. Your measurement is saved."
+        case nil:
+            if sessionStore.sessions.contains(where: { $0.trials.contains(where: { $0.id == trial.id && $0.video != nil }) }) {
+                return "Video saved in this app."
+            }
+            return savedVideoMessage
+        }
     }
 
     private func automaticallySaveTrial(_ trial: Trial) {
@@ -2384,7 +2403,9 @@ struct MovementSessionFlowView: View {
         isSaving = true
         sessionStore.saveAcceptedTrial(trial, in: session,
             temporaryVideoURL: includeVideo ? videoDraft.url : nil,
-            videoCaptureStartPTSSeconds: includeVideo ? videoDraft.captureStartPTSSeconds : nil) { result in
+            videoCaptureStartPTSSeconds: includeVideo ? videoDraft.captureStartPTSSeconds : nil,
+            normalizedHandCrop: includeVideo ? videoDraft.normalizedHandCrop : nil,
+            deferVideoProcessing: true) { result in
             isSaving = false
             switch result {
             case .success(let session):
@@ -2463,6 +2484,14 @@ struct MovementSessionFlowView: View {
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
 
+                    if trials.contains(where: { $0.source == .camera }) {
+                        Text(L10n("Find your videos in Settings > Data."))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
                     ForEach(trials) { trial in
                         VStack(alignment: .leading, spacing: 4) {
                             Text(trial.taskType.displayName)
@@ -2471,15 +2500,6 @@ struct MovementSessionFlowView: View {
                             Text(trial.side.displayName)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
-                            if trial.video != nil {
-                                NavigationLink {
-                                    MovementVideoPlayerView(trial: trial, videoStore: sessionStore.videoStore)
-                                } label: {
-                                    Label(L10n("View recording"), systemImage: "play.circle")
-                                        .frame(minHeight: 44)
-                                }
-                                .accessibilityIdentifier("movementSavedVideo")
-                            }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -2655,7 +2675,10 @@ struct MovementSessionFlowView: View {
         if let cam {
             group.enter()
             cam.finishMeasurement { url, startPTS in
-                if captureAttemptID == attemptID { videoDraft.receive(url, captureStartPTSSeconds: startPTS) }
+                if captureAttemptID == attemptID {
+                    videoDraft.receive(url, captureStartPTSSeconds: startPTS, normalizedHandCrop: cam.completedHandCrop)
+                    checkpointBeforeVideoProcessing(group: group, attemptID: attemptID)
+                }
                 else if let url { try? FileManager.default.removeItem(at: url) }
                 group.leave()
             }
@@ -2673,6 +2696,26 @@ struct MovementSessionFlowView: View {
                 self.showCompletedTrialIfReady()
                 print("[PERF] guided capture finalized")
             }
+        }
+    }
+
+    private func checkpointBeforeVideoProcessing(group: DispatchGroup, attemptID: UUID) {
+        guard cameraCapture != nil, let trial = completedTrial else { return }
+        let session = savedSession ?? MovementSession(
+            patientId: patientID.isEmpty ? "unset" : patientID,
+            date: trial.startedAt, stimulationContext: context)
+        group.enter()
+        sessionStore.saveAcceptedTrial(trial, in: session, temporaryVideoURL: videoDraft.url,
+            videoCaptureStartPTSSeconds: videoDraft.captureStartPTSSeconds,
+            normalizedHandCrop: videoDraft.normalizedHandCrop,
+            deferVideoProcessing: true) { result in
+            if captureAttemptID == attemptID, case .success(let checkpoint) = result {
+                savedSession = checkpoint
+                trials = checkpoint.trials
+                savedVideoMessage = videoDraft.unavailable ? "Video not saved. Your measurement is saved." : nil
+                videoDraft.discard()
+            }
+            group.leave()
         }
     }
 

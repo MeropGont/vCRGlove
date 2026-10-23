@@ -89,6 +89,10 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
     private var movieStartCompletion: ((Bool) -> Void)?
     private var recordingCompletions: [(URL?, Double?) -> Void] = []
     private var movieStartCapturePTSSeconds: Double?
+    private var recordingHandBounds: CGRect?
+    private var recordingHandFrameCount = 0
+    private(set) var completedHandCrop: CGRect?
+    private var analysisIsMirrored = false
 
     // MARK: - Lifecycle
 
@@ -128,10 +132,13 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
         }
     }
 
-    /// Keep a completed movie for acceptance while stopping the live preview safely.
+    /// Stop hardware promptly. The session store owns masking after acceptance;
+    /// this private draft must never be played or exported directly.
     func finishMeasurement(completion: @escaping (URL?, Double?) -> Void) {
         stopRecording { url, startPTS in
-            self.stopSession { completion(url, startPTS) }
+            self.stopSession {
+                completion(url, url == nil ? nil : startPTS)
+            }
         }
     }
 
@@ -157,9 +164,14 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
                 DispatchQueue.main.async { completion(false) }
                 return
             }
-            let url = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString).appendingPathExtension("mov")
+            guard let url = try? MovementFaceMasker.recordingURL() else {
+                DispatchQueue.main.async { completion(false) }
+                return
+            }
             self.recordingURL = url
+            self.recordingHandBounds = nil
+            self.recordingHandFrameCount = 0
+            DispatchQueue.main.async { self.completedHandCrop = nil }
             self.movieStartCapturePTSSeconds = nil
             self.movieStartCompletion = completion
             self.recordingDelegate.onStart = { startPTS in
@@ -206,6 +218,10 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
         let completions = recordingCompletions
         let url = finishedRecordingURL
         let startPTS = url == nil ? nil : movieStartCapturePTSSeconds
+        var crop = recordingHandFrameCount >= 10 ? recordingHandBounds.flatMap(MovementFaceMasker.handCrop) : nil
+        if (movieFileOutput.connection(with: .video)?.isVideoMirrored ?? false) != analysisIsMirrored, let bounds = crop {
+            crop = CGRect(x: 1 - bounds.maxX, y: bounds.minY, width: bounds.width, height: bounds.height)
+        }
         recordingCompletions.removeAll()
         recordingURL = nil
         finishedRecordingURL = nil
@@ -214,7 +230,11 @@ final class VisionHandPoseCapture: NSObject, ObservableObject {
         movieStopRequested = false
         recordingDelegate.onStart = nil
         recordingDelegate.onComplete = nil
-        DispatchQueue.main.async { completions.forEach { $0(url, startPTS) } }
+        let finishedCrop = crop
+        DispatchQueue.main.async {
+            self.completedHandCrop = finishedCrop
+            completions.forEach { $0(url, startPTS) }
+        }
     }
 
     // MARK: - Session setup
@@ -323,6 +343,7 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
         // Frame PTS is on the host clock — same time base as systemUptime,
         // so the TrialRecorder can normalize it directly.
         let time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds
+        analysisIsMirrored = connection.isVideoMirrored
 
         let handler = VNImageRequestHandler(cmSampleBuffer: sampleBuffer, orientation: videoOrientation)
         do {
@@ -344,6 +365,19 @@ extension VisionHandPoseCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
             setHandVisible(false)
             updateClipped(false, at: time)
             return
+        }
+
+        if recordingURL != nil, !movieStopRequested,
+           let points = try? observation.recognizedPoints(.all) {
+            let visible = points.values.filter { $0.confidence >= minJointConfidence }.map(\.location)
+            if visible.count >= 6,
+               let wrist = points[.wrist], wrist.confidence >= minJointConfidence,
+               let minX = visible.map(\.x).min(), let maxX = visible.map(\.x).max(),
+               let minY = visible.map(\.y).min(), let maxY = visible.map(\.y).max() {
+                let bounds = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+                recordingHandBounds = recordingHandBounds.map { $0.union(bounds) } ?? bounds
+                recordingHandFrameCount += 1
+            }
         }
 
         // Edge check BEFORE the scalar guard: clipped fingertips are exactly

@@ -1877,6 +1877,36 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
+    func testPersonalComparisonWindowsEnglishGerman() throws {
+        for language in ["en", "de"] {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-trend-scenario", "study-comparison",
+                "-appLanguage", language, "-appFontSize", german ? "extraLarge" : "standard"]
+            app.launch()
+            app.tabBars.buttons[german ? "Bewegung" : "Movement"].tap()
+            app.buttons["Trends"].tap()
+            let window = app.buttons["trendComparisonWindow"]
+            revealMovementControl(window, in: app)
+            window.tap()
+            app.buttons[german ? "Gesamte Studie" : "Whole study"].tap()
+            XCTAssertEqual(window.value as? String, german ? "Gesamte Studie" : "Whole study")
+            let typical = app.staticTexts["trendProfileTypical-rate"]
+            revealMovementControl(typical, in: app)
+            XCTAssertTrue(typical.exists)
+            revealMovementControl(window, in: app)
+            window.tap()
+            app.buttons[german ? "Letzte 7 Monate" : "Past 7 months"].tap()
+            XCTAssertEqual(window.value as? String, german ? "Letzte 7 Monate" : "Past 7 months")
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Study-length comparison \(language)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            app.terminate()
+        }
+    }
+
+    @MainActor
     func testStudyComparisonAvailableFromMainResultsEnglishGerman() throws {
         for language in ["en", "de"] {
             let app = XCUIApplication()
@@ -2820,23 +2850,22 @@ final class vCRGloveUITests: XCTestCase {
             revealMovementControl(notice, in: app)
             showSaveAction("movementSaveFinish", in: app).tap()
             XCTAssertTrue(app.staticTexts["movementSavedSummary"].waitForExistence(timeout: 10))
-            let link = app.buttons["movementSavedVideo"]
-            revealMovementControl(link, in: app)
+            XCTAssertFalse(app.buttons["movementSavedVideo"].exists)
             let screenshot = XCTAttachment(screenshot: app.screenshot())
             screenshot.name = "Private video saved \(language)"
             screenshot.lifetime = .keepAlways
             add(screenshot)
-            link.tap()
-            XCTAssertTrue(app.otherElements["movementVideoPlayer"].waitForExistence(timeout: 10))
-            XCTAssertFalse(app.alerts.firstMatch.exists)
-            app.navigationBars.buttons.element(boundBy: 0).tap()
-            XCTAssertTrue(app.staticTexts["movementSavedSummary"].waitForExistence(timeout: 5))
-            XCTAssertTrue(app.buttons["movementSavedVideo"].exists)
             app.tabBars.buttons[language == "de" ? "Einstellungen" : "Settings"].tap()
             app.tabBars.buttons[language == "de" ? "Bewegung" : "Movement"].tap()
             XCTAssertTrue(app.staticTexts["movementSavedSummary"].waitForExistence(timeout: 5))
-            revealMovementControl(link, in: app)
-            link.tap()
+            app.tabBars.buttons[language == "de" ? "Einstellungen" : "Settings"].tap()
+            let initialData = app.staticTexts[language == "de" ? "Daten" : "Data"]
+            for _ in 0..<8 where !initialData.isHittable { app.swipeUp() }
+            initialData.tap()
+            openMovementVideoLibrary(in: app)
+            let initialVideo = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "movementOpenVideo_")).firstMatch
+            XCTAssertTrue(initialVideo.waitForExistence(timeout: 10))
+            initialVideo.tap()
             XCTAssertTrue(app.otherElements["movementVideoPlayer"].waitForExistence(timeout: 10))
             let share = app.buttons["movementShareVideo"]
             XCTAssertTrue(share.isHittable)

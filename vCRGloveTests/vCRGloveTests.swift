@@ -11,7 +11,362 @@ import SwiftUI
 import UIKit
 import XCTest
 import AVFoundation
+import CoreImage
 @testable import vCRGlove
+
+@Suite(.serialized)
+struct MovementFaceMaskingTests {
+    @Test func handCropIsPaddedStableAndRejectsMissingOrExcessiveRegions() throws {
+        let hand = CGRect(x: 0.3, y: 0.2, width: 0.2, height: 0.3)
+        let crop = try #require(MovementFaceMasker.handCrop(for: hand))
+        #expect(crop.contains(hand) && crop.width > hand.width && crop.height > hand.height)
+        #expect(MovementFaceMasker.handCrop(for: .zero) == nil)
+        #expect(MovementFaceMasker.handCrop(for: CGRect(x: 0, y: 0, width: 1, height: 1)) == nil)
+        let extent = CGRect(x: 0, y: 0, width: 720, height: 1280)
+        let requested = CGRect(x: 0.101, y: 0.203, width: 0.333, height: 0.401)
+        let pixels = try MovementFaceMasker.pixelCrop(requested, in: extent)
+        let original = CGRect(x: requested.minX * extent.width, y: requested.minY * extent.height,
+            width: requested.width * extent.width, height: requested.height * extent.height)
+        #expect(pixels.contains(original) && extent.contains(pixels))
+        #expect(Int(pixels.width).isMultiple(of: 2) && Int(pixels.height).isMultiple(of: 2))
+        #expect(throws: (any Error).self) {
+            try MovementFaceMasker.pixelCrop(CGRect(x: -0.1, y: 0, width: 1, height: 1), in: extent)
+        }
+    }
+    @Test func overlappingMasksShareOneOutlineWithoutDroppingProtectedPixels() {
+        let a = CGRect(x: 0, y: 80, width: 120, height: 120)
+        let b = CGRect(x: 80, y: 130, width: 60, height: 70)
+        let combined = MovementFaceMasker.consolidatedMasks([a, b])
+        #expect(combined.count == 1 && combined[0].contains(a) && combined[0].contains(b))
+        #expect(MovementFaceMasker.consolidatedMasks([a, a]) == [a])
+        let nearlyTouching = CGRect(x: 128, y: 130, width: 60, height: 70)
+        let joined = MovementFaceMasker.consolidatedMasks([a, nearlyTouching])
+        #expect(joined.count == 1 && joined[0].contains(a) && joined[0].contains(nearlyTouching))
+        let isolated = CGRect(x: 170, y: 180, width: 20, height: 20)
+        #expect(MovementFaceMasker.consolidatedMasks([a, isolated]).count == 2)
+        let diagonal = CGRect(x: 110, y: 190, width: 100, height: 100)
+        #expect(MovementFaceMasker.consolidatedMasks([a, diagonal]).count == 2)
+        let chain = MovementFaceMasker.consolidatedMasks([a, b, b.offsetBy(dx: 10, dy: 0)])
+        #expect([a, b, b.offsetBy(dx: 10, dy: 0)].allSatisfy { required in chain.contains { $0.contains(required) } })
+    }
+    @Test func masksExpandAndClampWithoutMovingCoordinates() throws {
+        let extent = CGRect(x: 0, y: 0, width: 200, height: 100)
+        let boxes = try MovementFaceMasker.maskRectangles([
+            CGRect(x: 0.4, y: 0.3, width: 0.2, height: 0.4),
+            CGRect(x: 0.95, y: 0.95, width: 0.1, height: 0.1)], in: extent)
+        #expect(boxes[0] == CGRect(x: 68, y: 18, width: 64, height: 64))
+        #expect(extent.contains(boxes[1]))
+        #expect(throws: (any Error).self) {
+            try MovementFaceMasker.maskRectangles([CGRect(x: 0, y: 0, width: -1, height: 1)], in: extent)
+        }
+        let large = try MovementFaceMasker.maskRectangles([CGRect(x: 0.3, y: 0.3, width: 0.4, height: 0.4)],
+            in: CGRect(x: 0, y: 0, width: 1000, height: 1000))
+        #expect(large[0].width == 496 && large[0].height == 496)
+    }
+
+    @Test func compactMasksReplaceTrailsAndRetainSeparateFacesThroughBriefGaps() throws {
+        let image = CIImage(color: CIColor(red: 0.5, green: 0.5, blue: 0.5))
+            .cropped(to: CGRect(x: 0, y: 0, width: 100, height: 100))
+        let tracks = FaceMaskTracks()
+        let left = CGRect(x: 0.1, y: 0.2, width: 0.2, height: 0.2)
+        let right = CGRect(x: 0.7, y: 0.2, width: 0.2, height: 0.2)
+        #expect(try tracks.update(detections: [left, left, right], image: image, time: 0, tracksMisses: false).count == 2)
+        let moved = left.offsetBy(dx: 0.04, dy: 0)
+        let current = try tracks.update(detections: [moved], image: image, time: 0.1, tracksMisses: false)
+        #expect(current.count == 2 && current.contains(where: { $0.contains(moved) }) && !current.contains(left))
+        #expect(try tracks.update(detections: [], image: image, time: 1.5, tracksMisses: false).count == 2)
+        #expect(try tracks.update(detections: [], image: image, time: 2.2, tracksMisses: false).isEmpty)
+        let rotated = MovementFaceMasker.unrotateHalfTurn(MovementFaceMasker.unrotateHalfTurn(left))
+        #expect(abs(rotated.minX - left.minX) < 1e-9 && abs(rotated.minY - left.minY) < 1e-9)
+    }
+
+    @Test func stylingKeepsEveryProtectiveCornerOpaque() throws {
+        let core = CGRect(x: 40, y: 40, width: 80, height: 80)
+        let mask = try MovementFaceMasker.styledMask(core)
+        let context = CIContext()
+        for point in [CGPoint(x: 40, y: 40), CGPoint(x: 119, y: 40),
+                      CGPoint(x: 40, y: 119), CGPoint(x: 119, y: 119), CGPoint(x: 80, y: 80)] {
+            var rgba = [UInt8](repeating: 0, count: 4)
+            context.render(mask, toBitmap: &rgba, rowBytes: 4,
+                bounds: CGRect(origin: point, size: CGSize(width: 1, height: 1)),
+                format: .RGBA8, colorSpace: CGColorSpaceCreateDeviceRGB())
+            #expect(rgba[3] == 255 && rgba[0] < 80)
+            #expect(rgba[0] == rgba[1] && rgba[1] == rgba[2])
+        }
+    }
+
+    @Test func styleRenderingCostProbe() throws {
+        let extent = CGRect(x: 0, y: 0, width: 720, height: 1280)
+        let box = CGRect(x: 400, y: 1000, width: 250, height: 240)
+        let background = CIImage(color: .white).cropped(to: extent)
+        let black = CIImage(color: .black)
+        let context = CIContext(options: [.cacheIntermediates: false])
+        var pixels: CVPixelBuffer?
+        #expect(CVPixelBufferCreate(kCFAllocatorDefault, 720, 1280, kCVPixelFormatType_32BGRA,
+            nil, &pixels) == kCVReturnSuccess)
+        let output = try #require(pixels)
+        var seconds: [Double] = []
+        for styled in [false, true] {
+            let start = ProcessInfo.processInfo.systemUptime
+            for _ in 0..<30 {
+                try autoreleasepool {
+                    let mask = styled ? try MovementFaceMasker.styledMask(box) : black.cropped(to: box)
+                    context.render(mask.composited(over: background), to: output,
+                        bounds: extent, colorSpace: CGColorSpaceCreateDeviceRGB())
+                }
+            }
+            seconds.append(ProcessInfo.processInfo.systemUptime - start)
+        }
+        print(String(format: "[VIDEO TEST] 30-frame render probe: rectangular %.3f s, rounded %.3f s (not iPhone latency)",
+            seconds[0], seconds[1]))
+    }
+
+    @Test func confirmedContinuationReusesEdgeTrackWithoutMergingAnotherFace() throws {
+        let image = CIImage(color: .black).cropped(to: CGRect(x: 0, y: 0, width: 128, height: 128))
+        let tracks = FaceMaskTracks(associationPredictor: { box, _ in box.offsetBy(dx: 0.085, dy: 0) })
+        let edge = CGRect(x: 0.01, y: 0.3, width: 0.12, height: 0.12)
+        let moved = edge.offsetBy(dx: 0.17, dy: 0)
+        let other = CGRect(x: 0.7, y: 0.7, width: 0.12, height: 0.12)
+        _ = try tracks.update(detections: [edge, other], image: image, time: 0, tracksMisses: false)
+        let associated = try tracks.update(detections: [moved, other], image: image, time: 0.03, tracksMisses: true)
+        #expect(associated.count == 2 && associated.contains(where: { $0.contains(moved) }))
+        let settled = try tracks.update(detections: [moved, other], image: image, time: 1, tracksMisses: false)
+        #expect(settled.count == 2 && settled.allSatisfy { $0.minX > 0 })
+        let uncertain = FaceMaskTracks(associationPredictor: { _, _ in nil })
+        _ = try uncertain.update(detections: [edge], image: image, time: 0, tracksMisses: false)
+        // An old guard must not be retired merely because a distant face appears.
+        #expect(try uncertain.update(detections: [moved], image: image, time: 3, tracksMisses: false).count == 2)
+    }
+
+    @Test func shrinkSmoothingNeverDelaysExpansionOrKeepsAWholeTrail() throws {
+        let image = CIImage(color: .black).cropped(to: CGRect(x: 0, y: 0, width: 128, height: 128))
+        let tracks = FaceMaskTracks()
+        let large = CGRect(x: 0.3, y: 0.3, width: 0.3, height: 0.3)
+        let small = CGRect(x: 0.35, y: 0.35, width: 0.2, height: 0.2)
+        _ = try tracks.update(detections: [large], image: image, time: 0, tracksMisses: false)
+        let shrinking = try tracks.update(detections: [small], image: image, time: 0.03, tracksMisses: false)
+        #expect(shrinking[0].contains(small) && shrinking[0].width < large.width && shrinking[0].width > small.width)
+        let expanded = try tracks.update(detections: [large], image: image, time: 0.06, tracksMisses: false)
+        #expect(expanded[0].contains(large))
+        let settled = try tracks.update(detections: [small], image: image, time: 1, tracksMisses: false)
+        #expect(abs(settled[0].width - small.width) < 1e-9)
+    }
+
+    @Test func edgeFaceStaysCoveredThroughLongMissesWithoutRetainingOldLargeMasks() throws {
+        let image = CIImage(color: CIColor(red: 0.5, green: 0.5, blue: 0.5))
+            .cropped(to: CGRect(x: 0, y: 0, width: 720, height: 1280))
+        let tracks = FaceMaskTracks()
+        let large = CGRect(x: 0.01, y: 0.70, width: 0.30, height: 0.28)
+        let compact = CGRect(x: 0.01, y: 0.82, width: 0.20, height: 0.16)
+        _ = try tracks.update(detections: [large], image: image, time: 0, tracksMisses: false)
+        let confirmed = try tracks.update(detections: [compact], image: image, time: 1, tracksMisses: false)
+        let held = try tracks.update(detections: [], image: image, time: 12, tracksMisses: false)
+        #expect(held == confirmed && held.count == 1)
+        #expect(held[0].minX == 0 && held[0].maxY == 1)
+        #expect(held[0].width < large.width && held[0].height < large.height)
+        #expect(held[0].contains(CGPoint(x: 0.1, y: 0.92)))
+        let interior = CGRect(x: 0.12, y: 0.72, width: 0.2, height: 0.2)
+        #expect(try tracks.update(detections: [interior], image: image, time: 13, tracksMisses: false) == [interior])
+        #expect(try tracks.update(detections: [], image: image, time: 16, tracksMisses: false).isEmpty)
+    }
+
+    @Test(arguments: [CGRect(x: 0.01, y: 0.4, width: 0.1, height: 0.1),
+        CGRect(x: 0.89, y: 0.4, width: 0.1, height: 0.1),
+        CGRect(x: 0.4, y: 0.01, width: 0.1, height: 0.1),
+        CGRect(x: 0.4, y: 0.89, width: 0.1, height: 0.1)])
+    func edgeCoverageWorksForEveryPhoneOrientation(_ face: CGRect) throws {
+        let image = CIImage(color: .black).cropped(to: CGRect(x: 0, y: 0, width: 128, height: 128))
+        let tracks = FaceMaskTracks()
+        let initial = try tracks.update(detections: [face], image: image, time: 0, tracksMisses: false)
+        let held = try tracks.update(detections: [], image: image, time: 30, tracksMisses: false)
+        #expect(initial == held && held.count == 1)
+        #expect(held[0].contains(face))
+        #expect(held[0].minX == 0 || held[0].maxX == 1 || held[0].minY == 0 || held[0].maxY == 1)
+        #expect(held[0].width < 0.2 && held[0].height < 0.2)
+    }
+
+    #if DEBUG && targetEnvironment(simulator)
+    private func readFrames(_ url: URL) throws -> [(CMTime, CVPixelBuffer)] {
+        let asset = AVURLAsset(url: url)
+        let track = try #require(asset.tracks(withMediaType: .video).first)
+        let reader = try AVAssetReader(asset: asset)
+        let output = AVAssetReaderTrackOutput(track: track,
+            outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+        output.alwaysCopiesSampleData = true
+        reader.add(output)
+        #expect(reader.startReading())
+        var result: [(CMTime, CVPixelBuffer)] = []
+        while let sample = output.copyNextSampleBuffer(), let pixels = CMSampleBufferGetImageBuffer(sample) {
+            result.append((CMSampleBufferGetPresentationTimeStamp(sample), pixels))
+        }
+        #expect(reader.status == .completed)
+        return result
+    }
+
+    private func intensity(_ buffer: CVPixelBuffer, x: Int, y: Int) -> Int {
+        CVPixelBufferLockBaseAddress(buffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
+        let bytes = CVPixelBufferGetBaseAddress(buffer)!.assumingMemoryBound(to: UInt8.self)
+        let index = y * CVPixelBufferGetBytesPerRow(buffer) + x * 4
+        return Int(bytes[index]) + Int(bytes[index + 1]) + Int(bytes[index + 2])
+    }
+
+    @Test @MainActor func handFocusedMovieOmitsOutsideGuardsAndKeepsInsideMaskAndTiming() async throws {
+        let crop = CGRect(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
+        for inside in [false, true] {
+            let source = try await makeMovementVideoTestFixture(width: 128, height: 128)
+            let timestamps = try readFrames(source).map { $0.0.seconds }
+            let face = inside ? CGRect(x: 0.4, y: 0.4, width: 0.2, height: 0.2)
+                : CGRect(x: 0, y: 0.9, width: 0.1, height: 0.1)
+            let output = try await MovementFaceMasker.consume(source, handCrop: crop) { _ in [face] }
+            defer { try? FileManager.default.removeItem(at: output) }
+            let frames = try readFrames(output)
+            #expect(frames.map { $0.0.seconds } == timestamps)
+            for (_, pixels) in frames {
+                #expect(CVPixelBufferGetWidth(pixels) == 64 && CVPixelBufferGetHeight(pixels) == 64)
+                if inside { #expect(intensity(pixels, x: 32, y: 32) < 90) }
+                else { #expect(intensity(pixels, x: 32, y: 32) > 400) }
+            }
+            let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            defer { try? FileManager.default.removeItem(at: directory) }
+            let trial = Trial(taskType: .fingerTap, side: .right, source: .camera,
+                stopCondition: .thirtySec, samples: [], metrics: .empty)
+            let reference = try MovementVideoStore(directory: directory).save(output, for: trial,
+                normalizedSourceCrop: crop)
+            #expect(reference.normalizedSourceCrop == crop)
+            #expect(try JSONDecoder().decode(MovementVideoReference.self,
+                from: JSONEncoder().encode(reference)) == reference)
+        }
+    }
+
+    @Test @MainActor func noFaceMovieKeepsFramesTimingAndSilentPlayback() async throws {
+        let source = try await makeMovementVideoTestFixture(startPTS: CMTime(value: 7, timescale: 10))
+        let original = try readFrames(source).map { ($0.0.seconds, intensity($0.1, x: 32, y: 32)) }
+        let originalAnchor = MovementVideoStore.firstVideoPTS(at: source)
+        // Vision inference is unavailable on this simulator; exercise the no-face result explicitly.
+        let output = try await MovementFaceMasker.consume(source) { _ in [] }
+        defer { try? FileManager.default.removeItem(at: output) }
+        let masked = try readFrames(output)
+        #expect(masked.map { $0.0.seconds } == original.map { $0.0 })
+        #expect(MovementVideoStore.firstVideoPTS(at: output) == originalAnchor)
+        #expect(!FileManager.default.fileExists(atPath: source.path))
+        #expect(MovementFaceMasker.isProcessedFile(output))
+        for (index, frame) in masked.enumerated() {
+            #expect(abs(intensity(frame.1, x: 32, y: 32) - original[index].1) < 60)
+        }
+        #expect(intensity(masked.last!.1, x: 32, y: 32) > 400)
+        let asset = AVURLAsset(url: output)
+        #expect(try await asset.load(.isPlayable))
+        #expect(try await asset.loadTracks(withMediaType: .audio).isEmpty)
+    }
+
+    @Test @MainActor func solidMasksCoverMultipleFacesAndHoldAcrossMissedFrames() async throws {
+        let source = try await makeMovementVideoTestFixture(width: 128, height: 128)
+        let detector = MaskingDetectorFixture()
+        let output = try await MovementFaceMasker.consume(source) { _ in detector.boxes() }
+        defer { try? FileManager.default.removeItem(at: output) }
+        let frames = try readFrames(output)
+        #expect(frames.count == 3)
+        for (_, pixels) in frames {
+            // Pixel-buffer rows are top-down; Vision/CI boxes are bottom-up.
+            #expect(intensity(pixels, x: 32, y: 96) < 90)
+            #expect(intensity(pixels, x: 96, y: 32) < 90)
+            #expect(intensity(pixels, x: 64, y: 64) > 400)
+        }
+    }
+
+    @Test @MainActor func rotatedMovieBecomesUprightAndMaskProvenancePersists() async throws {
+        let source = try await makeMovementVideoTestFixture(width: 128, height: 64,
+            transform: CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: 64, ty: 0))
+        let output = try await MovementFaceMasker.consume(source) { _ in [] }
+        defer { try? FileManager.default.removeItem(at: output) }
+        let pixels = try #require(readFrames(output).first?.1)
+        #expect(CVPixelBufferGetWidth(pixels) == 64 && CVPixelBufferGetHeight(pixels) == 128)
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let trial = Trial(taskType: .fingerTap, side: .right, source: .camera,
+            stopCondition: .thirtySec, samples: [], metrics: .empty)
+        let reference = try MovementVideoStore(directory: directory).save(output, for: trial)
+        #expect(reference.faceMaskingVersion == MovementFaceMasker.version)
+        let data = try JSONEncoder().encode(reference)
+        #expect(try JSONDecoder().decode(MovementVideoReference.self, from: data) == reference)
+        let legacy = Data("{\"fileName\":\"old.mov\",\"byteCount\":10}".utf8)
+        #expect(try JSONDecoder().decode(MovementVideoReference.self, from: legacy).faceMaskingVersion == nil)
+    }
+
+    @Test @MainActor func delayedFirstDetectionAlsoMasksOpeningFrames() async throws {
+        let source = try await makeMovementVideoTestFixture(width: 128, height: 128,
+            startPTS: CMTime(value: 7, timescale: 10))
+        let original = try readFrames(source).map { ($0.0.seconds, intensity($0.1, x: 64, y: 64)) }
+        let detector = MaskingDetectorFixture(skipping: 2)
+        let output = try await MovementFaceMasker.consume(source) { _ in detector.boxes() }
+        defer { try? FileManager.default.removeItem(at: output) }
+        let frames = try readFrames(output)
+        #expect(frames.map { $0.0.seconds } == original.map { $0.0 })
+        #expect(frames.count == original.count)
+        for (index, frame) in frames.enumerated() {
+            let pixels = frame.1
+            #expect(intensity(pixels, x: 32, y: 96) < 90)
+            #expect(intensity(pixels, x: 96, y: 32) < 90)
+            #expect(abs(intensity(pixels, x: 64, y: 64) - original[index].1) < 60)
+        }
+        #expect(!FileManager.default.fileExists(atPath: source.path))
+    }
+
+    @Test @MainActor func detectorFailureAndCancellationNeverReturnRawVideo() async throws {
+        let corrupt = try MovementFaceMasker.recordingURL()
+        try Data("invalid movie".utf8).write(to: corrupt)
+        do { _ = try await MovementFaceMasker.consume(corrupt); Issue.record("Corrupt movie must fail") }
+        catch { #expect(!FileManager.default.fileExists(atPath: corrupt.path)) }
+        let source = try await makeMovementVideoTestFixture()
+        do {
+            _ = try await MovementFaceMasker.consume(source) { _ in throw CocoaError(.fileReadUnknown) }
+            Issue.record("Detector failure must reject the video")
+        } catch { #expect(!FileManager.default.fileExists(atPath: source.path)) }
+        let cancelledSource = try await makeMovementVideoTestFixture()
+        let task = Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            return try await MovementFaceMasker.consume(cancelledSource)
+        }
+        do { _ = try await task.value; Issue.record("Cancelled video must not be returned") }
+        catch { #expect(!FileManager.default.fileExists(atPath: cancelledSource.path)) }
+    }
+
+    @Test @MainActor func lateFirstEdgeDetectionProtectsOpeningBeyondOldLookAhead() async throws {
+        let source = try await makeMovementVideoTestFixture(width: 128, height: 128,
+            frameStep: CMTime(value: 2, timescale: 1))
+        let originalTimes = try readFrames(source).map { $0.0.seconds }
+        let detector = MaskingDetectorFixture(skipping: 2,
+            faces: [CGRect(x: 0.8, y: 0.8, width: 0.2, height: 0.2)])
+        let output = try await MovementFaceMasker.consume(source) { _ in detector.boxes() }
+        defer { try? FileManager.default.removeItem(at: output) }
+        let frames = try readFrames(output)
+        #expect(frames.map { $0.0.seconds } == originalTimes)
+        for (_, pixels) in frames {
+            #expect(intensity(pixels, x: 115, y: 12) < 90)
+            #expect(intensity(pixels, x: 32, y: 96) > 400)
+        }
+    }
+    #endif
+}
+
+private final class MaskingDetectorFixture: @unchecked Sendable {
+    private let lock = NSLock()
+    private var first = true
+    private var skipped: Int
+    private let faces: [CGRect]
+    init(skipping: Int = 0, faces: [CGRect] = [CGRect(x: 0.2, y: 0.2, width: 0.1, height: 0.1),
+        CGRect(x: 0.7, y: 0.7, width: 0.1, height: 0.1)]) {
+        skipped = skipping; self.faces = faces
+    }
+    func boxes() -> [CGRect] {
+        lock.lock(); defer { lock.unlock() }
+        if skipped > 0 { skipped -= 1; return [] }
+        guard first else { return [] }
+        first = false
+        return faces
+    }
+}
 
 @Suite(.serialized)
 @MainActor
@@ -284,7 +639,7 @@ struct StudyInformationTests {
         let sections = StudyInformationTopic.devices.sections
         #expect(sections.map(\.id) == ["devices", "storage", "videos"])
         #expect(sections.dropFirst().flatMap(\.paragraphKeys) == [
-            "privacy.app.localData", "privacy.app.videoCapture", "privacy.app.videoStorage",
+            "privacy.app.localData", "privacy.app.videoCapture", "privacy.app.faceMasking", "privacy.app.videoStorage",
             "privacy.app.videoSharing", "privacy.app.videoDeletion"])
     }
 }
@@ -703,7 +1058,158 @@ struct JournalNoteExampleTests {
     }
 }
 
+private actor DeferredVideoTestGate {
+    private(set) var started = 0
+    private var released = false
+    private var continuation: CheckedContinuation<Void, Never>?
+    func wait() async {
+        started += 1
+        if !released { await withCheckedContinuation { continuation = $0 } }
+    }
+    func release() {
+        released = true
+        continuation?.resume()
+        continuation = nil
+    }
+}
+
 struct MovementVideoStorageTests {
+    @Test @MainActor func deferredVideoWithoutHandCropKeepsMeasurementButNeverPublishesFullFrame() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: dir.appendingPathComponent("videos")),
+            videoProcessor: { _, _ in
+                Issue.record("Missing hand crop must not run a full-frame processor")
+                throw CocoaError(.fileReadUnknown)
+            })
+        let recording = trial()
+        let source = try temporaryVideo(in: dir)
+        let saved: MovementSession = try await withCheckedThrowingContinuation { continuation in
+            store.saveAcceptedTrial(recording, in: .init(patientId: "TEST"), temporaryVideoURL: source,
+                deferVideoProcessing: true) { continuation.resume(with: $0) }
+        }
+        #expect(saved.trials.first?.id == recording.id && saved.trials.first?.video == nil)
+        #expect(store.videoPreparationStates[recording.id] == .unavailable)
+        #expect(!FileManager.default.fileExists(atPath: source.path))
+    }
+    #if DEBUG && targetEnvironment(simulator)
+    @Test @MainActor func deferredMoviesDoNotBlockMeasurementsAndAttachToLatestSession() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let gate = DeferredVideoTestGate()
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: dir.appendingPathComponent("videos")),
+            videoProcessor: { source, _ in
+                await gate.wait()
+                return try await MovementFaceMasker.consume(source) { _ in [] }
+            })
+        let first = trial()
+        let raw = try await makeMovementVideoTestFixture()
+        let checkpoint = try await saveDeferred(first, session: .init(patientId: "TEST"), source: raw, store: store)
+        #expect(checkpoint.trials.first?.video == nil)
+        #expect(!FileManager.default.fileExists(atPath: raw.path))
+        let second = trial(side: .left)
+        let both = try await saveDeferred(second, session: checkpoint,
+            source: makeMovementVideoTestFixture(), store: store)
+        #expect(both.trials.count == 2 && both.trials.allSatisfy { $0.video == nil })
+        // One processor at a time, even though the next task can already be saved.
+        for _ in 0..<200 {
+            if await gate.started > 0 { break }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        #expect(await gate.started == 1)
+        await gate.release()
+        try await waitForVideos(store)
+        #expect(store.sessions.count == 1 && store.sessions[0].trials.count == 2)
+        #expect(store.sessions[0].trials.allSatisfy { $0.video?.faceMaskingVersion == MovementFaceMasker.version })
+        // A stale flow checkpoint must not drop a video attached after it was created.
+        let _: Void = try await withCheckedThrowingContinuation { continuation in
+            store.saveAcceptedSession(both) { continuation.resume(with: $0) }
+        }
+        #expect(store.sessions[0].trials.allSatisfy { $0.video != nil })
+        #expect(store.sessions[0].trials.first { $0.id == first.id }?.samples == first.samples)
+        let oldMovie = try store.videoStore.url(for: #require(store.sessions[0].trials.first { $0.id == first.id }))
+        _ = try await save(trial(), session: both, temporary: nil, store: store)
+        #expect(!FileManager.default.fileExists(atPath: oldMovie.path))
+        #expect(store.sessions[0].trials.first { $0.id == second.id }?.video != nil)
+    }
+
+    @Test @MainActor func deferredVideoDoesNotResurrectReplacedTake() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let gate = DeferredVideoTestGate()
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: dir.appendingPathComponent("videos")),
+            videoProcessor: { source, _ in
+                await gate.wait()
+                return try await MovementFaceMasker.consume(source) { _ in [] }
+            })
+        let first = trial()
+        let checkpoint = try await saveDeferred(first, session: .init(patientId: "TEST"),
+            source: makeMovementVideoTestFixture(), store: store)
+        let replacement = trial()
+        _ = try await save(replacement, session: checkpoint, temporary: nil, store: store)
+        await gate.release()
+        try await waitForVideos(store)
+        #expect(store.sessions[0].trials.map(\.id) == [replacement.id])
+        #expect(store.sessions[0].trials[0].video == nil)
+        #expect(store.videoPreparationStates[first.id] == .unavailable)
+        let files = (try? FileManager.default.contentsOfDirectory(atPath: dir.appendingPathComponent("videos").path)) ?? []
+        #expect(files.isEmpty)
+    }
+
+    @Test @MainActor func deferredProcessingFailureKeepsMeasurementAndRemovesOriginal() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: dir.appendingPathComponent("videos")),
+            videoProcessor: { _, _ in throw CocoaError(.fileReadUnknown) })
+        let recording = trial()
+        let raw = try await makeMovementVideoTestFixture()
+        _ = try await saveDeferred(recording, session: .init(patientId: "TEST"), source: raw, store: store)
+        try await waitForVideos(store)
+        #expect(store.sessions[0].trials[0].id == recording.id)
+        #expect(store.sessions[0].trials[0].video == nil)
+        #expect(store.videoPreparationStates[recording.id] == .unavailable)
+        #expect(!FileManager.default.fileExists(atPath: raw.path))
+    }
+
+    @MainActor private func saveDeferred(_ trial: Trial, session: MovementSession,
+        source: URL, store: TaskSessionStore) async throws -> MovementSession {
+        try await withCheckedThrowingContinuation { continuation in
+            store.saveAcceptedTrial(trial, in: session, temporaryVideoURL: source,
+                normalizedHandCrop: CGRect(x: 0, y: 0, width: 1, height: 1),
+                deferVideoProcessing: true) { continuation.resume(with: $0) }
+        }
+    }
+
+    @MainActor private func waitForVideos(_ store: TaskSessionStore) async throws {
+        for _ in 0..<1000 {
+            if store.videoPreparationStates.values.allSatisfy({ $0 == .unavailable }) { return }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        Issue.record("Video queue did not finish")
+    }
+    #endif
+    @Test @MainActor func measurementCheckpointCanAttachVideoWithoutDuplicatingSessionOrTrial() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: dir.appendingPathComponent("videos")))
+        let recording = trial()
+        let checkpoint: MovementSession = try await withCheckedThrowingContinuation { continuation in
+            store.saveAcceptedTrial(recording, in: MovementSession(patientId: "TEST"),
+                temporaryVideoURL: nil) { continuation.resume(with: $0) }
+        }
+        #expect(checkpoint.trials[0].video == nil)
+        let attached = try await save(recording, session: checkpoint,
+            temporary: temporaryVideo(in: dir), store: store)
+        #expect(store.sessions.count == 1 && attached.trials.count == 1)
+        #expect(attached.id == checkpoint.id && attached.trials[0].id == recording.id)
+        #expect(attached.trials[0].samples == recording.samples && attached.trials[0].video != nil)
+    }
+
     @Test @MainActor func batchSharingValidatesEveryFileWithoutCreatingExportCopies() async throws {
         let directory = try directory()
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -1333,11 +1839,11 @@ struct MovementPersonalProfileTests {
             medicationTiming: medication, recordedDurationSeconds: 30, fingerTappingAngle: angle)
         return MovementSession(patientId: "PROFILE-TEST", stimulationContext: context, trials: [trial])
     }
-    private func profile(_ sessions: [MovementSession]) -> MovementPersonalProfile {
+    private func profile(_ sessions: [MovementSession], window: MovementComparisonWindow = .recent) -> MovementPersonalProfile {
         let summary = MovementTrendSummary(sessions: sessions, task: .fingerTap, side: .right, metric: .frequency)
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        return MovementPersonalProfile(recordings: summary.recordings, task: .fingerTap, calendar: calendar)
+        return MovementPersonalProfile(recordings: summary.recordings, task: .fingerTap, calendar: calendar, window: window)
     }
     @Test func personalTypicalUsesDailyMediansAndMatchingContext() throws {
         let sessions = [session(day: 1, rate: 1), session(day: 1, rate: 1), session(day: 1, rate: 1),
@@ -1359,6 +1865,33 @@ struct MovementPersonalProfileTests {
         #expect((speed.latest ?? 0) > 0 && speed.typical == nil)
         #expect(profile([history.last!]).entries.allSatisfy { $0.typical == nil })
         #expect(profile([]).recording == nil)
+    }
+
+    @Test func wholeStudyAndPreviousDayUseTheSelectedHistoryWithoutSevenDayCap() throws {
+        let history = (0...10).map { session(day: $0, rate: Double($0+1)) }
+        let all = try #require(profile(history, window: .all).entries.first { $0.metric == .rate })
+        #expect(all.previousDays == 10 && all.typical == 5.5 && all.latest == 11)
+        let previous = try #require(profile(history, window: .previousDay).entries.first { $0.metric == .rate })
+        #expect(previous.previousDays == 1 && previous.typical == 10)
+        #expect(profile([history.last!], window: .all).entries.allSatisfy { $0.typical == nil })
+    }
+
+    @Test func comparisonWindowsUseCalendarMonthsIncludingSevenMonthStudyAndLeapDates() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+            calendar.date(from: DateComponents(year: year, month: month, day: day))!
+        }
+        let latest = date(2026, 10, 23)
+        let days = [date(2026, 3, 22), date(2026, 3, 23), date(2026, 7, 23),
+                    date(2026, 9, 23), date(2026, 10, 22), latest, date(2026, 10, 24)]
+        #expect(MovementComparisonWindow.sevenMonths.dates(from: days, before: latest, calendar: calendar).count == 4)
+        #expect(MovementComparisonWindow.quarter.dates(from: days, before: latest, calendar: calendar).count == 3)
+        #expect(MovementComparisonWindow.month.dates(from: days, before: latest, calendar: calendar).count == 2)
+        #expect(MovementComparisonWindow.all.dates(from: days, before: latest, calendar: calendar).count == 5)
+        let leapDays = [date(2024, 2, 28), date(2024, 2, 29)]
+        #expect(MovementComparisonWindow.month.dates(from: leapDays, before: date(2024, 3, 31), calendar: calendar)
+            == [date(2024, 2, 29)])
     }
 }
 

@@ -567,6 +567,33 @@ enum MovementProfileMetric: String, CaseIterable, Identifiable {
     }
 }
 
+enum MovementComparisonWindow: String, CaseIterable, Identifiable {
+    case previousDay, recent, month, quarter, sevenMonths, all
+    var id: String { rawValue }
+    var titleKey: String {
+        switch self {
+        case .previousDay: return "Previous recording day"
+        case .recent: return "Recent 7 recording days"
+        case .month: return "Past month"
+        case .quarter: return "Past 3 months"
+        case .sevenMonths: return "Past 7 months"
+        case .all: return "Whole study"
+        }
+    }
+    func dates(from dates: [Date], before latestDay: Date, calendar: Calendar) -> [Date] {
+        let earlier = dates.filter { $0 < latestDay }.sorted()
+        switch self {
+        case .previousDay: return Array(earlier.suffix(1))
+        case .recent: return Array(earlier.suffix(7))
+        case .all: return earlier
+        case .month, .quarter, .sevenMonths:
+            let months = self == .month ? 1 : self == .quarter ? 3 : 7
+            guard let start = calendar.date(byAdding: .month, value: -months, to: latestDay) else { return [] }
+            return earlier.filter { $0 >= start }
+        }
+    }
+}
+
 struct MovementPersonalProfile {
     struct Entry: Identifiable {
         let metric: MovementProfileMetric
@@ -578,7 +605,8 @@ struct MovementPersonalProfile {
     let recording: MovementTrendRecording?
     let entries: [Entry]
 
-    init(recordings: [MovementTrendRecording], task: MovementTaskType, calendar: Calendar = .current) {
+    init(recordings: [MovementTrendRecording], task: MovementTaskType, calendar: Calendar = .current,
+         window: MovementComparisonWindow = .recent) {
         let metrics: [MovementProfileMetric] = task == .fingerTap ? [.rate, .rhythm, .size, .angularSpeed]
             : task == .handOpenClose ? [.rate, .rhythm, .size] : [.rate, .rhythm]
         let latest = recordings.sorted { $0.date == $1.date ? $0.id < $1.id : $0.date < $1.date }.reversed().first { item in
@@ -600,7 +628,7 @@ struct MovementPersonalProfile {
             return values.count.isMultiple(of: 2) ? sorted[middle-1]/2 + sorted[middle]/2 : sorted[middle]
         }
         let priorDays = Dictionary(grouping: previous, by: { calendar.startOfDay(for: $0.date) })
-        let dates = priorDays.keys.sorted().suffix(7)
+        let dates = window.dates(from: Array(priorDays.keys), before: today, calendar: calendar)
         entries = metrics.filter { $0 != .angularSpeed || latest.trial.fingerTappingAngle != nil }.map { metric in
             let values = dates.compactMap { date -> Double? in
                 let day = priorDays[date]!.compactMap { metric.value($0) }
@@ -615,6 +643,7 @@ struct MovementPersonalProfile {
 struct MovementTrendView: View {
     @ObservedObject private var store = TaskSessionStore.shared
     @AppStorage("movementTrendIdentityLinks") private var identityLinksData = Data()
+    @AppStorage("movementPersonalComparisonWindow") private var comparisonWindow: MovementComparisonWindow = .recent
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @State private var taskType: MovementTaskType = .fingerTap
@@ -638,6 +667,10 @@ struct MovementTrendView: View {
     }
 
     private var summary: MovementTrendSummary {
+        makeSummary(filters: filters)
+    }
+
+    private func makeSummary(filters: MovementTrendFilters) -> MovementTrendSummary {
         var sessions = store.sessions
         var source: SignalSource? = taskType.preferredSource
         #if DEBUG && targetEnvironment(simulator)
@@ -652,7 +685,7 @@ struct MovementTrendView: View {
 
     var body: some View {
         let summary = self.summary
-        let profile = MovementPersonalProfile(recordings: summary.recordings, task: taskType)
+        let profile = makeProfile(summary: summary)
         Form {
             Section {
                 if dynamicTypeSize.isAccessibilitySize {
@@ -861,7 +894,7 @@ struct MovementTrendView: View {
                     if taskType == .fingerTap {
                         Text(L10n("Finger movement speed describes how quickly the camera-view finger angle changes. It is different from tapping rate and is affected by hand position and tracking."))
                     }
-                    Text(L10n("Your recent typical values are medians from up to seven earlier matching recording days. We keep hand, stimulation timing, reported medication status and recording method separate. Filters apply; days with repeated recordings receive equal weight."))
+                    Text(L10n("Your comparison uses daily medians within the selected comparison window. Whole study includes all earlier matching days, independently of the chart period. Other filters apply; each recording day has equal weight."))
                     Text(L10n("These measures help describe your movement pattern. Faster or larger does not automatically mean better, and small differences may reflect normal recording variation."))
                 }
                 .navigationTitle(L10n("Your movement pattern"))
@@ -964,6 +997,19 @@ struct MovementTrendView: View {
 
     private func personalProfile(_ profile: MovementPersonalProfile) -> some View {
         return Section {
+            Menu {
+                ForEach(MovementComparisonWindow.allCases) { window in
+                    Button { comparisonWindow = window } label: {
+                        if window == comparisonWindow {
+                            Label(L10n(window.titleKey), systemImage: "checkmark")
+                        } else { Text(L10n(window.titleKey)) }
+                    }
+                }
+            } label: {
+                selectionLabel(title: L10n("Comparison window"), value: L10n(comparisonWindow.titleKey))
+            }
+            .accessibilityIdentifier("trendComparisonWindow")
+            .accessibilityValue(L10n(comparisonWindow.titleKey))
             if let recording = profile.recording {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(L10n("Latest matching recording")).foregroundStyle(.secondary)
@@ -977,7 +1023,7 @@ struct MovementTrendView: View {
                         Text(entry.latest.map { entry.metric.formatted($0, task: taskType) } ?? L10n("Value unavailable"))
                             .accessibilityIdentifier("trendProfileValue-\(entry.id)")
                         if let typical = entry.typical {
-                            Text(String(format: L10n("Your recent typical: %@ · %d earlier day(s)"),
+                            Text(String(format: L10n("Your typical: %@ · %d earlier day(s)"),
                                         entry.metric.formatted(typical, task: taskType), entry.previousDays))
                                 .font(.subheadline).foregroundStyle(.secondary)
                                 .accessibilityIdentifier("trendProfileTypical-\(entry.id)")
@@ -1006,6 +1052,17 @@ struct MovementTrendView: View {
                 .accessibilityIdentifier("trendProfileInfo")
             }
         }
+    }
+
+    private func makeProfile(summary: MovementTrendSummary) -> MovementPersonalProfile {
+        guard let latestDate = summary.recordings.map(\.date).max() else {
+            return MovementPersonalProfile(recordings: [], task: taskType, window: comparisonWindow)
+        }
+        var comparisonFilters = filters
+        comparisonFilters.period = .all
+        let records = filters.period == .all ? summary.recordings : makeSummary(filters: comparisonFilters).recordings
+        return MovementPersonalProfile(recordings: records.filter { $0.date <= latestDate },
+            task: taskType, window: comparisonWindow)
     }
 
     private var visibleMetrics: [TrendMetric] {

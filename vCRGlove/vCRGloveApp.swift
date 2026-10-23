@@ -101,6 +101,7 @@ struct vCRGloveApp: App {
 
     init() {
         FullDataExporter.removeInterruptedExports()
+        MovementFaceMasker.prepareWorkspace()
         _ = PhoneWC.shared
 
         if let url = EventStore.shared.fileURL() {

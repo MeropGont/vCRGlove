@@ -1,6 +1,58 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Comparison window" : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Comparison window" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Vergleichszeitraum" } } }
+    },
+    "Previous recording day" : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Previous recording day" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Vorheriger Aufnahmetag" } } }
+    },
+    "Recent 7 recording days" : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Recent 7 recording days" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzte 7 Aufnahmetage" } } }
+    },
+    "Past month" : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Past month" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzter Monat" } } }
+    },
+    "Past 3 months" : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Past 3 months" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzte 3 Monate" } } }
+    },
+    "Past 7 months" : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Past 7 months" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzte 7 Monate" } } }
+    },
+    "Whole study" : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Whole study" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Gesamte Studie" } } }
+    },
+    "Your typical: %@ · %d earlier day(s)" : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your typical: %@ · %d earlier day(s)" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Für Sie typisch: %@ · %d frühere Tage" } } }
+    },
+    "Your comparison uses daily medians within the selected comparison window. Whole study includes all earlier matching days, independently of the chart period. Other filters apply; each recording day has equal weight." : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your comparison uses daily medians within the selected comparison window. Whole study includes all earlier matching days, independently of the chart period. Other filters apply; each recording day has equal weight." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Ihr Vergleich nutzt Tagesmediane im gewählten Vergleichszeitraum. Die gesamte Studie umfasst alle früheren passenden Tage, unabhängig vom Diagrammzeitraum. Andere Filter gelten weiterhin; jeder Aufnahmetag hat das gleiche Gewicht." } } }
+    },
+    "Preparing video…" : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Preparing video…" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Video wird vorbereitet …" } } }
+    },
+    "Video is being prepared. Find it later in Settings > Data." : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Video is being prepared. Find it later in Settings > Data." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Das Video wird vorbereitet. Sie finden es später unter Einstellungen > Daten." } } }
+    },
+    "Find your videos in Settings > Data." : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Find your videos in Settings > Data." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Ihre Videos finden Sie unter Einstellungen > Daten." } } }
+    },
+    "You can continue your tasks. Keep the app open until videos are ready." : {
+      "extractionState" : "manual",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "You can continue your tasks. Keep the app open until videos are ready." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Sie können mit den Aufgaben fortfahren. Lassen Sie die App geöffnet, bis die Videos fertig sind." } } }
+    },
     "Latest matching recording" : {
       "extractionState" : "manual",
       "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Latest matching recording" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzte passende Aufnahme" } } }
@@ -6680,6 +6732,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Datenschutz & Daten"
+          }
+        }
+      }
+    },
+    "privacy.app.faceMasking" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Videos werden auf diesem iPhone auf den erkannten Handbereich zugeschnitten. Kann kein geeigneter Ausschnitt bestimmt werden, wird kein Video gespeichert; die Bewegungsmessungen bleiben erhalten. Erkannte Gesichter werden vor dem Speichern mit undurchsichtigen Flächen verdeckt. Die ungeschützte Zwischenaufnahme wird anschließend gelöscht. Schlägt die Verarbeitung fehl, bleiben nur die Bewegungsmessungen erhalten. Gesichter können übersehen werden; andere erkennbare Merkmale bleiben sichtbar. Dies garantiert keine Anonymität. Ältere Videos bleiben unverändert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New videos are cropped to the detected hand area on this iPhone. If a suitable crop cannot be determined, no video is saved; the movement measurements are kept. Detected faces are covered with opaque masks before saving. The unmasked temporary recording is then deleted. If processing fails, only the movement measurements are kept. Faces may be missed and other identifying features remain visible. This does not guarantee anonymity. Older videos remain unchanged."
           }
         }
       }

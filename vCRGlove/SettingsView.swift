@@ -1176,7 +1176,7 @@ enum StudyInformationTopic: String, CaseIterable, Identifiable {
                     .init(id: "devices", headingKey: nil, paragraphKeys: ["study.devices.body", "study.devices.results"]),
                     .init(id: "storage", headingKey: "Stored data", paragraphKeys: ["privacy.app.localData"]),
                     .init(id: "videos", headingKey: "privacy.app.videoTitle", paragraphKeys: [
-                        "privacy.app.videoCapture", "privacy.app.videoStorage", "privacy.app.videoSharing", "privacy.app.videoDeletion"])
+                        "privacy.app.videoCapture", "privacy.app.faceMasking", "privacy.app.videoStorage", "privacy.app.videoSharing", "privacy.app.videoDeletion"])
                 ]
             case .safety: keys = ["study.safety.body", "study.safety.voluntary"]
             case .contact: return []
