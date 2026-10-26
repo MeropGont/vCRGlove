@@ -15,6 +15,8 @@ import AVFoundation
 
 struct MovementTaskView: View {
 
+    @ObservedObject private var watchConnection = PhoneWC.shared
+
     private enum Phase {
         case setup
         case countdown(Int)
@@ -52,7 +54,7 @@ struct MovementTaskView: View {
     private var usingWatch: Bool { activeSignalSource == .watchMotion }
     private var canStartRecording: Bool {
         StimulationContext.patientChoices.contains(context) &&
-            (!usingWatch || PhoneWC.shared.isWatchReachable) && cameraCapture == nil && watchCapture == nil
+            (!usingWatch || watchConnection.isWatchReachable) && cameraCapture == nil && watchCapture == nil
     }
 
     private var showsPreview: Bool {
@@ -699,9 +701,10 @@ private struct WatchStreamHint: View {
 }
 
 private struct WatchPrerequisiteView: View {
+    @ObservedObject private var watchConnection = PhoneWC.shared
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1.0)) { _ in
-            let ready = PhoneWC.shared.isWatchReachable
+            let ready = watchConnection.isWatchReachable
             if !ready {
                 VStack(alignment: .leading, spacing: 6) {
                     Label(L10n("Open the watch app to continue"), systemImage: "applewatch.slash")
@@ -1610,6 +1613,8 @@ struct RawSignalPlotView: View {
 ///
 struct MovementSessionFlowView: View {
 
+    @ObservedObject private var watchConnection = PhoneWC.shared
+
     @AppStorage("patientID") private var patientID = ""
     @ObservedObject private var sessionStore = TaskSessionStore.shared
 
@@ -1694,7 +1699,7 @@ struct MovementSessionFlowView: View {
     }
     private var usingSynthetic: Bool { activeSignalSource == .synthetic }
     private var canStartRecording: Bool {
-        (!usingWatch || PhoneWC.shared.isWatchReachable) && cameraCapture == nil && watchCapture == nil
+        (!usingWatch || watchConnection.isWatchReachable) && cameraCapture == nil && watchCapture == nil
     }
 
     private var flowUsesCamera: Bool {

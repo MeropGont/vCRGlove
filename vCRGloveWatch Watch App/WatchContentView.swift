@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var motion = MotionService.shared
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         VStack(spacing: 10) {
@@ -21,14 +22,15 @@ struct ContentView: View {
 
             HStack {
                 Button(motion.isStreaming ? "Stop Stream" : "Stream") {
-                    motion.isStreaming ? motion.stopStreaming() : motion.startStreaming()
+                    if motion.isStreaming { motion.stopStreaming() }
+                    else { motion.startStreaming() }
                 }
                 .disabled(motion.isPhoneControlled)
 
                 Button(motion.isRecording ? "Stop Rec" : "Record") {
                     motion.isRecording ? motion.stop() : motion.start()
                 }
-                .disabled(motion.isStreaming && !motion.isPhoneControlled)
+                .disabled(motion.isStreaming || motion.isPhoneControlled)
             }
 
             if motion.isPhoneControlled {
@@ -49,6 +51,9 @@ struct ContentView: View {
             }
         }
         .onAppear { _ = WatchConnectivityManager.shared } // ensure WCSession activates
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background { motion.stopStreaming() }
+        }
         .padding()
     }
 }

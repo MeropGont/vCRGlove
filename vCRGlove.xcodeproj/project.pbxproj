@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D02600000000000000000001 /* WatchStreamProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02600000000000000000003 /* WatchStreamProtocol.swift */; };
+		D02600000000000000000002 /* WatchStreamProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02600000000000000000003 /* WatchStreamProtocol.swift */; };
 		D02300000000000000000001 /* DailyActivitySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02300000000000000000002 /* DailyActivitySummary.swift */; };
 		D02300000000000000000003 /* DailyActivitySummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02300000000000000000004 /* DailyActivitySummaryTests.swift */; };
 		D02200000000000000000001 /* MovementFaceMasker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02200000000000000000002 /* MovementFaceMasker.swift */; };
@@ -121,6 +123,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D02600000000000000000003 /* WatchStreamProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchStreamProtocol.swift; sourceTree = "<group>"; };
 		D02300000000000000000002 /* DailyActivitySummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyActivitySummary.swift; sourceTree = "<group>"; };
 		D02300000000000000000004 /* DailyActivitySummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyActivitySummaryTests.swift; sourceTree = "<group>"; };
 		D02200000000000000000002 /* MovementFaceMasker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementFaceMasker.swift; sourceTree = "<group>"; };
@@ -267,6 +270,7 @@
 				A929856A2FBB473200B0F0FB /* NoteLogView.swift */,
 				A929856B2FBB473200B0F0FB /* PatientVCRView.swift */,
 				A929856C2FBB473200B0F0FB /* PhoneWC.swift */,
+				D02600000000000000000003 /* WatchStreamProtocol.swift */,
 				A9A51D27303C656B00E69380 /* SessionUploader.swift */,
 				A929856D2FBB473200B0F0FB /* SettingsView.swift */,
 				A929856E2FBB473200B0F0FB /* SymptomEpisodeLogView.swift */,
@@ -616,6 +620,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A92985952FBB473D00B0F0FB /* MotionService.swift in Sources */,
+				D02600000000000000000002 /* WatchStreamProtocol.swift in Sources */,
 				A92985962FBB473D00B0F0FB /* vCRGloveWatchApp.swift in Sources */,
 				A92985972FBB473D00B0F0FB /* WatchConnectivityManager.swift in Sources */,
 				A92985982FBB473D00B0F0FB /* WatchContentView.swift in Sources */,
@@ -661,6 +666,7 @@
 				A9A51D38303C656B00E69380 /* TrialRecorder.swift in Sources */,
 				A9A51D39303C656B00E69380 /* MovementTrendView.swift in Sources */,
 				A9A51D3A303C656B00E69380 /* WatchMotionCapture.swift in Sources */,
+				D02600000000000000000001 /* WatchStreamProtocol.swift in Sources */,
 				A9A51D3B303C656B00E69380 /* MovementModels.swift in Sources */,
 				A9A51D3C303C656B00E69380 /* SyntheticCaptureSource.swift in Sources */,
 				A92985782FBB473200B0F0FB /* JournalHomeView.swift in Sources */,
@@ -744,7 +750,7 @@
 				DEVELOPMENT_TEAM = X62VCFT697;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "";
+				INFOPLIST_FILE = "vCRGloveWatch Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = vCRGloveWatch;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads Health data for monitoring";
@@ -778,7 +784,7 @@
 				DEVELOPMENT_TEAM = X62VCFT697;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "";
+				INFOPLIST_FILE = "vCRGloveWatch Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = vCRGloveWatch;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Reads Health data for monitoring";

@@ -1,6 +1,8 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "watch.startTimeout" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"No motion received. Open vCRGlove on your Watch and try again."}},"de":{"stringUnit":{"state":"translated","value":"Keine Bewegungsdaten empfangen. Öffnen Sie vCRGlove auf Ihrer Watch und versuchen Sie es erneut."}}}},
+    "watch.startFailed" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Could not start the Watch recording. Open the Watch app and check that both apps are up to date."}},"de":{"stringUnit":{"state":"translated","value":"Die Watch-Aufnahme konnte nicht gestartet werden. Öffnen Sie die Watch-App und prüfen Sie, ob beide Apps aktuell sind."}}}},
     "reminder.sound" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Reminder sounds"}},"de":{"stringUnit":{"state":"translated","value":"Erinnerungstöne"}}}},
     "reminder.quietHours.detail" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Reminders during quiet hours are moved to the end of quiet hours."}},"de":{"stringUnit":{"state":"translated","value":"Erinnerungen während der Ruhezeit werden auf das Ende der Ruhezeit verschoben."}}}},
     "routine.welcomeBack" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Welcome back. Every active day counts."}},"de":{"stringUnit":{"state":"translated","value":"Willkommen zurück. Jeder aktive Tag zählt."}}}},

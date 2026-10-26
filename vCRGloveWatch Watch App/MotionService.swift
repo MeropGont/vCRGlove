@@ -19,15 +19,19 @@ final class MotionService: NSObject, ObservableObject {
     @Published var rmsLast1s: Double = 0
     /// True while the iPhone is controlling streaming for a movement task.
     /// Prevents the user from accidentally stopping the stream on the watch.
-    @Published var isPhoneControlled = false
+    @Published private(set) var isPhoneControlled = false
 
     private let motion = CMMotionManager()
-    private let queue = OperationQueue()
+    // State, CoreMotion callbacks and WC command handling share the main queue.
+    private let queue = OperationQueue.main
     private var fileHandle: FileHandle?
     private var oneSecBuffer = [Double]()
     private var lastWriteTime = CFAbsoluteTimeGetCurrent()
     private var extendedSession: WKExtendedRuntimeSession?
     private var lastRecordingURL: URL?
+    private(set) var streamID: UUID?
+    private var streamSequence = 0
+    private var streamSafetyStop: DispatchWorkItem?
 
     private override init() { super.init() }
 
@@ -40,7 +44,7 @@ final class MotionService: NSObject, ObservableObject {
     }
 
     func start() {
-        guard !isRecording else { return }
+        guard !isRecording, !isStreaming else { return }
         isRecording = true
         oneSecBuffer.removeAll()
 
@@ -57,7 +61,7 @@ final class MotionService: NSObject, ObservableObject {
         guard motion.isDeviceMotionAvailable else { print("DeviceMotion not available"); stop(); return }
 
         motion.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical, to: queue) { [weak self] dm, err in
-            guard let self, let dm else { return }
+            guard let self, let dm, self.isRecording else { return }
             let ua = dm.userAcceleration  // gravity already removed
             let t  = dm.timestamp
             let ax = ua.x, ay = ua.y, az = ua.z
@@ -102,13 +106,18 @@ final class MotionService: NSObject, ObservableObject {
     /// Streams rotation rate around the forearm axis (watch x-axis) to the
     /// phone. One pronation/supination cycle = one positive rotation lobe,
     /// which the phone-side analyzer counts via hysteresis.
-    func startStreaming() {
-        guard !isStreaming else { return }
+    @discardableResult
+    func startStreaming(id: UUID = UUID(), phoneControlled: Bool = false) -> Bool {
+        if isStreaming { return streamID == id }
+        guard WKExtension.shared().applicationState == .active else { return false }
         if isRecording {
             stop()
         }
-        guard motion.isDeviceMotionAvailable else { return }
+        guard motion.isDeviceMotionAvailable else { return false }
         isStreaming = true
+        streamID = id
+        streamSequence = 0
+        isPhoneControlled = phoneControlled
         streamBatch.removeAll()
 
         // Keep the watch app alive while streaming so the display can dim
@@ -116,35 +125,52 @@ final class MotionService: NSObject, ObservableObject {
         let session = WKExtendedRuntimeSession()
         session.delegate = self
         extendedSession = session
-        if #available(watchOS 11.0, *) {
-            session.start(at: Date())
-        } else {
-            session.start()
+        session.start()
+        if phoneControlled {
+            // Countdown + 30-second task + teardown margin. Never run forever
+            // when the phone's stop message cannot be delivered.
+            let stop = DispatchWorkItem { [weak self] in
+                guard let self, self.streamID == id else { return }
+                self.stopStreaming()
+            }
+            streamSafetyStop = stop
+            DispatchQueue.main.asyncAfter(deadline: .now() + 45, execute: stop)
         }
 
         motion.deviceMotionUpdateInterval = 1.0 / samplesPerSec
         motion.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical, to: queue) { [weak self] dm, _ in
-            guard let self, let dm, self.isStreaming else { return }
+            guard let self, let dm, self.isStreaming, self.streamID == id else { return }
             // Rotation around the wrist/forearm axis — pronation/supination.
             self.streamBatch.append([dm.timestamp, dm.rotationRate.x])
             if self.streamBatch.count >= Self.batchSize {
                 let batch = self.streamBatch
                 self.streamBatch.removeAll(keepingCapacity: true)
-                WatchConnectivityManager.shared.sendMotionBatch(batch)
+                WatchConnectivityManager.shared.sendMotionBatch(batch, id: id, sequence: self.streamSequence)
+                self.streamSequence += 1
             }
         }
+        return true
     }
 
     func stopStreaming() {
         guard isStreaming else { return }
+        let id = streamID
         isStreaming = false
+        isPhoneControlled = false
+        streamID = nil
+        streamSafetyStop?.cancel()
+        streamSafetyStop = nil
         motion.stopDeviceMotionUpdates()
-        extendedSession?.invalidate()
+        let runtime = extendedSession
         extendedSession = nil
-        if !streamBatch.isEmpty {
-            WatchConnectivityManager.shared.sendMotionBatch(streamBatch)
-            streamBatch.removeAll()
+        runtime?.invalidate()
+        if let id {
+            if !streamBatch.isEmpty {
+                WatchConnectivityManager.shared.sendMotionBatch(streamBatch, id: id, sequence: streamSequence)
+            }
+            WatchConnectivityManager.shared.streamDidEnd(id)
         }
+        streamBatch.removeAll()
     }
 
     func exportRecordingToPhone() {
@@ -174,6 +200,10 @@ extension MotionService: WKExtendedRuntimeSessionDelegate {
 
     func extendedRuntimeSession(_ session: WKExtendedRuntimeSession, didInvalidateWith reason: WKExtendedRuntimeSessionInvalidationReason, error: Error?) {
         print("Extended runtime session invalidated:", reason.rawValue, error?.localizedDescription ?? "no error")
-        extendedSession = nil
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.extendedSession === session else { return }
+            self.extendedSession = nil
+            self.stopStreaming()
+        }
     }
 }

@@ -3,6 +3,7 @@ import WatchConnectivity
 
 final class WatchConnectivityManager: NSObject, WCSessionDelegate {
     static let shared = WatchConnectivityManager()
+    private var commands = WatchStreamCommandGate()
 
     override init() {
         super.init()
@@ -36,10 +37,13 @@ final class WatchConnectivityManager: NSObject, WCSessionDelegate {
 
     /// Sends one batch of [timestamp, value] pairs. Uses sendMessage (fast,
     /// unqueued) — during a live trial, stale samples are useless anyway.
-    func sendMotionBatch(_ samples: [[Double]]) {
+    func sendMotionBatch(_ samples: [[Double]], id: UUID, sequence: Int) {
         let s = WCSession.default
         guard s.isReachable else { return }
-        s.sendMessage(["type": "motionBatch", "samples": samples],
+        var message = WatchStreamProtocol.command("motionBatch", id: id)
+        message["samples"] = samples
+        message["sequence"] = sequence
+        s.sendMessage(message,
                       replyHandler: nil,
                       errorHandler: { error in
             print("WC sendMotionBatch failed:", error.localizedDescription)
@@ -58,30 +62,49 @@ final class WatchConnectivityManager: NSObject, WCSessionDelegate {
     }
 
     /// Phone-initiated commands: start/stop streaming for a movement trial.
-    private func handleCommand(_ type: String) {
-        print("WC received command:", type)
+    private func handleCommand(_ message: [String: Any], queued: Bool = false,
+                               reply: (([String: Any]) -> Void)? = nil) {
         DispatchQueue.main.async {
+            guard let type = message["type"] as? String,
+                  let id = WatchStreamProtocol.streamID(in: message) else {
+                reply?(["accepted": false, "protocolVersion": WatchStreamProtocol.version])
+                return
+            }
+            let motion = MotionService.shared
+            var accepted = false
             switch type {
             case "startMotionStream":
-                MotionService.shared.isPhoneControlled = true
-                MotionService.shared.startStreaming()
+                if !queued, (!motion.isStreaming || motion.streamID == id), self.commands.start(id) {
+                    accepted = motion.startStreaming(id: id, phoneControlled: true)
+                    if !accepted { self.commands.end(id) }
+                }
             case "stopMotionStream":
-                MotionService.shared.stopStreaming()
-                MotionService.shared.isPhoneControlled = false
+                self.commands.end(id)
+                if motion.streamID == id { motion.stopStreaming() }
+                accepted = true
             default: break
             }
+            var response = WatchStreamProtocol.command("streamAcknowledgement", id: id)
+            response["accepted"] = accepted
+            reply?(response)
         }
     }
 
+    func streamDidEnd(_ id: UUID) { commands.end(id) }
+
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
-        guard let type = message["type"] as? String else { return }
-        handleCommand(type)
+        handleCommand(message)
+    }
+
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any],
+                 replyHandler: @escaping ([String: Any]) -> Void) {
+        handleCommand(message, reply: replyHandler)
     }
 
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
-        guard let type = userInfo["type"] as? String else { return }
-        print("WC received queued command:", type)
-        handleCommand(type)
+        // A queued start could begin recording long after the patient left.
+        guard userInfo["type"] as? String == "stopMotionStream" else { return }
+        handleCommand(userInfo, queued: true)
     }
 
     #if os(watchOS)

@@ -7,8 +7,17 @@
 
 import Foundation
 import WatchConnectivity
+import Combine
 
-final class PhoneWC: NSObject, WCSessionDelegate {
+@MainActor
+protocol WatchMotionTransport: AnyObject {
+    var isWatchReachable: Bool { get }
+    func startMotionStream(id: UUID, onBatch: @escaping ([[Double]]) -> Void, onFailure: @escaping () -> Void)
+    func stopMotionStream(id: UUID)
+}
+
+@MainActor
+final class PhoneWC: NSObject, ObservableObject, WCSessionDelegate, WatchMotionTransport {
     static let shared = PhoneWC()
     private override init() { super.init(); activate() }
 
@@ -20,73 +29,100 @@ final class PhoneWC: NSObject, WCSessionDelegate {
 
     // MARK: - Live motion streaming (movement tasks, e.g. 3.6)
 
-    /// Set by WatchMotionCapture during a trial. Called on a background queue
-    /// with one batch of [timestamp, value] pairs (watch monotonic clock).
-    var onMotionBatch: (([[Double]]) -> Void)?
+    private var cursor: WatchStreamBatchCursor?
+    private var startAcknowledged = false
+    private var onMotionBatch: (([[Double]]) -> Void)?
+    private var onStreamFailure: (() -> Void)?
 
-    var isWatchReachable: Bool {
-        WCSession.isSupported() && WCSession.default.isReachable
+    @Published private(set) var isWatchReachable = false
+
+    private func refreshReachability() {
+        isWatchReachable = WCSession.isSupported() && WCSession.default.activationState == .activated && WCSession.default.isReachable
     }
 
-    func startMotionStream() {
-        guard WCSession.default.activationState == .activated else {
-            Logger.shared.log("WC", "Cannot start stream: WCSession not activated yet")
-            return
-        }
-        attemptStartMotionStream(retriesLeft: 10)
-    }
-
-    private func attemptStartMotionStream(retriesLeft: Int) {
-        guard WCSession.default.isReachable else {
-            Logger.shared.log("WC", "Watch not reachable, retries left: \(retriesLeft)")
-            if retriesLeft > 0 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                    self?.attemptStartMotionStream(retriesLeft: retriesLeft - 1)
+    func startMotionStream(id: UUID, onBatch: @escaping ([[Double]]) -> Void, onFailure: @escaping () -> Void) {
+        guard isWatchReachable else { onFailure(); return }
+        if let previous = cursor?.id { stopMotionStream(id: previous) }
+        cursor = WatchStreamBatchCursor(id: id)
+        startAcknowledged = false
+        onMotionBatch = onBatch
+        onStreamFailure = onFailure
+        WCSession.default.sendMessage(WatchStreamProtocol.command("startMotionStream", id: id), replyHandler: { [weak self] reply in
+            Task { @MainActor in
+                guard let self, self.cursor?.id == id else { return }
+                guard WatchStreamProtocol.streamID(in: reply) == id, reply["accepted"] as? Bool == true else {
+                    Logger.shared.log("WC", "Watch rejected start; update both apps or open the Watch app")
+                    self.failStream(id: id)
+                    return
                 }
-            } else {
-                Logger.shared.log("WC", "Watch not reachable; startMotionStream not queued")
+                self.startAcknowledged = true
             }
-            return
-        }
-        WCSession.default.sendMessage(["type": "startMotionStream"],
-                                      replyHandler: nil,
-                                      errorHandler: { error in
-            Logger.shared.log("WC", "startMotionStream failed: \(error.localizedDescription)")
+        }, errorHandler: { [weak self] error in
+            Task { @MainActor in
+                Logger.shared.log("WC", "Stream start failed: \(error.localizedDescription)")
+                self?.failStream(id: id)
+            }
         })
-        Logger.shared.log("WC", "Sent startMotionStream")
     }
 
-    func stopMotionStream() {
-        if WCSession.default.isReachable {
-            WCSession.default.sendMessage(["type": "stopMotionStream"],
-                                          replyHandler: nil,
-                                          errorHandler: { error in
-                Logger.shared.log("WC", "stopMotionStream failed: \(error.localizedDescription)")
-            })
+    private func failStream(id: UUID) {
+        guard cursor?.id == id else { return }
+        let failure = onStreamFailure
+        stopMotionStream(id: id)
+        failure?()
+    }
+
+    func stopMotionStream(id: UUID) {
+        guard cursor?.id == id else { return }
+        cursor = nil
+        startAcknowledged = false
+        onMotionBatch = nil
+        onStreamFailure = nil
+        let message = WatchStreamProtocol.command("stopMotionStream", id: id)
+        let session = WCSession.default
+        guard session.activationState == .activated else { return }
+        if session.isReachable {
+            session.sendMessage(message, replyHandler: { reply in
+                if reply["accepted"] as? Bool != true { session.transferUserInfo(message) }
+            }, errorHandler: { _ in session.transferUserInfo(message) })
         } else {
-            Logger.shared.log("WC", "Watch not reachable; stopMotionStream not queued")
+            // Only stops may be queued. A late stop is scoped to its original ID.
+            session.transferUserInfo(message)
         }
     }
 
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+    nonisolated func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+        Task { @MainActor in self.receive(message) }
+    }
+
+    private func receive(_ message: [String: Any]) {
         // High-frequency motion batches go straight to the capture pipeline —
         // never into the handshake log.
         if message["type"] as? String == "motionBatch" {
-            if let samples = message["samples"] as? [[Double]] {
+            if startAcknowledged, let samples = cursor?.accept(message) {
                 onMotionBatch?(samples)
             }
             return
         }
         append(["kind":"message","payload":message, "ts_phone": ISO8601DateFormatter().string(from: Date())])
     }
-    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
-        append(["kind":"userInfo","payload":userInfo, "ts_phone": ISO8601DateFormatter().string(from: Date())])
+    nonisolated func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
+        Task { @MainActor in
+            self.append(["kind":"userInfo","payload":userInfo, "ts_phone": ISO8601DateFormatter().string(from: Date())])
+        }
     }
 
     // activation stubs
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {}
-    func sessionDidBecomeInactive(_ session: WCSession) {}
-    func sessionDidDeactivate(_ session: WCSession) { WCSession.default.activate() }
+    nonisolated func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        Task { @MainActor in self.refreshReachability() }
+    }
+    nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
+        Task { @MainActor in self.refreshReachability() }
+    }
+    nonisolated func sessionDidBecomeInactive(_ session: WCSession) {
+        Task { @MainActor in self.isWatchReachable = false }
+    }
+    nonisolated func sessionDidDeactivate(_ session: WCSession) { WCSession.default.activate() }
 
     private func append(_ obj: [String:Any]) {
         do {

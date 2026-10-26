@@ -1,123 +1,108 @@
-//
-//  WatchMotionCapture.swift
-//  vCRGlove
-//
-//  Live movement-signal source backed by the Apple Watch (CoreMotion via
-//  WatchConnectivity). Mirrors the VisionHandPoseCapture API so
-//  MovementTaskView can treat camera and watch sources identically:
-//  start → onSample(value, monotonicTime) → stop.
-//
-//  Signal for 3.6 (pronation/supination): rotation rate around the forearm
-//  axis in rad/s. The watch timestamps samples with ITS OWN monotonic clock;
-//  this class rebases them onto the phone's systemUptime so the TrialRecorder
-//  can normalize them like any other source.
-//
-
 import Foundation
 import Combine
-import WatchConnectivity
 
+/// Watch-relative spacing is preserved. Receipt anchoring is not clock sync.
+@MainActor
 final class WatchMotionCapture: ObservableObject {
-
     enum CaptureError: LocalizedError {
-        case watchNotReachable
+        case watchNotReachable, startTimedOut, streamFailed
 
         var errorDescription: String? {
             switch self {
             case .watchNotReachable:
-                return "Apple Watch is not reachable. Open the vCRGlove app on your watch and make sure Bluetooth is on."
+                return L10n("Apple Watch is not reachable. Open the vCRGlove app on your watch and make sure Bluetooth is on.")
+            case .startTimedOut: return L10n("watch.startTimeout")
+            case .streamFailed: return L10n("watch.startFailed")
             }
         }
     }
 
-    /// True while motion batches are actively arriving (updated per batch,
-    /// cleared if none arrive for `staleAfterSec`).
     @Published private(set) var isReceiving = false
-
-    /// One sample per watch motion frame. Called on the main actor.
-    /// `time` is rebased to the phone's monotonic clock (systemUptime).
     var onSample: (@MainActor (_ value: Double, _ time: Double) -> Void)?
-
-    private let staleAfterSec: Double = 1.0
-    private var watchT0: Double?
-    private var phoneT0: Double = 0
-    private var staleTimer: Timer?
+    private let transport: any WatchMotionTransport
+    private let now: () -> Double
+    private let startupTimeout: TimeInterval
+    private var activeID: UUID?
+    private var watchAnchor: Double?
+    private var phoneAnchor: Double = 0
+    private var lastWatchTime: Double?
+    private var lastBatchAt: Double = 0
+    private var timer: Timer?
     private var startCompletion: (@MainActor (Result<Void, CaptureError>) -> Void)?
 
+    init(transport: (any WatchMotionTransport)? = nil, startupTimeout: TimeInterval = 8,
+         now: @escaping () -> Double = { ProcessInfo.processInfo.systemUptime }) {
+        self.transport = transport ?? PhoneWC.shared
+        self.startupTimeout = startupTimeout
+        self.now = now
+    }
+
+    deinit { timer?.invalidate() }
+
     func start(completion: @escaping @MainActor (Result<Void, CaptureError>) -> Void) {
-        guard PhoneWC.shared.isWatchReachable else {
-            DispatchQueue.main.async { completion(.failure(.watchNotReachable)) }
-            return
-        }
-
-        watchT0 = nil
-        lastBatchAt = 0
+        stop()
+        guard transport.isWatchReachable else { completion(.failure(.watchNotReachable)); return }
+        let id = UUID()
+        activeID = id
+        watchAnchor = nil
+        lastWatchTime = nil
+        lastBatchAt = now()
+        let startedAt = now()
         startCompletion = completion
-
-        PhoneWC.shared.onMotionBatch = { [weak self] batch in
-            self?.ingest(batch)
+        let timer = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.activeID == id else { return }
+                if self.startCompletion != nil, self.now() - startedAt >= self.startupTimeout {
+                    self.fail(.startTimedOut, id: id)
+                } else if self.now() - self.lastBatchAt > 1.5 {
+                    self.isReceiving = false
+                }
+            }
         }
-
-        PhoneWC.shared.startMotionStream()
-        startStaleTimer()
+        self.timer = timer
+        RunLoop.main.add(timer, forMode: .common)
+        transport.startMotionStream(id: id, onBatch: { [weak self] samples in
+            self?.ingest(samples, id: id)
+        }, onFailure: { [weak self] in self?.fail(.streamFailed, id: id) })
     }
 
     func stop(completion: (() -> Void)? = nil) {
-        PhoneWC.shared.stopMotionStream()
-        PhoneWC.shared.onMotionBatch = nil
-        staleTimer?.invalidate()
-        staleTimer = nil
-        DispatchQueue.main.async { [weak self] in
-            self?.isReceiving = false
-            completion?()
-        }
+        let id = activeID
+        activeID = nil
+        startCompletion = nil
+        timer?.invalidate()
+        timer = nil
+        isReceiving = false
+        if let id { transport.stopMotionStream(id: id) }
+        completion?()
     }
 
-    // MARK: - Private
-
-    private var lastBatchAt: Double = 0
-
-    private func ingest(_ batch: [[Double]]) {
-        guard !batch.isEmpty else { return }
-        // Rebase watch clock → phone clock on the first sample. Relative
-        // spacing within the watch stream is exact; only the offset differs.
-        if watchT0 == nil {
-            watchT0 = batch[0][0]
-            phoneT0 = ProcessInfo.processInfo.systemUptime
-        }
-        guard let watchT0 else { return }
-
-        lastBatchAt = ProcessInfo.processInfo.systemUptime
-        if let startCompletion {
-            self.startCompletion = nil
-            DispatchQueue.main.async {
-                startCompletion(.success(()))
-            }
-        }
-        if !isReceiving {
-            DispatchQueue.main.async { [weak self] in self?.isReceiving = true }
-        }
-
-        let samples = batch.compactMap { pair -> (Double, Double)? in
-            guard pair.count >= 2 else { return nil }
-            return (pair[0] - watchT0 + phoneT0, pair[1])
-        }
-        DispatchQueue.main.async { [weak self] in
-            for (t, value) in samples {
-                self?.onSample?(value, t)
-            }
-        }
+    private func fail(_ error: CaptureError, id: UUID) {
+        guard activeID == id else { return }
+        let completion = startCompletion
+        stop()
+        completion?(.failure(error))
     }
 
-    private func startStaleTimer() {
-        // Invalidate any previous timer so we never accumulate stale timers across restarts.
-        staleTimer?.invalidate()
-        let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            let stale = ProcessInfo.processInfo.systemUptime - self.lastBatchAt > self.staleAfterSec
-            if stale && self.isReceiving { self.isReceiving = false }
+    private func ingest(_ samples: [[Double]], id: UUID) {
+        guard activeID == id, WatchStreamProtocol.validSamples(samples),
+              lastWatchTime.map({ samples[0][0] > $0 }) ?? true else { return }
+        if watchAnchor == nil {
+            // Anchor the newest buffered sample to receipt, not into the future.
+            watchAnchor = samples.last![0]
+            phoneAnchor = now()
         }
-        RunLoop.main.add(timer, forMode: .common)
-        staleTimer = timer
+        guard let watchAnchor else { return }
+        lastWatchTime = samples.last?[0]
+        lastBatchAt = now()
+        isReceiving = true
+        let completion = startCompletion
+        startCompletion = nil
+        completion?(.success(()))
+        guard activeID == id else { return }
+        for sample in samples {
+            guard activeID == id else { return }
+            onSample?(sample[1], sample[0] - watchAnchor + phoneAnchor)
+        }
     }
 }

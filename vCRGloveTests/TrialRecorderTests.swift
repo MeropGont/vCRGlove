@@ -10,6 +10,139 @@
 import Testing
 import Foundation
 @testable import vCRGlove
+// Watch transport tests use an in-memory counterpart, not paired hardware.
+
+@MainActor
+private final class MockWatchMotionTransport: WatchMotionTransport {
+    struct Attempt {
+        let id: UUID
+        let batch: ([[Double]]) -> Void
+        let failure: () -> Void
+    }
+    var isWatchReachable = true
+    var attempts: [Attempt] = []
+    var stopped: [UUID] = []
+    func startMotionStream(id: UUID, onBatch: @escaping ([[Double]]) -> Void, onFailure: @escaping () -> Void) {
+        attempts.append(Attempt(id: id, batch: onBatch, failure: onFailure))
+    }
+    func stopMotionStream(id: UUID) { stopped.append(id) }
+}
+
+struct WatchStreamReliabilityTests {
+    private func message(id: UUID, sequence: Int, samples: [[Double]]) -> [String: Any] {
+        var value = WatchStreamProtocol.command("motionBatch", id: id)
+        value["sequence"] = sequence
+        value["samples"] = samples
+        return value
+    }
+
+    @Test func packetsRejectWrongTrialsDuplicatesAndMalformedSamples() {
+        let id = UUID()
+        var cursor = WatchStreamBatchCursor(id: id)
+        #expect(cursor.accept(message(id: UUID(), sequence: 0, samples: [[1, 2]])) == nil)
+        #expect(cursor.accept(["type": "motionBatch", "samples": [[1.0, 2.0]]]) == nil)
+        for invalid in [[], [[]], [[1]], [[1, .nan]], [[.infinity, 1]], [[2, 1], [1, 2]]] as [[[Double]]] {
+            #expect(cursor.accept(message(id: id, sequence: 0, samples: invalid)) == nil)
+        }
+        #expect(cursor.accept(message(id: id, sequence: 0, samples: [[1, 2], [1.02, 3]])) != nil)
+        #expect(cursor.accept(message(id: id, sequence: 0, samples: [[1.04, 4]])) == nil)
+        #expect(cursor.accept(message(id: id, sequence: 1, samples: [[1, 2]])) == nil)
+        // Lost packets may leave a real timestamp gap; never invent replacements.
+        #expect(cursor.accept(message(id: id, sequence: 3, samples: [[3, 4]])) != nil)
+        #expect(cursor.lastTimestamp == 3)
+    }
+
+    @Test func delayedStopsAndCancelledStartsCannotAffectTheNextTrial() {
+        var gate = WatchStreamCommandGate()
+        let old = UUID(), current = UUID()
+        gate.end(old)
+        #expect(gate.start(old) == false)
+        #expect(gate.start(current) == true)
+        #expect(gate.start(current) == true)
+        #expect(gate.start(UUID()) == false)
+        #expect(gate.end(old) == false)
+        #expect(gate.activeID == current)
+        #expect(gate.end(current) == true)
+        #expect(gate.start(current) == false)
+    }
+
+    @Test @MainActor func captureWaitsForValidSamplesAndPreservesWatchSpacing() {
+        let transport = MockWatchMotionTransport()
+        var time = 500.0
+        let capture = WatchMotionCapture(transport: transport, now: { time })
+        var successes = 0
+        var received: [(Double, Double)] = []
+        capture.onSample = { received.append(($0, $1)) }
+        capture.start { if case .success = $0 { successes += 1 } }
+        transport.attempts[0].batch([[]])
+        #expect(successes == 0 && !capture.isReceiving)
+        transport.attempts[0].batch([[1000, 2], [1000.02, 3]])
+        #expect(successes == 1 && capture.isReceiving)
+        #expect(abs(received[0].1 - 499.98) < 0.00001)
+        #expect(received[1].1 == 500)
+        time = 510
+        transport.attempts[0].batch([[1010.02, 4]])
+        #expect(abs(received[2].1 - 510) < 0.00001)
+        #expect(successes == 1)
+        capture.stop()
+    }
+
+    @Test @MainActor func stoppingOrRestartingIgnoresLateSamplesAndFailures() {
+        let transport = MockWatchMotionTransport()
+        let capture = WatchMotionCapture(transport: transport)
+        var completions = 0, samples = 0
+        capture.onSample = { _, _ in samples += 1 }
+        capture.start { _ in completions += 1 }
+        capture.stop()
+        capture.start { _ in completions += 1 }
+        transport.attempts[0].batch([[1, 2]])
+        transport.attempts[0].failure()
+        #expect(completions == 0 && samples == 0)
+        transport.attempts[1].batch([[2, 3]])
+        #expect(completions == 1 && samples == 1)
+        capture.stop()
+        transport.attempts[1].batch([[3, 4]])
+        #expect(samples == 1)
+        #expect(Set(transport.stopped) == Set(transport.attempts.map(\.id)))
+    }
+
+    @Test @MainActor func stoppingDuringBatchPreventsRemainingCallbacks() {
+        let transport = MockWatchMotionTransport()
+        let capture = WatchMotionCapture(transport: transport)
+        var count = 0
+        capture.onSample = { _, _ in count += 1; capture.stop() }
+        capture.start { _ in }
+        transport.attempts[0].batch([[1, 2], [1.02, 3]])
+        #expect(count == 1)
+        capture.onSample = nil
+    }
+
+    @Test @MainActor func unreachableOrRejectedStartsFailWithoutCreatingARecording() {
+        let transport = MockWatchMotionTransport()
+        transport.isWatchReachable = false
+        let capture = WatchMotionCapture(transport: transport)
+        var failures = 0
+        capture.start { if case .failure = $0 { failures += 1 } }
+        #expect(failures == 1 && transport.attempts.isEmpty)
+        transport.isWatchReachable = true
+        capture.start { if case .failure = $0 { failures += 1 } }
+        transport.attempts[0].failure()
+        transport.attempts[0].batch([[1, 2]])
+        #expect(failures == 2 && !capture.isReceiving)
+    }
+
+    @Test @MainActor func startupDeadlineFailsOnceAndStopsItsOwnStream() async throws {
+        let transport = MockWatchMotionTransport()
+        let capture = WatchMotionCapture(transport: transport, startupTimeout: 0.02)
+        var failures = 0
+        capture.start { if case .failure(.startTimedOut) = $0 { failures += 1 } }
+        for _ in 0..<100 where failures == 0 { try await Task.sleep(nanoseconds: 10_000_000) }
+        #expect(failures == 1)
+        #expect(transport.stopped == [transport.attempts[0].id])
+        transport.attempts[0].batch([[1, 2]])
+        #expect(failures == 1 && !capture.isReceiving)
+    }
+}
 
 struct TrialRecorderTests {
     @Test @MainActor func routineGateTracksTheRecorderThroughItsCompletionCallback() async throws {
