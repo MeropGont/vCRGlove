@@ -173,6 +173,14 @@ Deleting a video keeps the trial, samples and metrics, removes its reference and
 
 Movies request complete iOS file protection and are excluded from automatic backup. App removal/device loss can lose data. This is file deletion, not a forensic secure-wipe guarantee. See [Video storage](MOVEMENT_VIDEO_STORAGE.md).
 
+Settings > Data provides the sole **Save task videos** switch (default on).
+Off skips movie capture/processing for future takes, not the live camera,
+measurements or angle data. Existing/pending accepted videos remain unchanged.
+The persisted `saveMovementVideos` choice is included in current-settings exports
+when explicitly set; absent means the default on. New recording-start events
+include `videoRequested`, not a guarantee that a movie was successfully saved.
+This preference is separate from study consent.
+
 ## Export Coverage
 
 [TaskSessionExporter.swift](../vCRGlove/TaskSessionExporter.swift) produces:
@@ -194,7 +202,52 @@ The separate movement JSON/CSV exports are generated from decoded records, not a
 
 ### Researcher Full-Data ZIP
 
-Unlock Study team, open Study setup & logs, then tap Share all recorded data. [FullDataExporter.swift](../vCRGlove/FullDataExporter.swift) prepares one ZIP and opens the system share sheet; the operator chooses the destination. No data is automatically sent or deleted. Export is unavailable during an active, paused or starting stimulation session to avoid competing with stimulation timing.
+### Selected Non-Video ZIPs (23 October 2026)
+
+Settings > Data > **Share all data (ZIP)** shares all saved non-video study data.
+**Choose data to share** offers session JSON, metrics CSV, raw-sample CSV,
+tapping-angle CSV, journal, stimulation/event logs and current study settings.
+All seven groups are selected by default. Recorded videos keep their separate library.
+
+The Data page starts with the recorded-session/trial summary, followed by one
+Files block containing the video library and session JSON/metrics/sample/angle
+files. Selecting a JSON or CSV generates the current file and opens an in-app
+read-only text preview; its toolbar offers the system app/share chooser. These
+individual files retain the existing `vcr/tasks/exports` location. A separate
+Sharing block below contains the all-data and file-group ZIP options. There is
+no separate Last export section. Video controls and ZIP contents are unchanged.
+
+The Study team > Study setup & logs > **Share selected study data** screen uses
+the same writer with All dates, Last 2 weeks (today and 13 preceding calendar
+days), Last month (one calendar month through today), Custom dates, or Selected
+sessions. Custom end dates include the whole chosen day. Sessions are selected
+by their start date; their complete trials stay together. Manually selected
+sessions include journal and event records only on those sessions' local calendar
+days, not all intervening days. Date-range selection filters journal/events by
+their own timestamps. This is a local share operation, not a direct ICNS upload.
+
+Manifest format 2 records selected groups, session IDs, calendar/time zone,
+optional half-open date interval `[start, end)`, file sizes and SHA-256 checksums.
+Session JSON/JSONL retains unknown fields and movie-reference metadata without
+including movies. CSVs reuse existing schemas and stored metrics; no reanalysis.
+Empty angle/other CSVs have headers, not fabricated values. Journal dates remain
+Foundation seconds since 2001; logs retain `ts` or Watch `ts_phone` timestamps.
+Current settings are not a historical snapshot; scoped exports omit pending
+uploader payloads that might contain out-of-range records.
+
+Unreadable required records abort rather than silently omit records or include
+unselected data. Unknown/unparseable historical formats can still be preserved
+using the original full-device archive below. A missing store is listed in the
+manifest. Snapshots wait behind queued writes but are sequential, not globally
+atomic. Drafts/live recordings are excluded. Exports are disabled while a vCR
+session is active, paused, or starting. Temporary packages are removed after
+share dismissal/failure or on next launch; source stores and measurements are
+never deleted or marked as transferred. ZIPs are not password-encrypted and need
+an approved destination. External receipt/backup verification remains pending.
+
+### Original Full-Device Archive (Includes Videos)
+
+Unlock Study team, open Study setup & logs, then tap Full archive (including videos). [FullDataExporter.swift](../vCRGlove/FullDataExporter.swift) prepares one ZIP and opens the system share sheet; the operator chooses the destination. No data is automatically sent or deleted. Export is unavailable during an active, paused or starting stimulation session to avoid competing with stimulation timing.
 
 The ZIP's `vCRGlove-data` folder contains `README.txt`, `journal/journal_entries.json`, `logs/events.jsonl`, optional `logs/handshake.jsonl`, `tasks/sessions.jsonl`, `tasks/videos/`, `study-settings.plist` and `manifest.json`. Raw storage is copied without model decoding/re-encoding, preserving unknown fields, deletion tombstones and malformed historical lines. All retained UUID-named task movies are included, including orphaned files; bundled demonstrations and unaccepted temporary takes are not.
 

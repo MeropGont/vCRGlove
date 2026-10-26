@@ -8,6 +8,7 @@
 import Foundation
 
 final class EventStore {
+    static let activityDidChange = Notification.Name("vCRGlove.activityDidChange")
     static let shared = EventStore()
     private let directory: URL?
     init(directory: URL? = nil) { self.directory = directory }
@@ -68,6 +69,9 @@ final class EventStore {
                 } else {
                     try line.write(to: url)
                 }
+                if type == "stimulation_started" || type == "admin_metadata" {
+                    DispatchQueue.main.async { NotificationCenter.default.post(name: Self.activityDidChange, object: nil) }
+                }
             } catch {
                 print("EventStore write error:", error.localizedDescription)
             }
@@ -76,6 +80,25 @@ final class EventStore {
 
     func fileURL() -> URL? {
         try? eventFileURL()
+    }
+
+    /// Ordered after pending appends; callers need not read the log on the UI thread.
+    func recordedStimulationStartDates() async throws -> [Date] {
+        try await recordedActivityEvidence().starts
+    }
+
+    func recordedActivityEvidence() async throws -> StimulationActivityReader.Evidence {
+        try await withCheckedThrowingContinuation { continuation in
+            ioQueue.async {
+                do {
+                    let url = try self.eventFileURL()
+                    let data: Data
+                    do { data = try Data(contentsOf: url) }
+                    catch CocoaError.fileReadNoSuchFile { data = Data() }
+                    continuation.resume(returning: StimulationActivityReader.evidence(in: data))
+                } catch { continuation.resume(throwing: error) }
+            }
+        }
     }
 
     func copyExportSnapshot(to destination: URL) async throws -> [String] {
@@ -116,6 +139,7 @@ final class EventStore {
                     "patientID": patientID
                 ]
             )
+            DispatchQueue.main.async { NotificationCenter.default.post(name: Self.activityDidChange, object: nil) }
         } catch {
             print("EventStore clear error:", error.localizedDescription)
         }

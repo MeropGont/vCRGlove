@@ -52,8 +52,11 @@ struct MainTabView: View {
             }
             .tag(Tab.settings)
         }
+        .environment(\.studyExportBlocked, gloveVM.hasStimulationSession)
+        .environment(\.routineAcknowledgementsAllowed, selectedTab == .journal && !gloveVM.hasStimulationSession)
         .onChange(of: scenePhase) { _, newPhase in
             gloveVM.handleScenePhaseChange(newPhase)
+            if newPhase == .active { ReminderScheduler.scheduleFromStoredSettings() }
         }
     }
 }

@@ -12,6 +12,152 @@ import XCTest
 @testable import vCRGlove
 
 @Suite(.serialized)
+struct SelectedStudyExportTests {
+    func fixture() throws -> (URL, URL, [MovementSession], Data) {
+        let base = try FullDataExporter.makeDirectory()
+        let snapshot = base.appendingPathComponent("snapshot")
+        let tasks = snapshot.appendingPathComponent("tasks")
+        let logs = snapshot.appendingPathComponent("logs")
+        try FileManager.default.createDirectory(at: tasks, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: logs, withIntermediateDirectories: true)
+        let dates = ["2026-10-01T08:00:00Z", "2026-10-15T08:00:00Z", "2026-10-23T08:00:00Z"]
+            .map { FullDataExporter.parsedDate($0)! }
+        let sessions = dates.enumerated().map { index, date in
+            MovementSession(patientId: "TEAM-EXPORT", date: date, stimulationContext: .preStim,
+                trials: [Trial(taskType: .fingerTap, side: .right, source: .camera,
+                    stopCondition: .thirtySec, startedAt: date,
+                    samples: [.init(t: 0, value: Double(index))], metrics: .empty,
+                    video: .init(fileName: "\(UUID().uuidString).mov", byteCount: 10),
+                    fingerTappingAngle: .init(samples: [.init(t: 0, degrees: 10), .init(t: 0.1, degrees: nil)]))])
+        }
+        let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .iso8601
+        var raw = Data()
+        for session in sessions {
+            var object = try JSONSerialization.jsonObject(with: encoder.encode(session)) as! [String: Any]
+            object["futureMetadata"] = "preserve"
+            raw.append(try JSONSerialization.data(withJSONObject: object)); raw.append(0x0A)
+        }
+        try raw.write(to: tasks.appendingPathComponent("sessions.jsonl"))
+        for (name, key) in [("events.jsonl", "ts"), ("handshake.jsonl", "ts_phone")] {
+            let lines = try dates.reduce(into: Data()) { data, date in
+                data.append(try JSONSerialization.data(withJSONObject: [key: ISO8601DateFormatter().string(from: date), "futureEvent": true]))
+                data.append(0x0A)
+            }
+            try lines.write(to: logs.appendingPathComponent(name))
+        }
+        let journal = try JSONSerialization.data(withJSONObject: dates.map {
+            ["date": $0.timeIntervalSinceReferenceDate, "futureJournal": "preserve"] as [String: Any]
+        })
+        return (base, snapshot, sessions, journal)
+    }
+
+    @Test func manualSelectionKeepsMatchingJSONCSVAnglesAndCalendarDayLogs() throws {
+        let (base, snapshot, sessions, journal) = try fixture()
+        defer { try? FileManager.default.removeItem(at: base) }
+        let source = snapshot.appendingPathComponent("tasks/sessions.jsonl")
+        let original = try Data(contentsOf: source)
+        let root = base.appendingPathComponent("output")
+        var selection = StudyExportSelection(sessionIDs: [sessions[0].id, sessions[2].id])
+        selection.calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        try FullDataExporter.buildSelectedFiles(selection: selection, snapshot: snapshot, root: root,
+            journalData: journal, settingsData: Data("settings".utf8))
+        let data = try Data(contentsOf: root.appendingPathComponent("tasks/sessions.json"))
+        let objects = try #require(JSONSerialization.jsonObject(with: data) as? [[String: Any]])
+        #expect(objects.count == 2 && objects.allSatisfy { $0["futureMetadata"] as? String == "preserve" })
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode([MovementSession].self, from: data)
+        #expect(decoded.map(\.id) == [sessions[0].id, sessions[2].id])
+        for file in ["metrics.csv", "samples.csv", "finger-tapping-angles.csv"] {
+            let csv = try String(contentsOf: root.appendingPathComponent("tasks/\(file)"), encoding: .utf8)
+            #expect(csv.contains(sessions[0].id.uuidString) && csv.contains(sessions[2].id.uuidString))
+            #expect(!csv.contains(sessions[1].id.uuidString))
+        }
+        let journalObjects = try JSONSerialization.jsonObject(with: Data(contentsOf: root.appendingPathComponent("journal/journal_entries.json"))) as! [[String: Any]]
+        #expect(journalObjects.count == 2)
+        for name in ["events.jsonl", "handshake.jsonl"] {
+            let events = try String(contentsOf: root.appendingPathComponent("logs/\(name)"), encoding: .utf8)
+            #expect(events.split(separator: "\n").count == 2 && !events.contains("2026-10-15"))
+        }
+        #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("tasks/videos").path))
+        #expect(try Data(contentsOf: source) == original)
+    }
+
+    @Test func dateRangeIncludesStartExcludesEndAndKeepsAllTrials() throws {
+        let (base, snapshot, sessions, journal) = try fixture()
+        defer { try? FileManager.default.removeItem(at: base) }
+        let selection = StudyExportSelection(interval: DateInterval(start: sessions[1].date, end: sessions[2].date))
+        let root = base.appendingPathComponent("output")
+        try FullDataExporter.buildSelectedFiles(selection: selection, snapshot: snapshot, root: root,
+            journalData: journal, settingsData: Data())
+        let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
+        let exported = try decoder.decode([MovementSession].self, from: Data(contentsOf: root.appendingPathComponent("tasks/sessions.json")))
+        #expect(exported.count == 1 && exported[0].trials == sessions[1].trials)
+        let log = try String(contentsOf: root.appendingPathComponent("logs/events.jsonl"), encoding: .utf8)
+        #expect(log.contains("2026-10-15") && !log.contains("2026-10-23") && !log.contains("2026-10-01"))
+    }
+
+    @Test func fileGroupsAndMissingAnglesAreExplicitWithoutPersistentExportCopies() throws {
+        let (base, snapshot, _, _) = try fixture()
+        defer { try? FileManager.default.removeItem(at: base) }
+        let root = base.appendingPathComponent("output")
+        try FullDataExporter.buildSelectedFiles(selection: .init(groups: [.samples]), snapshot: snapshot, root: root,
+            journalData: nil, settingsData: Data())
+        #expect(try FileManager.default.contentsOfDirectory(atPath: root.appendingPathComponent("tasks").path) == ["samples.csv"])
+        let empty = try TaskSessionExporter.exportFingerTappingAnglesCSV([], directory: base.appendingPathComponent("empty"))
+        #expect(try String(contentsOf: empty, encoding: .utf8).split(separator: "\n").count == 1)
+        #expect(throws: (any Error).self) { try TaskSessionExporter.exportFingerTappingAnglesCSV([]) }
+    }
+
+    @Test func staleSelectionAndMalformedScopedRecordsFailRatherThanLeakUnselectedData() throws {
+        let (base, snapshot, _, journal) = try fixture()
+        defer { try? FileManager.default.removeItem(at: base) }
+        #expect(throws: (any Error).self) {
+            try FullDataExporter.buildSelectedFiles(selection: .init(sessionIDs: [UUID()]), snapshot: snapshot,
+                root: base.appendingPathComponent("stale"), journalData: journal, settingsData: Data())
+        }
+        try Data("malformed\n".utf8).write(to: snapshot.appendingPathComponent("logs/events.jsonl"))
+        let selection = StudyExportSelection(groups: [.events], interval: DateInterval(start: .distantPast, end: .distantFuture))
+        #expect(throws: (any Error).self) {
+            try FullDataExporter.buildSelectedFiles(selection: selection, snapshot: snapshot,
+                root: base.appendingPathComponent("bad"), journalData: nil, settingsData: Data())
+        }
+    }
+
+    @Test @MainActor func nonVideoSnapshotDoesNotReadMovieStoreAndCreatesRealZIP() async throws {
+        let (base, snapshot, _, journal) = try fixture()
+        defer { try? FileManager.default.removeItem(at: base) }
+        let movies = base.appendingPathComponent("videos")
+        try FileManager.default.createDirectory(at: movies, withIntermediateDirectories: true)
+        try Data("must not be copied".utf8).write(to: movies.appendingPathComponent("unexpected-file"))
+        let journalURL = base.appendingPathComponent("journal.json"); try journal.write(to: journalURL)
+        let tasks = TaskSessionStore(storageURL: snapshot.appendingPathComponent("tasks/sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: movies))
+        let package = try await FullDataExporter.prepare(selection: .init(), journal: JournalStore(storageURL: journalURL),
+            tasks: tasks, events: EventStore(directory: snapshot.appendingPathComponent("logs")))
+        defer { package.remove() }
+        #expect(package.missingVideoCount == 0)
+        #expect(Array(try Data(contentsOf: package.archive).prefix(2)) == [0x50, 0x4b])
+        #expect(!FileManager.default.fileExists(atPath: package.directory.appendingPathComponent("snapshot").path))
+        #expect(try Data(contentsOf: movies.appendingPathComponent("unexpected-file")) == Data("must not be copied".utf8))
+    }
+
+    @Test @MainActor func settingsOnlyAndEmptyDevicePackagesDoNotRequireOtherStores() async throws {
+        let base = try FullDataExporter.makeDirectory()
+        defer { try? FileManager.default.removeItem(at: base) }
+        let tasks = TaskSessionStore(storageURL: base.appendingPathComponent("absent-sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: base.appendingPathComponent("no-movies")))
+        for groups in [Set<StudyExportSelection.FileGroup>([.settings]), Set(StudyExportSelection.FileGroup.allCases)] {
+            let package = try await FullDataExporter.prepare(selection: .init(groups: groups),
+                journal: JournalStore(storageURL: base.appendingPathComponent("absent-journal.json")),
+                tasks: tasks, events: EventStore(directory: base.appendingPathComponent("no-logs")))
+            #expect(package.missingVideoCount == 0)
+            #expect(try Data(contentsOf: package.archive).count > 100)
+            package.remove()
+        }
+    }
+}
+
+@Suite(.serialized)
 @MainActor
 struct FullDataExportTests {
     @Test func copiesRawMovementAndAllSavedMoviesWithoutRewriting() async throws {
@@ -113,6 +259,29 @@ struct FullDataExportTests {
 }
 
 final class FullDataArchiveTests: XCTestCase {
+    @MainActor
+    func testSelectedArchiveManifestAndCleanup() async throws {
+        let (base, snapshot, sessions, journal) = try SelectedStudyExportTests().fixture()
+        defer { try? FileManager.default.removeItem(at: base) }
+        let journalURL = base.appendingPathComponent("journal.json"); try journal.write(to: journalURL)
+        let defaultsName = "selected-export-\(UUID())"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: defaultsName))
+        defer { defaults.removePersistentDomain(forName: defaultsName) }
+        defaults.set("must-not-export", forKey: "researchPassword")
+        defaults.set("out-of-range-pending", forKey: "vcr.uploader.pending")
+        let package = try await FullDataExporter.prepare(selection: .init(sessionIDs: [sessions[1].id]),
+            journal: JournalStore(storageURL: journalURL),
+            tasks: TaskSessionStore(storageURL: snapshot.appendingPathComponent("tasks/sessions.jsonl"),
+                videoStore: MovementVideoStore(directory: base.appendingPathComponent("movies"))),
+            events: EventStore(directory: snapshot.appendingPathComponent("logs")), defaults: defaults)
+        let attachment = XCTAttachment(contentsOfFile: package.archive)
+        attachment.name = "Selected-study-data-fixture.zip"; attachment.lifetime = .keepAlways; add(attachment)
+        XCTAssertEqual(package.missingVideoCount, 0)
+        package.remove()
+        XCTAssertFalse(FileManager.default.fileExists(atPath: package.archive.path))
+        XCTAssertEqual(try Data(contentsOf: journalURL), journal)
+    }
+
     @MainActor
     func testFailureLeavesOriginalsAndRemovesPartialExport() async throws {
         let root = try FullDataExporter.makeDirectory()

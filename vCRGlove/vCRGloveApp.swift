@@ -52,7 +52,10 @@ final class AppSettings: ObservableObject {
     static let shared = AppSettings()
 
     @Published var language: AppLanguage = AppLanguage(rawValue: UserDefaults.standard.string(forKey: "appLanguage") ?? "en") ?? .english {
-        didSet { UserDefaults.standard.set(language.rawValue, forKey: "appLanguage") }
+        didSet {
+            UserDefaults.standard.set(language.rawValue, forKey: "appLanguage")
+            if language != oldValue { ReminderScheduler.scheduleFromStoredSettings() }
+        }
     }
 
     @Published var fontSize: AppFontSize = AppFontSize(rawValue: UserDefaults.standard.string(forKey: "appFontSize") ?? "standard") ?? .standard {

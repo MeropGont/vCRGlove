@@ -62,7 +62,7 @@ struct SettingsView: View {
                         icon: "figure.hand.cycling",
                         color: .purple,
                         title: "Data",
-                        subtitle: "Movement measurements and videos"
+                        subtitle: L10n("Recorded study data and videos")
                     )
                 }
                 .accessibilityIdentifier("settingsData")
@@ -243,9 +243,16 @@ private struct ProfileSettingsView: View {
 
 private struct GeneralSettingsView: View {
     @StateObject private var appSettings = AppSettings.shared
+    @AppStorage(RoutineMilestoneLedger.enabledKey) private var celebrationsEnabled = true
 
     var body: some View {
         Form {
+            Section {
+                Toggle(L10n("routine.celebrations"), isOn: $celebrationsEnabled)
+                    .accessibilityIdentifier("settingsRoutineCelebrations")
+            } footer: {
+                Text(L10n("routine.celebrations.detail"))
+            }
             Section(L10n("Language")) {
                 Picker(L10n("Language"), selection: $appSettings.language) {
                     ForEach(AppLanguage.allCases) { lang in
@@ -340,11 +347,18 @@ private struct ResearchAdminSettingsView: View {
     var body: some View {
         List {
             Section {
+                NavigationLink {
+                    StudyDataExportView(research: true)
+                } label: {
+                    Label(L10n("Share selected study data"), systemImage: "square.and.arrow.up")
+                }
+                .disabled(vm.hasStimulationSession || !vm.researchUnlocked)
+                .accessibilityIdentifier("researchShareSelectedData")
                 Button {
                     isPreparingExport = true
                     exportPreparation = UUID()
                 } label: {
-                    Label(L10n("research.export.share"), systemImage: "square.and.arrow.up")
+                    Label(L10n("Full archive (including videos)"), systemImage: "archivebox")
                 }
                 .disabled(isPreparingExport || vm.hasStimulationSession || !vm.researchUnlocked)
                 .accessibilityIdentifier("researchShareAllData")
@@ -355,7 +369,8 @@ private struct ResearchAdminSettingsView: View {
             } header: {
                 Text(L10n("research.export.title"))
             } footer: {
-                Text(L10n(vm.hasStimulationSession ? "research.export.stop" : "research.export.explanation"))
+                Text(L10n(vm.hasStimulationSession ? "research.export.stop"
+                    : "Share selected data without videos, or create a full archive including videos."))
             }
 
             if MovementTrendIdentityLinks.isTeamID(patientID) {
@@ -709,6 +724,7 @@ private struct ReminderSettingsView: View {
     @AppStorage("quietHoursEnabled") private var quietHoursEnabled = true
     @AppStorage("quietStartHour") private var quietStartHour = 21
     @AppStorage("quietEndHour") private var quietEndHour = 8
+    @AppStorage("reminderSoundEnabled") private var reminderSoundEnabled = true
 
     @State private var permissionText = "Checking..."
     @State private var statusMessage: LocalizedStringKey?
@@ -807,6 +823,8 @@ private struct ReminderSettingsView: View {
             .opacity(notificationsEnabled ? 1 : 0.45)
 
             Section("Quiet Hours") {
+                Toggle(L10n("reminder.sound"), isOn: $reminderSoundEnabled)
+                    .accessibilityIdentifier("reminderSoundEnabled")
                 Toggle("Use quiet hours", isOn: $quietHoursEnabled)
 
                 Stepper("Start: \(quietStartHour):00", value: $quietStartHour, in: 0...23)
@@ -815,7 +833,7 @@ private struct ReminderSettingsView: View {
                 Stepper("End: \(quietEndHour):00", value: $quietEndHour, in: 0...23)
                     .disabled(!quietHoursEnabled)
 
-                Text("Journal and task reminders inside quiet hours are moved to the quiet-hours end time.")
+                Text(L10n("reminder.quietHours.detail"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -842,6 +860,7 @@ private struct ReminderSettingsView: View {
         .onChange(of: quietHoursEnabled) { _, _ in scheduleIfAllowed() }
         .onChange(of: quietStartHour) { _, _ in scheduleIfAllowed() }
         .onChange(of: quietEndHour) { _, _ in scheduleIfAllowed() }
+        .onChange(of: reminderSoundEnabled) { _, _ in scheduleIfAllowed() }
     }
 
     private func weekdayPicker(selection: Binding<String>) -> some View {
@@ -920,7 +939,8 @@ private struct ReminderSettingsView: View {
             taskWeekdays: selectedWeekdays(from: taskReminderWeekdays),
             quietHoursEnabled: quietHoursEnabled,
             quietStartHour: quietStartHour,
-            quietEndHour: quietEndHour
+            quietEndHour: quietEndHour,
+            soundEnabled: reminderSoundEnabled
         )
 
         if showMessage {
@@ -977,7 +997,8 @@ enum ReminderScheduler {
             taskWeekdays: weekdaysSetting("taskReminderWeekdays", defaultValue: "3,5"),
             quietHoursEnabled: boolSetting("quietHoursEnabled", defaultValue: true),
             quietStartHour: defaults.object(forKey: "quietStartHour") as? Int ?? 21,
-            quietEndHour: defaults.object(forKey: "quietEndHour") as? Int ?? 8
+            quietEndHour: defaults.object(forKey: "quietEndHour") as? Int ?? 8,
+            soundEnabled: boolSetting("reminderSoundEnabled", defaultValue: true)
         )
     }
 
@@ -1008,64 +1029,70 @@ enum ReminderScheduler {
         taskWeekdays: Set<Int>,
         quietHoursEnabled: Bool,
         quietStartHour: Int,
-        quietEndHour: Int
+        quietEndHour: Int,
+        soundEnabled: Bool = true
     ) {
         let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: identifiers)
+        var requests: [UNNotificationRequest] = []
 
         if vcrEnabled {
-            scheduleDaily(
-                id: "vcr.daily",
-                title: String(localized: "vCR session"),
-                body: String(localized: "Your gloves are ready when you are"),
+            requests += weeklyRequests(
+                kind: .vcr, weekdays: Set(1...7),
                 hour: vcrHour,
-                minute: vcrMinute
+                minute: vcrMinute,
+                quietHoursEnabled: quietHoursEnabled, quietStartHour: quietStartHour,
+                quietEndHour: quietEndHour, soundEnabled: soundEnabled
             )
         }
 
         if journalEnabled {
-            let adjustedTime = adjustedForQuietHours(
-                hour: journalHour,
-                minute: journalMinute,
-                quietHoursEnabled: quietHoursEnabled,
-                quietStartHour: quietStartHour,
-                quietEndHour: quietEndHour
-            )
-
-            scheduleWeekly(
-                idPrefix: "journal",
-                weekdays: journalWeekdays,
-                title: String(localized: "Journal check-in"),
-                body: String(localized: "How are you feeling today?"),
-                hour: adjustedTime.hour,
-                minute: adjustedTime.minute
+            requests += weeklyRequests(
+                kind: .journal, weekdays: journalWeekdays,
+                hour: journalHour, minute: journalMinute,
+                quietHoursEnabled: quietHoursEnabled, quietStartHour: quietStartHour,
+                quietEndHour: quietEndHour, soundEnabled: soundEnabled
             )
         }
 
         if taskEnabled {
-            let adjustedTime = adjustedForQuietHours(
-                hour: taskHour,
-                minute: taskMinute,
-                quietHoursEnabled: quietHoursEnabled,
-                quietStartHour: quietStartHour,
-                quietEndHour: quietEndHour
-            )
-
-            scheduleWeekly(
-                idPrefix: "task",
-                weekdays: taskWeekdays,
-                title: String(localized: "Movement task"),
-                body: String(localized: "Let's do today’s movement task"),
-                hour: adjustedTime.hour,
-                minute: adjustedTime.minute
+            requests += weeklyRequests(
+                kind: .task, weekdays: taskWeekdays,
+                hour: taskHour, minute: taskMinute,
+                quietHoursEnabled: quietHoursEnabled, quietStartHour: quietStartHour,
+                quietEndHour: quietEndHour, soundEnabled: soundEnabled
             )
         }
+        // Stable weekday IDs replace existing requests without a remove/add gap.
+        let activeIDs = Set(requests.map(\.identifier))
+        center.removePendingNotificationRequests(withIdentifiers: identifiers.filter { !activeIDs.contains($0) })
+        for request in requests { center.add(request) }
     }
 
-    private static var identifiers: [String] {
+    static var identifiers: [String] {
         ["vcr.daily"] +
+        (1...7).map { "vcr.\($0)" } +
         (1...7).map { "journal.\($0)" } +
         (1...7).map { "task.\($0)" }
+    }
+
+    enum Kind: String, CaseIterable {
+        case vcr, journal, task
+        var titleKey: String {
+            switch self {
+            case .vcr: return "vCR session"
+            case .journal: return "Journal check-in"
+            case .task: return "Movement task"
+            }
+        }
+        var messagePrefix: String { "reminder.\(self == .task ? "movement" : rawValue)" }
+    }
+
+    static let messageCount = 12
+
+    static func messageKey(for kind: Kind, on date: Date, calendar: Calendar = .current) -> String {
+        let day = calendar.ordinality(of: .day, in: .era, for: calendar.startOfDay(for: date)) ?? 1
+        let variant = ((day % messageCount) + messageCount) % messageCount
+        return kind.messagePrefix + (variant == 0 ? ".body" : ".\(variant + 1)")
     }
 
     private static func adjustedForQuietHours(
@@ -1097,48 +1124,39 @@ enum ReminderScheduler {
         return (hour, minute)
     }
 
-    private static func scheduleDaily(id: String, title: String, body: String, hour: Int, minute: Int) {
-        var components = DateComponents()
-        components.hour = hour
-        components.minute = minute
-
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = .default
-
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-        let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
-    }
-
-    private static func scheduleWeekly(
-        idPrefix: String,
+    static func weeklyRequests(
+        kind: Kind,
         weekdays: Set<Int>,
-        title: String,
-        body: String,
         hour: Int,
-        minute: Int
-    ) {
-        for weekday in weekdays {
+        minute: Int,
+        quietHoursEnabled: Bool,
+        quietStartHour: Int,
+        quietEndHour: Int,
+        soundEnabled: Bool,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> [UNNotificationRequest] {
+        let time = adjustedForQuietHours(hour: hour, minute: minute,
+            quietHoursEnabled: quietHoursEnabled, quietStartHour: quietStartHour, quietEndHour: quietEndHour)
+        return weekdays.filter { (1...7).contains($0) }.sorted().map { weekday in
             var components = DateComponents()
             components.weekday = weekday
-            components.hour = hour
-            components.minute = minute
+            components.hour = time.hour
+            components.minute = time.minute
 
             let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = body
-            content.sound = .default
+            content.title = L10n(kind.titleKey)
+            let nextDate = calendar.nextDate(after: now, matching: components, matchingPolicy: .nextTime) ?? now
+            content.body = L10n(messageKey(for: kind, on: nextDate, calendar: calendar))
+            content.sound = soundEnabled ? .default : nil
+            content.threadIdentifier = "routine-reminders"
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-            let request = UNNotificationRequest(
-                identifier: "\(idPrefix).\(weekday)",
+            return UNNotificationRequest(
+                identifier: "\(kind.rawValue).\(weekday)",
                 content: content,
                 trigger: trigger
             )
-
-            UNUserNotificationCenter.current().add(request)
         }
     }
 }

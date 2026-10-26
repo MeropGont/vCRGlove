@@ -1,118 +1,77 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Comparison window" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Comparison window" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Vergleichszeitraum" } } }
-    },
-    "Previous recording day" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Previous recording day" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Vorheriger Aufnahmetag" } } }
-    },
-    "Recent 7 recording days" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Recent 7 recording days" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzte 7 Aufnahmetage" } } }
-    },
-    "Past month" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Past month" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzter Monat" } } }
-    },
-    "Past 3 months" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Past 3 months" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzte 3 Monate" } } }
-    },
-    "Past 7 months" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Past 7 months" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzte 7 Monate" } } }
-    },
-    "Whole study" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Whole study" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Gesamte Studie" } } }
-    },
-    "Your typical: %@ · %d earlier day(s)" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your typical: %@ · %d earlier day(s)" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Für Sie typisch: %@ · %d frühere Tage" } } }
-    },
-    "Your comparison uses daily medians within the selected comparison window. Whole study includes all earlier matching days, independently of the chart period. Other filters apply; each recording day has equal weight." : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your comparison uses daily medians within the selected comparison window. Whole study includes all earlier matching days, independently of the chart period. Other filters apply; each recording day has equal weight." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Ihr Vergleich nutzt Tagesmediane im gewählten Vergleichszeitraum. Die gesamte Studie umfasst alle früheren passenden Tage, unabhängig vom Diagrammzeitraum. Andere Filter gelten weiterhin; jeder Aufnahmetag hat das gleiche Gewicht." } } }
-    },
-    "Preparing video…" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Preparing video…" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Video wird vorbereitet …" } } }
-    },
-    "Video is being prepared. Find it later in Settings > Data." : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Video is being prepared. Find it later in Settings > Data." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Das Video wird vorbereitet. Sie finden es später unter Einstellungen > Daten." } } }
-    },
-    "Find your videos in Settings > Data." : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Find your videos in Settings > Data." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Ihre Videos finden Sie unter Einstellungen > Daten." } } }
-    },
-    "You can continue your tasks. Keep the app open until videos are ready." : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "You can continue your tasks. Keep the app open until videos are ready." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Sie können mit den Aufgaben fortfahren. Lassen Sie die App geöffnet, bis die Videos fertig sind." } } }
-    },
-    "Latest matching recording" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Latest matching recording" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzte passende Aufnahme" } } }
-    },
-    "Your recent typical" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your recent typical" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Zuletzt für Sie typisch" } } }
-    },
-    "Your movement pattern" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your movement pattern" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Ihr Bewegungsmuster" } } }
-    },
-    "About your movement pattern" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "About your movement pattern" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Informationen zu Ihrem Bewegungsmuster" } } }
-    },
-    "Finger movement speed" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Finger movement speed" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Geschwindigkeit der Fingerbewegung" } } }
-    },
-    "Research comparison" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Research comparison" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Forschungsvergleich" } } }
-    },
-    "Compare with research recordings" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Compare with research recordings" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Mit Forschungsaufnahmen vergleichen" } } }
-    },
-    "Your recent typical: %@ · %d earlier day(s)" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your recent typical: %@ · %d earlier day(s)" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Zuletzt typisch für Sie: %@ · %d frühere Tage" } } }
-    },
-    "As you record on more days under similar conditions, your personal comparison will appear here." : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "As you record on more days under similar conditions, your personal comparison will appear here." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Wenn Sie an weiteren Tagen unter ähnlichen Bedingungen aufnehmen, erscheint hier Ihr persönlicher Vergleich." } } }
-    },
-    "Your movement pattern will appear after a usable recording." : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your movement pattern will appear after a usable recording." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Nach einer auswertbaren Aufnahme erscheint hier Ihr Bewegungsmuster." } } }
-    },
-    "Rate counts repetitions per second. Rhythm variability describes how evenly they repeat: lower values mean more even intervals. Movement size describes how widely you moved, relative to your palm." : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Rate counts repetitions per second. Rhythm variability describes how evenly they repeat: lower values mean more even intervals. Movement size describes how widely you moved, relative to your palm." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Die Wiederholungsrate zählt Wiederholungen pro Sekunde. Die Rhythmusvariabilität beschreibt deren Gleichmäßigkeit: Niedrigere Werte bedeuten gleichmäßigere Zeitabstände. Die Bewegungsgröße beschreibt, wie weit Sie sich bewegt haben, bezogen auf Ihre Handfläche." } } }
-    },
-    "Finger movement speed describes how quickly the camera-view finger angle changes. It is different from tapping rate and is affected by hand position and tracking." : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Finger movement speed describes how quickly the camera-view finger angle changes. It is different from tapping rate and is affected by hand position and tracking." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Die Geschwindigkeit der Fingerbewegung beschreibt, wie schnell sich der Fingerwinkel im Kamerabild ändert. Sie unterscheidet sich von der Tipprate und wird durch Handposition und Erkennung beeinflusst." } } }
-    },
-    "Your recent typical values are medians from up to seven earlier matching recording days. We keep hand, stimulation timing, reported medication status and recording method separate. Filters apply; days with repeated recordings receive equal weight." : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Your recent typical values are medians from up to seven earlier matching recording days. We keep hand, stimulation timing, reported medication status and recording method separate. Filters apply; days with repeated recordings receive equal weight." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Ihre zuletzt typischen Werte sind Mediane aus bis zu sieben früheren passenden Aufnahmetagen. Hand, Stimulationszeitpunkt, angegebener Medikamentenstatus und Aufnahmemethode werden getrennt betrachtet. Die Filter gelten auch hier; Tage mit mehreren Aufnahmen werden gleich gewichtet." } } }
-    },
-    "These measures help describe your movement pattern. Faster or larger does not automatically mean better, and small differences may reflect normal recording variation." : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "These measures help describe your movement pattern. Faster or larger does not automatically mean better, and small differences may reflect normal recording variation." } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese Messwerte helfen, Ihr Bewegungsmuster zu beschreiben. Schneller oder größer bedeutet nicht automatisch besser; kleine Unterschiede können durch normale Schwankungen bei der Aufnahme entstehen." } } }
-    },
-    "Latest available comparison" : {
-      "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Latest available comparison" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Letzter verfügbarer Vergleich" } } }
-    },
+    "reminder.sound" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Reminder sounds"}},"de":{"stringUnit":{"state":"translated","value":"Erinnerungstöne"}}}},
+    "reminder.quietHours.detail" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Reminders during quiet hours are moved to the end of quiet hours."}},"de":{"stringUnit":{"state":"translated","value":"Erinnerungen während der Ruhezeit werden auf das Ende der Ruhezeit verschoben."}}}},
+    "routine.welcomeBack" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Welcome back. Every active day counts."}},"de":{"stringUnit":{"state":"translated","value":"Willkommen zurück. Jeder aktive Tag zählt."}}}},
+    "reminder.vcr.2" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Your planned session is here when you're ready."}},"de":{"stringUnit":{"state":"translated","value":"Wenn Sie bereit sind, können Sie Ihre geplante Sitzung beginnen."}}}},
+    "reminder.vcr.3" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"A gentle reminder for the vCR session you planned."}},"de":{"stringUnit":{"state":"translated","value":"Eine freundliche Erinnerung an Ihre geplante vCR-Sitzung."}}}},
+    "reminder.vcr.4" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Make a little space for your planned vCR routine."}},"de":{"stringUnit":{"state":"translated","value":"Nehmen Sie sich etwas Zeit für Ihre geplante vCR-Routine."}}}},
+    "reminder.vcr.5" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Ready for your planned session? You can start in the app."}},"de":{"stringUnit":{"state":"translated","value":"Bereit für Ihre geplante Sitzung? Sie können in der App starten."}}}},
+    "reminder.vcr.6" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Take a moment to settle in for your planned vCR session."}},"de":{"stringUnit":{"state":"translated","value":"Machen Sie es sich für Ihre geplante vCR-Sitzung bequem."}}}},
+    "reminder.vcr.7" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"A little time for your planned vCR routine, when you're ready."}},"de":{"stringUnit":{"state":"translated","value":"Etwas Zeit für Ihre geplante vCR-Routine, wenn Sie bereit sind."}}}},
+    "reminder.vcr.8" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"If now is a good time, you can begin your planned vCR session."}},"de":{"stringUnit":{"state":"translated","value":"Wenn es gerade passt, können Sie Ihre geplante vCR-Sitzung beginnen."}}}},
+    "reminder.vcr.9" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Find a comfortable moment for your planned vCR session."}},"de":{"stringUnit":{"state":"translated","value":"Suchen Sie sich einen angenehmen Moment für Ihre geplante vCR-Sitzung."}}}},
+    "reminder.vcr.10" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Your vCR routine, at the time you chose."}},"de":{"stringUnit":{"state":"translated","value":"Ihre vCR-Routine zu der von Ihnen gewählten Zeit."}}}},
+    "reminder.vcr.11" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"A moment to get comfortable and begin your planned session."}},"de":{"stringUnit":{"state":"translated","value":"Ein Moment, um es sich bequem zu machen und Ihre geplante Sitzung zu beginnen."}}}},
+    "reminder.vcr.12" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"When it fits your day, return to your planned vCR routine."}},"de":{"stringUnit":{"state":"translated","value":"Kehren Sie zu Ihrer geplanten vCR-Routine zurück, wenn es in Ihren Tag passt."}}}},
+    "reminder.journal.2" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"How has your day been? A short check-in is welcome."}},"de":{"stringUnit":{"state":"translated","value":"Wie war Ihr Tag bisher? Ein kurzer Tagesrückblick ist willkommen."}}}},
+    "reminder.journal.3" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Take a moment to notice how you're feeling."}},"de":{"stringUnit":{"state":"translated","value":"Nehmen Sie sich einen Moment, um zu spüren, wie es Ihnen geht."}}}},
+    "reminder.journal.4" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Good day or difficult day, there's room for both in your Journal."}},"de":{"stringUnit":{"state":"translated","value":"Ein guter oder ein schwieriger Tag: In Ihrem Journal ist Platz für beides."}}}},
+    "reminder.journal.5" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Your experience matters. How are you today?"}},"de":{"stringUnit":{"state":"translated","value":"Ihr Erleben zählt. Wie geht es Ihnen heute?"}}}},
+    "reminder.journal.6" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"A small pause for yourself and a quick check-in."}},"de":{"stringUnit":{"state":"translated","value":"Eine kleine Pause für Sie und ein kurzer Tagesrückblick."}}}},
+    "reminder.journal.7" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Your Journal is here whenever you're ready."}},"de":{"stringUnit":{"state":"translated","value":"Ihr Journal ist da, wenn Sie bereit sind."}}}},
+    "reminder.journal.8" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"What would you like to remember about today?"}},"de":{"stringUnit":{"state":"translated","value":"Was möchten Sie von heute festhalten?"}}}},
+    "reminder.journal.9" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"There's no right or wrong answer. Just how you feel today."}},"de":{"stringUnit":{"state":"translated","value":"Es gibt kein Richtig oder Falsch. Es geht darum, wie Sie sich heute fühlen."}}}},
+    "reminder.journal.10" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"A brief check-in can help you keep track of your days."}},"de":{"stringUnit":{"state":"translated","value":"Ein kurzer Tagesrückblick kann helfen, Ihre Tage im Blick zu behalten."}}}},
+    "reminder.journal.11" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"A little space to reflect on your day, if it suits you."}},"de":{"stringUnit":{"state":"translated","value":"Etwas Raum für einen Rückblick auf Ihren Tag, wenn es für Sie passt."}}}},
+    "reminder.journal.12" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"How are things today? Your check-in can be short and simple."}},"de":{"stringUnit":{"state":"translated","value":"Wie geht es Ihnen heute? Ihr Tagesrückblick darf kurz und einfach sein."}}}},
+    "reminder.movement.2" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"A comfortable moment for your movement tasks, when you're ready."}},"de":{"stringUnit":{"state":"translated","value":"Ein angenehmer Moment für Ihre Bewegungsaufgaben, wenn Sie bereit sind."}}}},
+    "reminder.movement.3" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Your movement tasks are here when it fits your day."}},"de":{"stringUnit":{"state":"translated","value":"Ihre Bewegungsaufgaben sind da, wenn es in Ihren Tag passt."}}}},
+    "reminder.movement.4" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Ready for a movement check? The app will guide you."}},"de":{"stringUnit":{"state":"translated","value":"Bereit für eine Bewegungsmessung? Die App begleitet Sie dabei."}}}},
+    "reminder.movement.5" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"A friendly reminder for the movement tasks you planned."}},"de":{"stringUnit":{"state":"translated","value":"Eine freundliche Erinnerung an Ihre geplanten Bewegungsaufgaben."}}}},
+    "reminder.movement.6" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Each recording is a snapshot of today, not a test to pass."}},"de":{"stringUnit":{"state":"translated","value":"Jede Aufnahme ist eine Momentaufnahme von heute, keine Prüfung zum Bestehen."}}}},
+    "reminder.movement.7" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"If now is convenient, your movement tasks are ready to begin."}},"de":{"stringUnit":{"state":"translated","value":"Wenn es gerade passt, können Sie mit Ihren Bewegungsaufgaben beginnen."}}}},
+    "reminder.movement.8" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Find a comfortable place for your movement recording."}},"de":{"stringUnit":{"state":"translated","value":"Suchen Sie sich einen bequemen Platz für Ihre Bewegungsaufnahme."}}}},
+    "reminder.movement.9" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Your movement routine, one task at a time."}},"de":{"stringUnit":{"state":"translated","value":"Ihre Bewegungsroutine, eine Aufgabe nach der anderen."}}}},
+    "reminder.movement.10" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"A moment to record how your movements are today."}},"de":{"stringUnit":{"state":"translated","value":"Ein Moment, um Ihre heutigen Bewegungen festzuhalten."}}}},
+    "reminder.movement.11" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Your next movement recording can wait until you're settled and ready."}},"de":{"stringUnit":{"state":"translated","value":"Ihre nächste Bewegungsaufnahme kann warten, bis Sie bequem sitzen und bereit sind."}}}},
+    "reminder.movement.12" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"When you're ready, take a moment for your planned movement check."}},"de":{"stringUnit":{"state":"translated","value":"Wenn Sie bereit sind, nehmen Sie sich einen Moment für Ihre geplante Bewegungsmessung."}}}},
+    "reminder.vcr.body" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"When you're ready, you can start your planned vCR session."}},"de":{"stringUnit":{"state":"translated","value":"Wenn Sie bereit sind, können Sie Ihre geplante vCR-Sitzung starten."}}}},
+    "reminder.journal.body" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"A moment for you. How are you feeling today?"}},"de":{"stringUnit":{"state":"translated","value":"Ein Moment für Sie. Wie geht es Ihnen heute?"}}}},
+    "reminder.movement.body" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"When it suits you, take a moment for your movement tasks."}},"de":{"stringUnit":{"state":"translated","value":"Wenn es für Sie passt, nehmen Sie sich einen Moment für Ihre Bewegungsaufgaben."}}}},
+    "Dismiss" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Dismiss"}},"de":{"stringUnit":{"state":"translated","value":"Schließen"}}}},
+    "routine.celebrations" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Milestone acknowledgements"}},"de":{"stringUnit":{"state":"translated","value":"Meilensteine würdigen"}}}},
+    "routine.celebrations.detail" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Brief encouragement in the Journal. No sounds or extra notifications."}},"de":{"stringUnit":{"state":"translated","value":"Kurze Ermutigung im Journal. Ohne Töne oder zusätzliche Benachrichtigungen."}}}},
+    "routine.milestones" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Milestones"}},"de":{"stringUnit":{"state":"translated","value":"Meilensteine"}}}},
+    "routine.milestone.three" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"3 days in a row"}},"de":{"stringUnit":{"state":"translated","value":"3 Tage in Folge"}}}},
+    "routine.milestone.seven" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"7 days in a row"}},"de":{"stringUnit":{"state":"translated","value":"7 Tage in Folge"}}}},
+    "routine.milestone.thirty" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"30 active days"}},"de":{"stringUnit":{"state":"translated","value":"30 aktive Tage"}}}},
+    "routine.milestone.message" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"%@. Thank you!"}},"de":{"stringUnit":{"state":"translated","value":"%@. Danke!"}}}},
+    "routine.restart" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Some saved data could not be read. Please restart the app to try again."}},"de":{"stringUnit":{"state":"translated","value":"Einige gespeicherte Daten konnten nicht gelesen werden. Bitte starten Sie die App erneut."}}}},
+    "routine.title" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Your routine"}},"de":{"stringUnit":{"state":"translated","value":"Ihre Routine"}}}},
+    "routine.about" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"About active days"}},"de":{"stringUnit":{"state":"translated","value":"Informationen zu aktiven Tagen"}}}},
+    "routine.ready" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Ready for today"}},"de":{"stringUnit":{"state":"translated","value":"Bereit für heute"}}}},
+    "routine.oneDay" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"%d active day"}},"de":{"stringUnit":{"state":"translated","value":"%d aktiver Tag"}}}},
+    "routine.streak" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"%d active days in a row"}},"de":{"stringUnit":{"state":"translated","value":"%d Tage in Folge aktiv"}}}},
+    "routine.oneDayThisWeek" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"%d active day this week"}},"de":{"stringUnit":{"state":"translated","value":"%d aktiver Tag diese Woche"}}}},
+    "routine.daysThisWeek" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"%d active days this week"}},"de":{"stringUnit":{"state":"translated","value":"%d aktive Tage diese Woche"}}}},
+    "routine.loading" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Loading activity…"}},"de":{"stringUnit":{"state":"translated","value":"Aktivität wird geladen…"}}}},
+    "routine.unavailable" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Activity summary unavailable"}},"de":{"stringUnit":{"state":"translated","value":"Aktivitätsübersicht nicht verfügbar"}}}},
+    "routine.activeDay" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Active day"}},"de":{"stringUnit":{"state":"translated","value":"Aktiver Tag"}}}},
+    "routine.noActivity" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"No activity recorded"}},"de":{"stringUnit":{"state":"translated","value":"Keine Aktivität erfasst"}}}},
+    "routine.startRecorded" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Start recorded"}},"de":{"stringUnit":{"state":"translated","value":"Start erfasst"}}}},
+    "routine.startUnverified" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Start not confirmed"}},"de":{"stringUnit":{"state":"translated","value":"Start nicht bestätigt"}}}},
+    "routine.oneMeasurement" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"%d measurement saved"}},"de":{"stringUnit":{"state":"translated","value":"%d Messung gespeichert"}}}},
+    "routine.measurements" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"%d measurements saved"}},"de":{"stringUnit":{"state":"translated","value":"%d Messungen gespeichert"}}}},
+    "routine.totalDays" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Total active days"}},"de":{"stringUnit":{"state":"translated","value":"Aktive Tage insgesamt"}}}},
+    "routine.longestStreak" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Longest run of active days"}},"de":{"stringUnit":{"state":"translated","value":"Längste Folge aktiver Tage"}}}},
+    "routine.explanation" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"An active day includes a saved check-in, a recorded movement attempt or a recorded vCR start. Repeating activities does not add extra days.\n\nToday remains open until midnight. After a missed day, your total active days and longest run remain.\n\nThis recognises participation, not movement performance or completed treatment."}},"de":{"stringUnit":{"state":"translated","value":"Ein aktiver Tag umfasst einen gespeicherten Tagesrückblick, einen aufgezeichneten Bewegungsversuch oder einen erfassten vCR-Start. Wiederholungen ergeben keine zusätzlichen Tage.\n\nHeute bleibt bis Mitternacht offen. Nach einem ausgelassenen Tag bleiben die Gesamtzahl aktiver Tage und die längste Folge erhalten.\n\nGewürdigt wird Ihre Teilnahme, nicht Ihre Bewegungsleistung oder eine abgeschlossene Behandlung."}}}},
+    "routine.identityScope" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Some older activity cannot be assigned reliably to the current study ID and is not included in this summary. Original records are unchanged."}},"de":{"stringUnit":{"state":"translated","value":"Einige ältere Aktivitäten lassen sich der aktuellen Studien-ID nicht sicher zuordnen und werden in dieser Übersicht nicht berücksichtigt. Die Originaldaten bleiben unverändert."}}}},
+    "File unavailable" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "File unavailable" } }, "de" : { "stringUnit" : { "state" : "translated", "value" : "Datei nicht verfügbar" } } } },
+"Data files" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Data files"}},"de":{"stringUnit":{"state":"translated","value":"Dateien"}}}},
+"Sharing" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Sharing"}},"de":{"stringUnit":{"state":"translated","value":"Teilen"}}}},
+"Open in…" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Open in…"}},"de":{"stringUnit":{"state":"translated","value":"Öffnen mit…"}}}},
     " Hz" : {
 
     },
@@ -293,6 +252,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld"
           }
         }
       }
@@ -913,6 +882,23 @@
         }
       }
     },
+    "About your movement pattern" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informationen zu Ihrem Bewegungsmuster"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About your movement pattern"
+          }
+        }
+      }
+    },
     "Activity impact: %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1337,6 +1323,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wie geplant"
+          }
+        }
+      }
+    },
+    "As you record on more days under similar conditions, your personal comparison will appear here." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn Sie an weiteren Tagen unter ähnlichen Bedingungen aufnehmen, erscheint hier Ihr persönlicher Vergleich."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As you record on more days under similar conditions, your personal comparison will appear here."
           }
         }
       }
@@ -1849,6 +1852,40 @@
         }
       }
     },
+    "Choose at least one data type." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte mindestens einen Datentyp auswählen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose at least one data type."
+          }
+        }
+      }
+    },
+    "Choose data to share" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten zum Teilen auswählen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose data to share"
+          }
+        }
+      }
+    },
     "Choose stimulation timing" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1919,6 +1956,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Demnächst verfügbar"
+          }
+        }
+      }
+    },
+    "Compare with research recordings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Forschungsaufnahmen vergleichen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compare with research recordings"
+          }
+        }
+      }
+    },
+    "Comparison window" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vergleichszeitraum"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparison window"
           }
         }
       }
@@ -2060,6 +2131,23 @@
         }
       }
     },
+    "Could not prepare data" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten konnten nicht vorbereitet werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not prepare data"
+          }
+        }
+      }
+    },
     "count" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2128,6 +2216,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Current measurement method"
+          }
+        }
+      }
+    },
+    "Custom dates" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eigener Zeitraum"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom dates"
           }
         }
       }
@@ -2276,6 +2381,40 @@
         }
       }
     },
+    "Data could not be prepared. Please try again. Your saved records have not changed." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Daten konnten nicht vorbereitet werden. Bitte erneut versuchen. Ihre gespeicherten Einträge sind unverändert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data could not be prepared. Please try again. Your saved records have not changed."
+          }
+        }
+      }
+    },
+    "Data to include" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enthaltene Daten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data to include"
+          }
+        }
+      }
+    },
     "Date" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2283,6 +2422,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Datum"
+          }
+        }
+      }
+    },
+    "Dates refer to session start. All trials in matching sessions are included; journal and logs use the chosen dates." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maßgeblich ist der Sitzungsbeginn. Alle Messungen passender Sitzungen sind enthalten. Tagebuch und Protokolle werden auf den gewählten Zeitraum begrenzt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dates refer to session start. All trials in matching sessions are included; journal and logs use the chosen dates."
           }
         }
       }
@@ -2986,6 +3142,23 @@
         }
       }
     },
+    "Find your videos in Settings > Data." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre Videos finden Sie unter Einstellungen > Daten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find your videos in Settings > Data."
+          }
+        }
+      }
+    },
     "Finger check" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2993,6 +3166,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fingertest"
+          }
+        }
+      }
+    },
+    "Finger movement speed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geschwindigkeit der Fingerbewegung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finger movement speed"
+          }
+        }
+      }
+    },
+    "Finger movement speed describes how quickly the camera-view finger angle changes. It is different from tapping rate and is affected by hand position and tracking." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Geschwindigkeit der Fingerbewegung beschreibt, wie schnell sich der Fingerwinkel im Kamerabild ändert. Sie unterscheidet sich von der Tipprate und wird durch Handposition und Erkennung beeinflusst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finger movement speed describes how quickly the camera-view finger angle changes. It is different from tapping rate and is affected by hand position and tracking."
           }
         }
       }
@@ -3207,6 +3414,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ab %d Stunden"
+          }
+        }
+      }
+    },
+    "Full archive (including videos)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vollständiges Archiv (mit Videos)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full archive (including videos)"
           }
         }
       }
@@ -4596,6 +4820,23 @@
         }
       }
     },
+    "Journal and logs cover the selected sessions' calendar days. All trials in each selected session are included." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagebuch und Protokolle umfassen die Kalendertage der ausgewählten Sitzungen. Alle Messungen dieser Sitzungen sind enthalten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journal and logs cover the selected sessions' calendar days. All trials in each selected session are included."
+          }
+        }
+      }
+    },
     "Journal and task reminders inside quiet hours are moved to the quiet-hours end time." : {
       "localizations" : {
         "de" : {
@@ -4851,6 +5092,23 @@
         }
       }
     },
+    "Last 2 weeks" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzte 2 Wochen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 2 weeks"
+          }
+        }
+      }
+    },
     "Last check-in" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4916,6 +5174,23 @@
         }
       }
     },
+    "Last month" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzter Monat"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last month"
+          }
+        }
+      }
+    },
     "Last Parkinson's medication" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4949,6 +5224,23 @@
         }
       }
     },
+    "Latest available comparison" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzter verfügbarer Vergleich"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latest available comparison"
+          }
+        }
+      }
+    },
     "Latest backup" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4973,6 +5265,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Latest day"
+          }
+        }
+      }
+    },
+    "Latest matching recording" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzte passende Aufnahme"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latest matching recording"
           }
         }
       }
@@ -5326,6 +5635,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kennzahlen"
+          }
+        }
+      }
+    },
+    "Metrics CSV" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messwerte (CSV)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metrics CSV"
           }
         }
       }
@@ -5815,6 +6141,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Noch keine Videos gespeichert"
+          }
+        }
+      }
+    },
+    "No sessions match this selection." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Sitzungen passen zu dieser Auswahl."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No sessions match this selection."
           }
         }
       }
@@ -6484,6 +6827,57 @@
         }
       }
     },
+    "Past 3 months" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzte 3 Monate"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past 3 months"
+          }
+        }
+      }
+    },
+    "Past 7 months" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzte 7 Monate"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past 7 months"
+          }
+        }
+      }
+    },
+    "Past month" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzter Monat"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past month"
+          }
+        }
+      }
+    },
     "Patient" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6714,6 +7108,40 @@
         }
       }
     },
+    "Preparing data…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten werden vorbereitet…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing data…"
+          }
+        }
+      }
+    },
+    "Preparing video…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video wird vorbereitet …"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing video…"
+          }
+        }
+      }
+    },
     "Previous month" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6721,6 +7149,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vorheriger Monat"
+          }
+        }
+      }
+    },
+    "Previous recording day" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorheriger Aufnahmetag"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous recording day"
           }
         }
       }
@@ -6770,19 +7215,33 @@
         }
       }
     },
+    "Save task videos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Aufgabenvideos speichern" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save task videos" } }
+      }
+    },
+    "Applies to new recordings. Measurements are always saved. Existing videos are kept." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Gilt für neue Aufnahmen. Messwerte werden weiterhin gespeichert. Vorhandene Videos bleiben erhalten." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Applies to new recordings. Measurements are always saved. Existing videos are kept." } }
+      }
+    },
     "privacy.app.videoCapture" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bei Aufnahmen von Finger-Tapping und Handöffnen/-schließen wird auch ein Video ohne Ton gespeichert. Bei der Kalibrierung und bei Watch-Aufgaben wird kein Video gespeichert."
+            "value" : "Bei Finger-Tapping und Handöffnen/-schließen können Videos ohne Ton gespeichert werden. Sie können dies unter Einstellungen > Daten ausschalten. Messwerte werden weiterhin gespeichert; vorhandene Videos bleiben erhalten. Bei der Kalibrierung und bei Watch-Aufgaben wird kein Video gespeichert."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finger-tapping and hand opening/closing recordings also save a silent video. Calibration and Watch tasks do not save video."
+            "value" : "Finger-tapping and hand opening/closing tasks can save silent videos. You can turn this off in Settings > Data. Measurements are still saved and existing videos are kept. Calibration and Watch tasks do not save video."
           }
         }
       }
@@ -6979,6 +7438,40 @@
         }
       }
     },
+    "Rate counts repetitions per second. Rhythm variability describes how evenly they repeat: lower values mean more even intervals. Movement size describes how widely you moved, relative to your palm." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Wiederholungsrate zählt Wiederholungen pro Sekunde. Die Rhythmusvariabilität beschreibt deren Gleichmäßigkeit: Niedrigere Werte bedeuten gleichmäßigere Zeitabstände. Die Bewegungsgröße beschreibt, wie weit Sie sich bewegt haben, bezogen auf Ihre Handfläche."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rate counts repetitions per second. Rhythm variability describes how evenly they repeat: lower values mean more even intervals. Movement size describes how widely you moved, relative to your palm."
+          }
+        }
+      }
+    },
+    "Raw samples CSV" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rohsignale (CSV)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raw samples CSV"
+          }
+        }
+      }
+    },
     "Read the study" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7018,6 +7511,23 @@
         }
       }
     },
+    "Recent 7 recording days" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letzte 7 Aufnahmetage"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent 7 recording days"
+          }
+        }
+      }
+    },
     "Reconnect" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7047,6 +7557,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aufgezeichnete Daten"
+          }
+        }
+      }
+    },
+    "Recorded study data and videos" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgezeichnete Studiendaten und Videos"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recorded study data and videos"
           }
         }
       }
@@ -7364,6 +7891,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Forschungsverwaltung"
+          }
+        }
+      }
+    },
+    "Research comparison" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forschungsvergleich"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Research comparison"
           }
         }
       }
@@ -8230,6 +8774,23 @@
         }
       }
     },
+    "Select sessions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sitzungen auswählen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select sessions"
+          }
+        }
+      }
+    },
     "Select the symptom intensity." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8281,6 +8842,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ausgewählter Tag"
+          }
+        }
+      }
+    },
+    "Selected sessions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählte Sitzungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected sessions"
           }
         }
       }
@@ -8351,6 +8929,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sitzung unterbrochen, weil beide Handschuhe getrennt wurden."
+          }
+        }
+      }
+    },
+    "Session JSON" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sitzungsdaten (JSON)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session JSON"
           }
         }
       }
@@ -8433,12 +9028,97 @@
         }
       }
     },
+    "Share all data (ZIP)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Daten teilen (ZIP)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share all data (ZIP)"
+          }
+        }
+      }
+    },
     "Share Event Log" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ereignisprotokoll teilen"
+          }
+        }
+      }
+    },
+    "Share selected data (ZIP)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählte Daten teilen (ZIP)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share selected data (ZIP)"
+          }
+        }
+      }
+    },
+    "Share selected data without videos, or create a full archive including videos." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählte Daten ohne Videos teilen oder ein vollständiges Archiv mit Videos erstellen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share selected data without videos, or create a full archive including videos."
+          }
+        }
+      }
+    },
+    "Share selected study data" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählte Studiendaten teilen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share selected study data"
+          }
+        }
+      }
+    },
+    "Share study data" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studiendaten teilen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share study data"
           }
         }
       }
@@ -8731,6 +9411,23 @@
         }
       }
     },
+    "Some records could not be read safely. No package was shared." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einige Einträge konnten nicht sicher gelesen werden. Es wurde kein Datenpaket geteilt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some records could not be read safely. No package was shared."
+          }
+        }
+      }
+    },
     "Some tasks recorded" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8940,6 +9637,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stimulation läuft"
+          }
+        }
+      }
+    },
+    "Stimulation and event logs" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulations- und Ereignisprotokolle"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stimulation and event logs"
           }
         }
       }
@@ -9221,6 +9935,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Study median"
+          }
+        }
+      }
+    },
+    "Study settings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Studieneinstellungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Study settings"
           }
         }
       }
@@ -10301,6 +11032,23 @@
         }
       }
     },
+    "Tapping angles CSV" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tapping-Winkel (CSV)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tapping angles CSV"
+          }
+        }
+      }
+    },
     "Tapping rate" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10465,6 +11213,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Für Bewegungswerte reicht das Signal nicht aus. Sie können die Aufnahme behalten oder wiederholen."
+          }
+        }
+      }
+    },
+    "These measures help describe your movement pattern. Faster or larger does not automatically mean better, and small differences may reflect normal recording variation." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Messwerte helfen, Ihr Bewegungsmuster zu beschreiben. Schneller oder größer bedeutet nicht automatisch besser; kleine Unterschiede können durch normale Schwankungen bei der Aufnahme entstehen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These measures help describe your movement pattern. Faster or larger does not automatically mean better, and small differences may reflect normal recording variation."
           }
         }
       }
@@ -11352,6 +12117,23 @@
         }
       }
     },
+    "Video is being prepared. Find it later in Settings > Data." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Video wird vorbereitet. Sie finden es später unter Einstellungen > Daten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video is being prepared. Find it later in Settings > Data."
+          }
+        }
+      }
+    },
     "Video not saved. Your measurement is saved." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11403,6 +12185,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kein Video verfügbar. Sie können Ihre Messung trotzdem speichern."
+          }
+        }
+      }
+    },
+    "Videos are not included. Sharing does not delete data or send it automatically." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos sind nicht enthalten. Beim Teilen werden keine Daten gelöscht oder automatisch versendet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos are not included. Sharing does not delete data or send it automatically."
           }
         }
       }
@@ -11702,6 +12501,23 @@
         }
       }
     },
+    "Whole study" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesamte Studie"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Whole study"
+          }
+        }
+      }
+    },
     "Why some points are separate" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11747,6 +12563,23 @@
         }
       }
     },
+    "You can continue your tasks. Keep the app open until videos are ready." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie können mit den Aufgaben fortfahren. Lassen Sie die App geöffnet, bis die Videos fertig sind."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can continue your tasks. Keep the app open until videos are ready."
+          }
+        }
+      }
+    },
     "You can still start vCR with one glove. If the second glove does not appear after scanning, charge it and try again." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -11754,6 +12587,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sie können vCR auch mit einem Handschuh starten. Wenn der zweite Handschuh nach dem Suchen nicht erscheint, laden Sie ihn auf und versuchen Sie es erneut."
+          }
+        }
+      }
+    },
+    "Your comparison uses daily medians within the selected comparison window. Whole study includes all earlier matching days, independently of the chart period. Other filters apply; each recording day has equal weight." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihr Vergleich nutzt Tagesmediane im gewählten Vergleichszeitraum. Die gesamte Studie umfasst alle früheren passenden Tage, unabhängig vom Diagrammzeitraum. Andere Filter gelten weiterhin; jeder Aufnahmetag hat das gleiche Gewicht."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your comparison uses daily medians within the selected comparison window. Whole study includes all earlier matching days, independently of the chart period. Other filters apply; each recording day has equal weight."
           }
         }
       }
@@ -11807,6 +12657,40 @@
         }
       }
     },
+    "Your movement pattern" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihr Bewegungsmuster"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your movement pattern"
+          }
+        }
+      }
+    },
+    "Your movement pattern will appear after a usable recording." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach einer auswertbaren Aufnahme erscheint hier Ihr Bewegungsmuster."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your movement pattern will appear after a usable recording."
+          }
+        }
+      }
+    },
     "Your rate uses the first 10 complete detected taps. The study median comes from 78 recordings of the same hand from people who reported no Parkinson's diagnosis." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -11820,6 +12704,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your rate uses the first 10 complete detected taps. The study median comes from 78 recordings of the same hand from people who reported no Parkinson's diagnosis."
+          }
+        }
+      }
+    },
+    "Your recent typical" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zuletzt für Sie typisch"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your recent typical"
+          }
+        }
+      }
+    },
+    "Your recent typical values are medians from up to seven earlier matching recording days. We keep hand, stimulation timing, reported medication status and recording method separate. Filters apply; days with repeated recordings receive equal weight." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre zuletzt typischen Werte sind Mediane aus bis zu sieben früheren passenden Aufnahmetagen. Hand, Stimulationszeitpunkt, angegebener Medikamentenstatus und Aufnahmemethode werden getrennt betrachtet. Die Filter gelten auch hier; Tage mit mehreren Aufnahmen werden gleich gewichtet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your recent typical values are medians from up to seven earlier matching recording days. We keep hand, stimulation timing, reported medication status and recording method separate. Filters apply; days with repeated recordings receive equal weight."
+          }
+        }
+      }
+    },
+    "Your recent typical: %@ · %d earlier day(s)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zuletzt typisch für Sie: %@ · %d frühere Tage"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your recent typical: %@ · %d earlier day(s)"
           }
         }
       }
@@ -11842,6 +12777,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ihre gespeicherte Aufnahme bleibt erhalten, bis eine neue gespeichert ist."
+          }
+        }
+      }
+    },
+    "Your typical: %@ · %d earlier day(s)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für Sie typisch: %@ · %d frühere Tage"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your typical: %@ · %d earlier day(s)"
           }
         }
       }

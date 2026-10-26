@@ -3,6 +3,7 @@ import SwiftUI
 struct JournalHomeView: View {
     @ObservedObject private var store = JournalStore.shared
     @ObservedObject private var taskStore = TaskSessionStore.shared
+    @StateObject private var activity = JournalActivityController()
     @Environment(\.locale) private var locale
     @State private var selectedDate = Date()
     @State private var eventDestination: EventDestination?
@@ -15,13 +16,16 @@ struct JournalHomeView: View {
     }
     private var entryCount: Int {
         store.entries.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }.count
-        + taskStore.sessions.filter { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }.count
+        + activity.sessions.filter { $0.trials.contains { Calendar.current.isDate($0.startedAt, inSameDayAs: selectedDate) } }.count
+    }
+    private var dayActivity: DailyActivitySummary? {
+        activity.history?.summary(on: selectedDate, calendar: .current)
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                JournalCalendarPanel(selectedDate: $selectedDate)
+                JournalCalendarPanel(selectedDate: $selectedDate, activity: activity)
                 Divider()
 
                 VStack(alignment: .leading, spacing: 12) {
@@ -60,6 +64,23 @@ struct JournalHomeView: View {
                     .disabled(isFuture || store.isLoadBlocked)
                     .accessibilityIdentifier("journalOpenCheckIn")
 
+                    VStack(spacing: 0) {
+                        NavigationLink {
+                            DailyLogView(date: selectedDate, filter: .stimulation, stimulationStarts: activity.starts)
+                        } label: {
+                            activityRow("vCR", status: stimulationStatus, icon: "waveform.path.ecg")
+                        }
+                        .accessibilityIdentifier("journalDayStimulation")
+                        Divider()
+                        NavigationLink {
+                            DailyLogView(date: selectedDate, filter: .movement, scopedSessions: activity.sessions)
+                        } label: {
+                            activityRow("Movement", status: movementStatus, icon: "hand.tap")
+                        }
+                        .accessibilityIdentifier("journalDayMovement")
+                    }
+                    .buttonStyle(.plain)
+
                     VStack(spacing: 8) {
                         logButton(.medication, type: .medication, title: "Medication", icon: "pills", id: "journalAddMedication")
                         logButton(.symptom, type: .symptom, title: "Symptom episode", icon: "waveform.path.ecg", id: "journalAddSymptom")
@@ -67,7 +88,7 @@ struct JournalHomeView: View {
                     }
 
                     NavigationLink {
-                        DailyLogView(date: selectedDate)
+                        DailyLogView(date: selectedDate, scopedSessions: activity.sessions)
                     } label: {
                         HStack {
                             Label(L10n("View entries"), systemImage: "list.bullet")
@@ -84,6 +105,7 @@ struct JournalHomeView: View {
             .padding()
         }
         .navigationTitle(L10n("Journal"))
+        .modifier(JournalActivityLifecycle(activity: activity))
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $eventDestination) { destination in
             switch destination {
@@ -92,6 +114,49 @@ struct JournalHomeView: View {
             case .note: NoteLogView(date: selectedDate)
             }
         }
+        #if DEBUG && targetEnvironment(simulator)
+        .task {
+            guard ProcessInfo.processInfo.arguments.contains("--ui-test-activity-calendar"), store.entries.isEmpty else { return }
+            let now = Date().addingTimeInterval(-60)
+            for offset in 0..<3 {
+                let date = Calendar.current.date(byAdding: .day, value: -offset, to: now)!
+                _ = store.add(.init(date: date, type: .dailyCheckIn, mood: 3))
+            }
+            _ = store.add(.init(date: now, type: .stimulation, note: "Start request"))
+            activity.events.append(type: "stimulation_started", tag: "vCR", message: "UI fixture")
+            let trial = Trial(taskType: .fingerTap, side: .right, source: .camera,
+                stopCondition: .thirtySec, startedAt: now, samples: [], metrics: .empty, recordedDurationSeconds: 10)
+            let id = UserDefaults.standard.string(forKey: "patientID") ?? "unset"
+            taskStore.saveAcceptedTrial(trial, in: .init(patientId: id, date: now), temporaryVideoURL: nil) { _ in }
+        }
+        #endif
+    }
+
+    private var stimulationStatus: String {
+        guard let dayActivity else { return L10n(activity.failed ? "routine.unavailable" : "routine.loading") }
+        return L10n(dayActivity.hasRecordedStimulationStart ? "routine.startRecorded"
+            : dayActivity.hasStimulationLog ? "routine.startUnverified" : "None recorded")
+    }
+
+    private var movementStatus: String {
+        guard let dayActivity else { return L10n(activity.failed ? "routine.unavailable" : "routine.loading") }
+        return dayActivity.savedMeasurementCount == 0 ? L10n("None recorded") : String(format:
+            L10n(dayActivity.savedMeasurementCount == 1 ? "routine.oneMeasurement" : "routine.measurements"), dayActivity.savedMeasurementCount)
+    }
+
+    private func activityRow(_ title: String, status: String, icon: String) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: icon).font(.system(size: 24)).foregroundStyle(.teal).frame(width: 28)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L10n(title)).font(.body.weight(.semibold))
+                Text(status).font(.subheadline).foregroundStyle(.secondary)
+            }.fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.secondary)
+        }
+        .foregroundStyle(Color.primary)
+        .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+        .padding(.vertical, 10)
     }
 
     private func logButton(_ destination: EventDestination, type: JournalEntryType,

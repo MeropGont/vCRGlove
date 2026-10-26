@@ -15,7 +15,35 @@
 import Foundation
 import Combine
 
+/// UI-only safety gate. Does not control sensors, timers or recording state.
+@MainActor
+final class RoutineRecordingActivity: ObservableObject {
+    static let shared = RoutineRecordingActivity()
+    @Published private(set) var activeIDs = Set<UUID>()
+    private var runCounts: [UUID: Int] = [:]
+    var isActive: Bool { !activeIDs.isEmpty }
+    func begin(_ id: UUID) {
+        runCounts[id, default: 0] += 1
+        activeIDs.insert(id)
+    }
+    func end(_ id: UUID) {
+        guard let count = runCounts[id] else { return }
+        if count > 1 { runCounts[id] = count - 1 }
+        else { remove(id) }
+    }
+    func remove(_ id: UUID) {
+        runCounts.removeValue(forKey: id)
+        activeIDs.remove(id)
+    }
+}
+
 final class TrialRecorder: ObservableObject {
+    let routineActivityID = UUID()
+
+    deinit {
+        let id = routineActivityID
+        DispatchQueue.main.async { RoutineRecordingActivity.shared.remove(id) }
+    }
 
     /// Safety net for .repetitions mode: if the target rep count is never
     /// reached (e.g. severe amplitude decrement — the patient physically
@@ -96,6 +124,7 @@ final class TrialRecorder: ObservableObject {
             self.startDurationTimer()
             self.latestSampleElapsed = 0
             DispatchQueue.main.async {
+                RoutineRecordingActivity.shared.begin(self.routineActivityID)
                 self.liveCycleCount = 0
                 self.elapsed = 0
                 self.isRecording = true
@@ -286,7 +315,9 @@ final class TrialRecorder: ObservableObject {
                 details: ["seconds": String(format: "%.3f", finishElapsed)])
 
             DispatchQueue.main.async { [weak self] in
-                self?.onComplete?(trial)
+                guard let self else { return }
+                self.onComplete?(trial)
+                RoutineRecordingActivity.shared.end(self.routineActivityID)
             }
         }
     }

@@ -23,6 +23,142 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
+    func testVideoStorageChoicePersistsAndKeepsMeasurementsEnglishGerman() throws {
+        for language in ["en", "de"] {
+            let app = XCUIApplication()
+            let settings = language == "de" ? "Einstellungen" : "Settings"
+            let arguments = ["--ui-test-session-save", UUID().uuidString,
+                "-appLanguage", language, "-appFontSize", language == "de" ? "extraLarge" : "standard"]
+            func openData() {
+                app.tabBars.buttons[settings].tap()
+                let entry = app.buttons["settingsData"]
+                for _ in 0..<6 where !entry.isHittable { app.swipeUp() }
+                XCTAssertTrue(entry.isHittable)
+                entry.tap()
+            }
+            app.launchArguments = arguments
+            app.launch()
+            openData()
+            let choice = app.switches["movementSaveTaskVideos"]
+            XCTAssertTrue(choice.waitForExistence(timeout: 5))
+            XCTAssertEqual(app.switches.matching(identifier: "movementSaveTaskVideos").count, 1)
+            if choice.value as? String == "1" {
+                choice.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+            }
+            XCTAssertEqual(choice.value as? String, "0")
+            let screenshot = XCTAttachment(screenshot: app.screenshot())
+            screenshot.name = "Video storage off \(language)"
+            screenshot.lifetime = .keepAlways
+            add(screenshot)
+            app.terminate()
+
+            app.launchArguments = arguments + ["--ui-test-save-result", "--ui-test-private-video", "--ui-test-angle-metrics"]
+            app.launch()
+            app.tabBars.buttons[language == "de" ? "Bewegung" : "Movement"].tap()
+            XCTAssertTrue(app.staticTexts["movementAutosaveStatus"].waitForExistence(timeout: 15))
+            XCTAssertFalse(app.staticTexts["movementVideoNotice"].exists)
+            openData()
+            XCTAssertEqual(choice.value as? String, "0")
+            let angles = app.buttons["movementExportAngles"]
+            for _ in 0..<5 where !angles.isHittable { app.swipeUp() }
+            XCTAssertTrue(angles.exists)
+            let videos = app.buttons["movementVideoLibrary"]
+            for _ in 0..<8 where !videos.isHittable { app.swipeDown() }
+            XCTAssertEqual(videos.value as? String, "0")
+            for _ in 0..<5 where !choice.isHittable { app.swipeDown() }
+            XCTAssertTrue(choice.waitForExistence(timeout: 5))
+            choice.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+            XCTAssertEqual(choice.value as? String, "1")
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testSelectedDataExportEnglishGerman() throws {
+        try verifySelectedDataExport(variations: [("en", "standard"), ("de", "extraLarge")])
+    }
+
+    @MainActor
+    func testSelectedDataExportGermanLargeText() throws {
+        try verifySelectedDataExport(variations: [("de", "extraLarge")])
+    }
+
+    @MainActor
+    private func verifySelectedDataExport(variations: [(String, String)]) throws {
+        for (language, size) in variations {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                "--ui-test-journal", UUID().uuidString, "--ui-test-stimulation-profile", UUID().uuidString,
+                "--ui-test-export-fixture", "-appLanguage", language, "-appFontSize", size]
+            app.launch()
+            app.tabBars.buttons[language == "de" ? "Einstellungen" : "Settings"].tap()
+            let dataEntry = app.buttons["settingsData"]
+            for _ in 0..<6 where !dataEntry.isHittable { app.swipeUp() }
+            XCTAssertTrue(dataEntry.isHittable); dataEntry.tap()
+            let share = app.buttons["studyShareDataZIP"]
+            for _ in 0..<8 where !share.isHittable { app.swipeUp() }
+            XCTAssertTrue(share.waitForExistence(timeout: 5))
+            share.tap()
+            let activity = app.otherElements["ActivityListView"]
+            XCTAssertTrue(activity.waitForExistence(timeout: 30))
+            dismissStudyExportShareSheet(in: app)
+            XCTAssertTrue(share.waitForExistence(timeout: 5))
+            app.buttons["studyChooseExportData"].tap()
+            let angles = app.switches["studyExportGroup_angles"]
+            for _ in 0..<4 where !angles.isHittable { app.swipeUp() }
+            XCTAssertTrue(angles.isHittable)
+            let image = XCTAttachment(screenshot: app.screenshot())
+            image.name = "Choose export data \(language) \(size)"; image.lifetime = .keepAlways; add(image)
+            angles.tap()
+            for _ in 0..<3 where !share.isHittable { app.swipeUp() }
+            share.tap()
+            XCTAssertTrue(activity.waitForExistence(timeout: 30))
+            dismissStudyExportShareSheet(in: app)
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            let unlock = app.buttons["researchUnlockEntry"]
+            for _ in 0..<6 where !unlock.isHittable { app.swipeUp() }
+            XCTAssertTrue(unlock.isHittable)
+            unlock.tap()
+            app.secureTextFields["researchPassword"].tap()
+            app.secureTextFields["researchPassword"].typeText("vcr2026")
+            app.buttons["researchUnlockConfirm"].tap()
+            let tools = app.buttons["researchTools"]
+            XCTAssertTrue(tools.waitForExistence(timeout: 5))
+            for _ in 0..<6 where !tools.isHittable { app.swipeUp() }
+            XCTAssertTrue(tools.isHittable); tools.tap()
+            app.buttons["researchShareSelectedData"].tap()
+            let period = app.buttons["studyExportPeriod"]
+            XCTAssertTrue(period.waitForExistence(timeout: 5))
+            period.tap()
+            app.buttons[language == "de" ? "Ausgewählte Sitzungen" : "Selected sessions"].tap()
+            let chooseSessions = app.buttons["studyExportSelectSessions"]
+            for _ in 0..<4 where !chooseSessions.isHittable { app.swipeUp() }
+            XCTAssertTrue(chooseSessions.isHittable); chooseSessions.tap()
+            let session = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "studyExportSession_")).firstMatch
+            XCTAssertTrue(session.waitForExistence(timeout: 5)); session.tap()
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            let researcher = XCTAttachment(screenshot: app.screenshot())
+            researcher.name = "Selected session export \(language) \(size)"; researcher.lifetime = .keepAlways; add(researcher)
+            for _ in 0..<5 where !share.isHittable { app.swipeUp() }
+            XCTAssertTrue(share.isEnabled); share.tap()
+            XCTAssertTrue(activity.waitForExistence(timeout: 30))
+            dismissStudyExportShareSheet(in: app)
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    private func dismissStudyExportShareSheet(in app: XCUIApplication) {
+        let close = app.buttons["header.closeButton"]
+        let settled = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            close.exists && close.isHittable && close.frame.minY > 40
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [settled], timeout: 10), .completed)
+        close.tap()
+    }
+
+    @MainActor
     func testResearchFullDataShareEnglishGerman() throws {
         for (language, size) in [("en", "standard"), ("de", "extraLarge")] {
             let app = XCUIApplication()
@@ -2664,37 +2800,129 @@ final class vCRGloveUITests: XCTestCase {
     }
 
     @MainActor
-    func testCalendarLegendEnglishGermanLargeText() throws {
+    func testRoutineMilestonesEnglishGerman() throws {
         for language in ["en", "de"] {
             let german = language == "de"
             let app = XCUIApplication()
             app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                                   "--ui-test-journal", UUID().uuidString, "--ui-test-activity-calendar",
+                                   "-patientID", "TEAM-\(UUID().uuidString)",
+                                   "-appLanguage", language, "-appFontSize", german ? "extraLarge" : "standard"]
+            func openPreference() {
+                app.tabBars.buttons[german ? "Einstellungen" : "Settings"].tap()
+                let general = app.buttons["settingsGeneral"]
+                for _ in 0..<6 where !general.isHittable { app.swipeDown() }
+                XCTAssertTrue(general.waitForExistence(timeout: 5))
+                general.tap()
+            }
+            func setPreference(_ enabled: Bool) {
+                let toggle = app.switches["settingsRoutineCelebrations"]
+                XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+                if (toggle.value as? String == "1") != enabled {
+                    toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+                }
+                XCTAssertEqual(toggle.value as? String, enabled ? "1" : "0")
+            }
+            app.launch()
+            openPreference()
+            setPreference(false)
+            app.tabBars.buttons["Journal"].tap()
+            let streak = app.staticTexts["journalRoutineStreak"]
+            let loaded = expectation(for: NSPredicate(format: "label CONTAINS %@", "3"), evaluatedWith: streak)
+            wait(for: [loaded], timeout: 15)
+            XCTAssertFalse(app.staticTexts["journalMilestoneMessage"].exists)
+            app.tabBars.buttons[german ? "Einstellungen" : "Settings"].tap()
+            setPreference(true)
+            let settingsShot = XCTAttachment(screenshot: app.screenshot())
+            settingsShot.name = "Milestone preference \(language)"
+            settingsShot.lifetime = .keepAlways
+            add(settingsShot)
+            app.tabBars.buttons["Journal"].tap()
+            let message = app.staticTexts["journalMilestoneMessage"]
+            XCTAssertTrue(message.waitForExistence(timeout: 5))
+            XCTAssertTrue(message.label.contains(german ? "3 Tage" : "3 days"))
+            XCTAssertTrue(streak.label.contains("3"))
+            let shot = XCTAttachment(screenshot: app.screenshot())
+            shot.name = "Milestone acknowledgement \(language)"
+            shot.lifetime = .keepAlways
+            add(shot)
+            app.buttons["journalDismissMilestone"].tap()
+            XCTAssertFalse(message.exists)
+            app.terminate()
+            app.launch()
+            app.tabBars.buttons["Journal"].tap()
+            let reloaded = expectation(for: NSPredicate(format: "label CONTAINS %@", "3"), evaluatedWith: streak)
+            wait(for: [reloaded], timeout: 15)
+            XCTAssertFalse(message.waitForExistence(timeout: 2))
+            app.terminate()
+        }
+    }
+
+    @MainActor
+    func testActivityCalendarEnglishGermanLargeText() throws {
+        try verifyActivityCalendar(languages: ["en", "de"])
+    }
+
+    @MainActor
+    func testActivityCalendarGermanLargeText() throws {
+        try verifyActivityCalendar(languages: ["de"])
+    }
+
+    @MainActor
+    private func verifyActivityCalendar(languages: [String]) throws {
+        for language in languages {
+            let german = language == "de"
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-test-session-save", UUID().uuidString,
+                                   "--ui-test-journal", UUID().uuidString, "--ui-test-activity-calendar",
+                                   "-patientID", "TEAM-CALENDAR",
                                    "-appLanguage", language, "-appFontSize", german ? "extraLarge" : "standard"]
             app.launch()
             app.tabBars.buttons["Journal"].tap()
-            let keys = german ? ["vCR-Eintrag", "Journaleintrag", "Bewegungssitzung", "Ausgewählter Tag"]
-                : ["vCR log", "Journal entry", "Movement session", "Selected day"]
-            for key in keys {
-                let label = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", key)).firstMatch
-                revealMovementControl(label, in: app)
-            }
-            let screenshot = XCTAttachment(screenshot: app.screenshot())
-            screenshot.name = "Calendar legend \(language)"
-            screenshot.lifetime = .keepAlways
-            add(screenshot)
-            let day = app.buttons["journalCalendarDay-1"]
-            revealMovementControl(day, in: app)
-            XCTAssertFalse(day.label == "1")
-            let now = Date()
-            let firstDay = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: now))!
-            let expectedDate = firstDay.formatted(Date.FormatStyle(date: .complete, time: .omitted).locale(Locale(identifier: language)))
-            XCTAssertEqual(day.label, expectedDate)
-            day.tap()
-            XCTAssertTrue(day.isSelected)
-            let openLog = app.buttons["journalViewEntries"]
-            revealMovementControl(openLog, in: app)
-            openLog.tap()
-            XCTAssertTrue(app.navigationBars.firstMatch.buttons.element(boundBy: 0).waitForExistence(timeout: 5))
+            let streak = app.staticTexts["journalRoutineStreak"]
+            let ready = expectation(for: NSPredicate(format: "label CONTAINS %@", "3"), evaluatedWith: streak)
+            wait(for: [ready], timeout: 15)
+            XCTAssertFalse(app.otherElements["journalCalendarLegend"].exists)
+            let todayNumber = Calendar.current.component(.day, from: Date())
+            let today = app.buttons["journalCalendarDay-\(todayNumber)"]
+            XCTAssertTrue(today.isSelected)
+            XCTAssertEqual(today.value as? String, german ? "Aktiver Tag" : "Active day")
+            let home = XCTAttachment(screenshot: app.screenshot())
+            home.name = "Activity calendar \(language)"; home.lifetime = .keepAlways; add(home)
+
+            let movement = app.buttons["journalDayMovement"]
+            for _ in 0..<8 where !movement.isHittable { app.swipeUp() }
+            XCTAssertTrue(movement.isHittable)
+            let saved = expectation(for: NSPredicate(format: "label CONTAINS %@", "1"), evaluatedWith: movement)
+            wait(for: [saved], timeout: 10)
+            let day = XCTAttachment(screenshot: app.screenshot())
+            day.name = "Selected day activity \(language)"; day.lifetime = .keepAlways; add(day)
+            movement.tap()
+            XCTAssertTrue(app.staticTexts[german ? "Bewegungssitzung" : "Movement session"].waitForExistence(timeout: 5))
+            app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+            let stimulation = app.buttons["journalDayStimulation"]
+            for _ in 0..<8 where !stimulation.isHittable { app.swipeDown() }
+            XCTAssertTrue(stimulation.isHittable)
+            XCTAssertTrue(stimulation.label.contains(german ? "Start erfasst" : "Start recorded"))
+            stimulation.tap()
+            XCTAssertTrue(app.staticTexts[german ? "Start erfasst" : "Start recorded"].waitForExistence(timeout: 5))
+            app.navigationBars.firstMatch.buttons.element(boundBy: 0).tap()
+            let first = app.buttons["journalCalendarDay-1"]
+            for _ in 0..<10 where !first.isHittable { app.swipeDown() }
+            XCTAssertTrue(first.isHittable)
+            let firstDay = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date()))!
+            XCTAssertEqual(first.label, firstDay.formatted(Date.FormatStyle(date: .complete, time: .omitted).locale(Locale(identifier: language))))
+            first.tap()
+            XCTAssertTrue(first.isSelected)
+            // Selecting an inactive historical date does not alter today's streak.
+            XCTAssertTrue(streak.label.contains("3"))
+            let checkIn = app.buttons["journalOpenCheckIn"]
+            for _ in 0..<8 where !checkIn.isHittable { app.swipeUp() }
+            XCTAssertTrue(checkIn.isEnabled)
+            for _ in 0..<10 where !app.buttons["journalNextMonth"].isHittable { app.swipeDown() }
+            app.buttons["journalNextMonth"].tap()
+            for _ in 0..<8 where !checkIn.exists { app.swipeUp() }
+            XCTAssertFalse(checkIn.isEnabled)
             app.terminate()
         }
     }
@@ -2824,14 +3052,30 @@ final class vCRGloveUITests: XCTestCase {
             attachment.lifetime = .keepAlways
             add(attachment)
             export.tap()
-            let file = app.descendants(matching: .any)
-                .matching(identifier: "movementLastExportFile").firstMatch
-            revealMovementControl(file, in: app)
-            XCTAssertTrue(file.waitForExistence(timeout: 5))
-            let share = app.buttons["movementShareLastExport"]
-            revealMovementControl(share, in: app)
-            share.tap()
+            let openIn = app.buttons["movementFileOpenIn"]
+            XCTAssertTrue(openIn.waitForExistence(timeout: 10))
+            let text = app.textViews["movementDocumentText"]
+            XCTAssertTrue(text.waitForExistence(timeout: 10))
+            XCTAssertTrue((text.value as? String)?.contains("session_id,trial_id") == true)
+            let preview = XCTAttachment(screenshot: app.screenshot())
+            preview.name = "Angle file preview \(language)"; preview.lifetime = .keepAlways; add(preview)
+            openIn.tap()
             XCTAssertTrue(app.otherElements["ActivityListView"].waitForExistence(timeout: 10))
+            dismissStudyExportShareSheet(in: app)
+            app.buttons["movementFileDone"].tap()
+            XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "movementLastExportFile").firstMatch.exists)
+            for id in ["movementOpenJSON", "movementOpenMetrics", "movementOpenSamples"] {
+                let row = app.buttons[id]
+                for _ in 0..<8 where !row.isHittable { app.swipeDown() }
+                XCTAssertTrue(row.isHittable); row.tap()
+                XCTAssertTrue(app.buttons["movementFileDone"].waitForExistence(timeout: 10))
+                let document = app.textViews["movementDocumentText"]
+                XCTAssertTrue(document.waitForExistence(timeout: 10))
+                XCTAssertFalse((document.value as? String ?? "").isEmpty)
+                let screenshot = XCTAttachment(screenshot: app.screenshot())
+                screenshot.name = "\(id) preview \(language)"; screenshot.lifetime = .keepAlways; add(screenshot)
+                app.buttons["movementFileDone"].tap()
+            }
             app.terminate()
         }
     }

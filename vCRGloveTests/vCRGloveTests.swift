@@ -1074,6 +1074,60 @@ private actor DeferredVideoTestGate {
 }
 
 struct MovementVideoStorageTests {
+    @Test @MainActor func videoPreferenceDefaultsPersistsAndIsSnapshottedForEachTake() throws {
+        let name = "video-preference-\(UUID())"
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        #expect(MovementVideoPreference.isEnabled(in: defaults))
+        defaults.set(false, forKey: MovementVideoPreference.key)
+        let reloaded = try #require(UserDefaults(suiteName: name))
+        #expect(!MovementVideoPreference.isEnabled(in: reloaded))
+        let draft = MovementVideoDraft()
+        draft.beginTake(defaults: reloaded)
+        defaults.set(true, forKey: MovementVideoPreference.key)
+        #expect(!draft.isVideoEnabledForTake)
+        draft.receive(nil)
+        #expect(!draft.unavailable && draft.messageKey == nil)
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let unexpectedMovie = try temporaryVideo(in: dir)
+        draft.receive(unexpectedMovie)
+        #expect(draft.url == nil && !FileManager.default.fileExists(atPath: unexpectedMovie.path))
+        draft.beginTake(defaults: defaults)
+        #expect(draft.isVideoEnabledForTake)
+        draft.receive(nil)
+        #expect(draft.unavailable)
+    }
+
+    @Test @MainActor func videoOffSavesMeasurementWithoutProcessingOrPreparationError() async throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let store = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"),
+            videoStore: MovementVideoStore(directory: dir.appendingPathComponent("videos")),
+            videoProcessor: { _, _ in
+                Issue.record("Measurements without a video must not run video processing")
+                throw CocoaError(.fileReadUnknown)
+            })
+        let recording = trial()
+        let saved: MovementSession = try await withCheckedThrowingContinuation { continuation in
+            store.saveAcceptedTrial(recording, in: .init(patientId: "TEST"), temporaryVideoURL: nil,
+                deferVideoProcessing: true) { continuation.resume(with: $0) }
+        }
+        #expect(saved.trials.first?.id == recording.id)
+        #expect(saved.trials.first?.samples == recording.samples)
+        #expect(saved.trials.first?.fingerTappingAngle == recording.fingerTappingAngle)
+        #expect(saved.trials.first?.video == nil)
+        #expect(store.videoPreparationStates.isEmpty)
+        let reloaded = TaskSessionStore(storageURL: dir.appendingPathComponent("sessions.jsonl"))
+        for _ in 0..<200 where reloaded.sessions.isEmpty {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+        #expect(reloaded.sessions.first?.trials.first?.id == recording.id)
+        #expect(reloaded.sessions.first?.trials.first?.samples == recording.samples)
+        #expect(reloaded.sessions.first?.trials.first?.fingerTappingAngle == recording.fingerTappingAngle)
+        #expect(FullDataExporter.settingsKeys.contains(MovementVideoPreference.key))
+    }
+
     @Test @MainActor func deferredVideoWithoutHandCropKeepsMeasurementButNeverPublishesFullFrame() async throws {
         let dir = try directory()
         defer { try? FileManager.default.removeItem(at: dir) }

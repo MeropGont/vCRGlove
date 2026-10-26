@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D02300000000000000000001 /* DailyActivitySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02300000000000000000002 /* DailyActivitySummary.swift */; };
+		D02300000000000000000003 /* DailyActivitySummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02300000000000000000004 /* DailyActivitySummaryTests.swift */; };
 		D02200000000000000000001 /* MovementFaceMasker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02200000000000000000002 /* MovementFaceMasker.swift */; };
 		D01200000000000000000001 /* MovementDemonstrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01200000000000000000002 /* MovementDemonstrationView.swift */; };
 		D01200000000000000000003 /* hand_videos in Resources */ = {isa = PBXBuildFile; fileRef = D01200000000000000000004 /* hand_videos */; };
@@ -119,6 +121,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D02300000000000000000002 /* DailyActivitySummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyActivitySummary.swift; sourceTree = "<group>"; };
+		D02300000000000000000004 /* DailyActivitySummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyActivitySummaryTests.swift; sourceTree = "<group>"; };
 		D02200000000000000000002 /* MovementFaceMasker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementFaceMasker.swift; sourceTree = "<group>"; };
 		D01200000000000000000002 /* MovementDemonstrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovementDemonstrationView.swift; sourceTree = "<group>"; };
 		D01200000000000000000004 /* hand_videos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources/hand_videos; sourceTree = "<group>"; };
@@ -247,6 +251,7 @@
 				A92985642FBB473200B0F0FB /* JournalCalendarView.swift */,
 				A92985652FBB473200B0F0FB /* JournalHomeView.swift */,
 				A92985662FBB473200B0F0FB /* JournalModels.swift */,
+				D02300000000000000000002 /* DailyActivitySummary.swift */,
 				A92985672FBB473200B0F0FB /* JournalStore.swift */,
 				A9A51D21303C656B00E69380 /* LiveSignalMonitor.swift */,
 				A94255332FD805BE008B8F73 /* Localizable.xcstrings */,
@@ -288,6 +293,7 @@
 				A9B73BF9303D899D00BAEEC4 /* MovementAnalyzerTests.swift */,
 				A9B73BFA303D899D00BAEEC4 /* TaskSessionExporterTests.swift */,
 				A9B73BFB303D899D00BAEEC4 /* TrialRecorderTests.swift */,
+				D02300000000000000000004 /* DailyActivitySummaryTests.swift */,
 				A92985872FBB473800B0F0FB /* vCRGloveTests.swift */,
 			);
 			path = vCRGloveTests;
@@ -659,6 +665,7 @@
 				A9A51D3C303C656B00E69380 /* SyntheticCaptureSource.swift in Sources */,
 				A92985782FBB473200B0F0FB /* JournalHomeView.swift in Sources */,
 				A92985792FBB473200B0F0FB /* JournalModels.swift in Sources */,
+				D02300000000000000000001 /* DailyActivitySummary.swift in Sources */,
 				A929857A2FBB473200B0F0FB /* JournalStore.swift in Sources */,
 				A929857B2FBB473200B0F0FB /* MainTabView.swift in Sources */,
 				A929857C2FBB473200B0F0FB /* MedicationLogView.swift in Sources */,
@@ -680,6 +687,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A9B73BFC303D899D00BAEEC4 /* TrialRecorderTests.swift in Sources */,
+				D02300000000000000000003 /* DailyActivitySummaryTests.swift in Sources */,
 				A9B73BFD303D899D00BAEEC4 /* TaskSessionExporterTests.swift in Sources */,
 				A9B73BFE303D899D00BAEEC4 /* MovementAnalyzerTests.swift in Sources */,
 				A92985892FBB473800B0F0FB /* vCRGloveTests.swift in Sources */,

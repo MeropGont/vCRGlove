@@ -29,18 +29,18 @@ enum TaskSessionExporter {
     // MARK: - Public API
 
     /// Full sessions (raw + metrics) as a pretty-printed JSON array.
-    static func exportJSON(_ sessions: [MovementSession]) throws -> URL {
-        guard !sessions.isEmpty else { throw ExportError.nothingToExport }
+    static func exportJSON(_ sessions: [MovementSession], directory: URL? = nil) throws -> URL {
+        guard !sessions.isEmpty || directory != nil else { throw ExportError.nothingToExport }
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(sessions)
-        return try write(data, name: "sessions", ext: "json")
+        return try write(data, name: "sessions", ext: "json", directory: directory)
     }
 
     /// One row per trial with all metrics — the clinic's primary table.
-    static func exportMetricsCSV(_ sessions: [MovementSession]) throws -> URL {
-        guard !sessions.isEmpty else { throw ExportError.nothingToExport }
+    static func exportMetricsCSV(_ sessions: [MovementSession], directory: URL? = nil) throws -> URL {
+        guard !sessions.isEmpty || directory != nil else { throw ExportError.nothingToExport }
         var rows = [csvHeaderMetrics]
         for s in sessions {
             for t in s.trials {
@@ -81,12 +81,12 @@ enum TaskSessionExporter {
                 rows.append(fields.joined(separator: ","))
             }
         }
-        return try write(Data(rows.joined(separator: "\n").utf8), name: "metrics", ext: "csv")
+        return try write(Data(rows.joined(separator: "\n").utf8), name: "metrics", ext: "csv", directory: directory)
     }
 
     /// One row per raw sample — for signal-level re-analysis.
-    static func exportSamplesCSV(_ sessions: [MovementSession]) throws -> URL {
-        guard !sessions.isEmpty else { throw ExportError.nothingToExport }
+    static func exportSamplesCSV(_ sessions: [MovementSession], directory: URL? = nil) throws -> URL {
+        guard !sessions.isEmpty || directory != nil else { throw ExportError.nothingToExport }
         var rows = ["session_id,trial_id,task,side,t_sec,value"]
         for s in sessions {
             for t in s.trials {
@@ -95,12 +95,12 @@ enum TaskSessionExporter {
                 }
             }
         }
-        return try write(Data(rows.joined(separator: "\n").utf8), name: "samples", ext: "csv")
+        return try write(Data(rows.joined(separator: "\n").utf8), name: "samples", ext: "csv", directory: directory)
     }
 
     /// Separate units/schema: existing raw-sample and metrics CSVs stay unchanged.
-    static func exportFingerTappingAnglesCSV(_ sessions: [MovementSession]) throws -> URL {
-        guard !sessions.isEmpty else { throw ExportError.nothingToExport }
+    static func exportFingerTappingAnglesCSV(_ sessions: [MovementSession], directory: URL? = nil) throws -> URL {
+        guard !sessions.isEmpty || directory != nil else { throw ExportError.nothingToExport }
         var rows = ["session_id,trial_id,task,side,t_sec,angle_degrees,angle_valid,measurement_version,unit,time_reference"]
         var hasRecording = false
         for session in sessions {
@@ -116,8 +116,8 @@ enum TaskSessionExporter {
                 }
             }
         }
-        guard hasRecording else { throw ExportError.noAngleRecordings }
-        return try write(Data(rows.joined(separator: "\n").utf8), name: "finger-tapping-angles", ext: "csv")
+        guard hasRecording || directory != nil else { throw ExportError.noAngleRecordings }
+        return try write(Data(rows.joined(separator: "\n").utf8), name: "finger-tapping-angles", ext: "csv", directory: directory)
     }
 
     // MARK: - Helpers
@@ -134,7 +134,14 @@ enum TaskSessionExporter {
         "measurement_version"
     ].joined(separator: ",")
 
-    private static func write(_ data: Data, name: String, ext: String) throws -> URL {
+    private static func write(_ data: Data, name: String, ext: String, directory: URL? = nil) throws -> URL {
+        if let directory {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let url = directory.appendingPathComponent("\(name).\(ext)")
+            try data.write(to: url, options: .atomic)
+            try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path)
+            return url
+        }
         let docs = try FileManager.default.url(
             for: .documentDirectory, in: .userDomainMask,
             appropriateFor: nil, create: true)

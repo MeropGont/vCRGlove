@@ -1,16 +1,35 @@
 import SwiftUI
 
 struct DailyLogView: View {
+    enum Filter { case all, stimulation, movement }
     let date: Date
+    var filter: Filter = .all
+    var stimulationStarts: [Date] = []
+    var scopedSessions: [MovementSession]? = nil
     @ObservedObject private var store = JournalStore.shared
     @ObservedObject private var taskStore = TaskSessionStore.shared
     @Environment(\.locale) private var locale
 
     private var entries: [JournalEntry] {
-        store.entries.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }.sorted { $0.date > $1.date }
+        store.entries.filter {
+            Calendar.current.isDate($0.date, inSameDayAs: date) && filter != .movement
+                && (filter != .stimulation || $0.type == .stimulation)
+        }.sorted { $0.date > $1.date }
     }
     private var sessions: [MovementSession] {
-        taskStore.sessions.filter { Calendar.current.isDate($0.date, inSameDayAs: date) }.sorted { $0.date > $1.date }
+        guard filter != .stimulation else { return [] }
+        return (scopedSessions ?? taskStore.sessions).compactMap { session in
+            let trials = session.trials.filter { Calendar.current.isDate($0.startedAt, inSameDayAs: date) }
+            guard !trials.isEmpty else { return nil }
+            return MovementSession(id: session.id, patientId: session.patientId, date: trials.map(\.startedAt).max()!,
+                stimulationContext: session.stimulationContext, trials: trials)
+        }.sorted { $0.date > $1.date }
+    }
+
+    private var startMinutes: [Date] {
+        guard filter == .stimulation else { return [] }
+        return Set(stimulationStarts.filter { Calendar.current.isDate($0, inSameDayAs: date) }
+            .compactMap { Calendar.current.dateInterval(of: .minute, for: $0)?.start }).sorted()
     }
 
     var body: some View {
@@ -18,9 +37,18 @@ struct DailyLogView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text(date.formatted(Date.FormatStyle(date: .complete, time: .omitted).locale(locale)))
                     .font(.headline).fixedSize(horizontal: false, vertical: true)
-                if entries.isEmpty && sessions.isEmpty {
+                if entries.isEmpty && sessions.isEmpty && startMinutes.isEmpty {
                     Text(L10n("No entries saved for this day yet."))
                         .foregroundStyle(.secondary)
+                }
+                ForEach(startMinutes, id: \.self) { start in
+                    Label {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(L10n("routine.startRecorded")).font(.headline)
+                            Text(start.formatted(Date.FormatStyle(date: .omitted, time: .shortened).locale(locale)))
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: { Image(systemName: "waveform.path.ecg").foregroundStyle(.teal) }
                 }
                 ForEach(entries) { entry in
                     if entry.type == .medication {

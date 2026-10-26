@@ -2,19 +2,21 @@
 //  MovementExportView.swift
 //  vCRGlove
 //
-//  Clinic-facing export screen for movement task sessions (Task F).
-//  Writes JSON / CSV files to Documents/vcr/tasks/exports/ (reachable via the
-//  Files app) and offers immediate sharing via ShareLink (AirDrop, Mail, …).
+//  Data overview, private videos, read-only file previews and explicit sharing.
+//  Generated JSON/CSV files remain in Documents/vcr/tasks/exports/.
 //
 
 import SwiftUI
 import AVKit
+import UIKit
 
 struct MovementExportView: View {
     private let showsVideoLibrary: Bool
     @ObservedObject private var store = TaskSessionStore.shared
+    @StateObject private var exportController = StudyDataExportController()
+    @AppStorage(MovementVideoPreference.key) private var saveTaskVideos = true
 
-    @State private var lastExport: URL?
+    @State private var openDocument: MovementDataDocument?
     @State private var errorMessage: String?
     @State private var selection = Set<UUID>()
     @State private var isSelecting = false
@@ -48,9 +50,14 @@ struct MovementExportView: View {
             } else {
                 Section {
                     LabeledContent(L10n("Sessions"), value: "\(store.sessions.count)")
+                        .accessibilityIdentifier("movementRecordedSessionCount")
                     LabeledContent(L10n("Trials"), value: "\(trialCount)")
+                    Toggle(L10n("Save task videos"), isOn: $saveTaskVideos)
+                        .accessibilityIdentifier("movementSaveTaskVideos")
                 } header: {
                     Text(L10n("Recorded data"))
+                } footer: {
+                    Text(L10n("Applies to new recordings. Measurements are always saved. Existing videos are kept."))
                 }
 
                 Section {
@@ -68,40 +75,29 @@ struct MovementExportView: View {
                     }
                     .accessibilityIdentifier("movementVideoLibrary")
                     .accessibilityValue("\(videos.count)")
-                }
-
-                Section {
-                    exportButton(L10n("JSON (full sessions)"), systemImage: "doc.badge.gearshape") {
+                    documentButton(L10n("JSON (full sessions)"), systemImage: "doc.badge.gearshape") {
                         try TaskSessionExporter.exportJSON(store.sessions)
                     }
-                    exportButton(L10n("CSV — metrics per trial"), systemImage: "tablecells") {
+                    .accessibilityIdentifier("movementOpenJSON")
+                    documentButton(L10n("CSV — metrics per trial"), systemImage: "tablecells") {
                         try TaskSessionExporter.exportMetricsCSV(store.sessions)
                     }
-                    exportButton(L10n("CSV — raw samples"), systemImage: "waveform.path") {
+                    .accessibilityIdentifier("movementOpenMetrics")
+                    documentButton(L10n("CSV — raw samples"), systemImage: "waveform.path") {
                         try TaskSessionExporter.exportSamplesCSV(store.sessions)
                     }
+                    .accessibilityIdentifier("movementOpenSamples")
                     if store.sessions.contains(where: { $0.trials.contains(where: { $0.fingerTappingAngle != nil }) }) {
-                        exportButton(L10n("CSV — finger-tapping angles"), systemImage: "angle") {
+                        documentButton(L10n("CSV — finger-tapping angles"), systemImage: "angle") {
                             try TaskSessionExporter.exportFingerTappingAnglesCSV(store.sessions)
                         }
                         .accessibilityIdentifier("movementExportAngles")
                     }
                 } header: {
-                    Text(L10n("Export"))
-                } footer: {
-                    Text(L10n("Files are saved to vcr/tasks/exports and can also be accessed from the Files app."))
+                    Text(L10n("Data files"))
                 }
 
-                if let url = lastExport {
-                    Section(L10n("Last export")) {
-                        LabeledContent(L10n("File"), value: url.lastPathComponent)
-                            .accessibilityIdentifier("movementLastExportFile")
-                        ShareLink(item: url) {
-                            Label(L10n("Share…"), systemImage: "square.and.arrow.up")
-                        }
-                        .accessibilityIdentifier("movementShareLastExport")
-                    }
-                }
+                StudyDataExportSection(controller: exportController)
 
                 if let errorMessage {
                     Section {
@@ -110,6 +106,10 @@ struct MovementExportView: View {
                     }
                 }
             }
+        }
+        .modifier(StudyDataExportPresentation(controller: exportController))
+        .sheet(item: $openDocument) { document in
+            MovementDataDocumentView(document: document)
         }
         .navigationTitle(L10n(showsVideoLibrary ? "Recorded videos" : "Data"))
         .toolbar {
@@ -171,18 +171,20 @@ struct MovementExportView: View {
         #endif
     }
 
-    private func exportButton(_ title: String, systemImage: String,
+    private func documentButton(_ title: String, systemImage: String,
                               _ action: @escaping () throws -> URL) -> some View {
         Button {
             do {
-                lastExport = try action()
+                openDocument = MovementDataDocument(url: try action(), title: title)
                 errorMessage = nil
             } catch {
                 errorMessage = error.localizedDescription
             }
         } label: {
             Label(title, systemImage: systemImage)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .disabled(store.sessions.isEmpty || exportController.preparing)
     }
 
     private var videoSection: some View {
@@ -275,6 +277,79 @@ struct MovementExportView: View {
                 message = L10n("Deletion could not be completed. Please try again to finish removing the video references.")
             }
         }
+    }
+}
+
+struct MovementDataDocument: Identifiable {
+    let url: URL
+    let title: String
+    var id: URL { url }
+}
+
+private struct MovementDataDocumentView: View {
+    let document: MovementDataDocument
+    @Environment(\.dismiss) private var dismiss
+    @State private var contents: String?
+    @State private var readFailed = false
+    @State private var choosingApp = false
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if let contents {
+                    MovementDocumentPreview(contents: contents)
+                } else if readFailed {
+                    ContentUnavailableView(L10n("File unavailable"), systemImage: "doc.badge.exclamationmark")
+                } else { ProgressView() }
+            }
+                .navigationTitle(document.title)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(L10n("Done")) { dismiss() }
+                            .accessibilityIdentifier("movementFileDone")
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button { choosingApp = true } label: {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        .accessibilityLabel(L10n("Open in…"))
+                        .accessibilityIdentifier("movementFileOpenIn")
+                    }
+                }
+        }
+        .sheet(isPresented: $choosingApp) {
+            FullDataShareSheet(url: document.url) { choosingApp = false }
+        }
+        .task(id: document.url) {
+            do {
+                let url = document.url
+                let text = try await Task.detached(priority: .userInitiated) {
+                    try String(contentsOf: url, encoding: .utf8)
+                }.value
+                if !Task.isCancelled { contents = text }
+            } catch { if !Task.isCancelled { readFailed = true } }
+        }
+    }
+}
+
+private struct MovementDocumentPreview: UIViewRepresentable {
+    let contents: String
+
+    func makeUIView(context: Context) -> UITextView {
+        let view = UITextView(usingTextLayoutManager: true)
+        view.isEditable = false
+        view.isSelectable = true
+        view.adjustsFontForContentSizeCategory = true
+        view.font = UIFontMetrics(forTextStyle: .body).scaledFont(for:
+            .monospacedSystemFont(ofSize: 14, weight: .regular))
+        view.textContainerInset = UIEdgeInsets(top: 16, left: 12, bottom: 16, right: 12)
+        view.backgroundColor = .systemBackground
+        view.accessibilityIdentifier = "movementDocumentText"
+        return view
+    }
+    func updateUIView(_ view: UITextView, context: Context) {
+        if view.text != contents { view.text = contents }
     }
 }
 

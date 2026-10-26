@@ -451,6 +451,7 @@ struct MovementTaskView: View {
     }
 
     private func startRecording() {
+        videoDraft.beginTake()
         isFinishingRecording = false
         completedTrial = nil
         let attemptID = captureAttemptID
@@ -487,7 +488,7 @@ struct MovementTaskView: View {
                 signalMonitor.ingest(value: value, at: time)
             }
         }
-        if let cameraCapture {
+        if let cameraCapture, videoDraft.isVideoEnabledForTake {
             cameraCapture.startRecordingToTemporaryFile { started in
                 guard captureAttemptID == attemptID else { return }
                 if !started { videoDraft.receive(nil) }
@@ -501,7 +502,8 @@ struct MovementTaskView: View {
             details: ["task": taskType.rawValue,
                       "side": side.rawValue,
                       "source": activeSignalSource.rawValue,
-                      "mode": stopCondition.mode.rawValue])
+                      "mode": stopCondition.mode.rawValue,
+                      "videoRequested": "\(cameraCapture != nil && videoDraft.isVideoEnabledForTake)"])
     }
 
     // MARK: - Save / cleanup
@@ -1849,7 +1851,8 @@ struct MovementSessionFlowView: View {
                 case "trailingGap": samples = (0...100).map { .init(t: Double($0) / 10, value: sin(Double($0) / 3)) }
                 default: samples = (0...300).map { .init(t: Double($0) / 10, value: sin(Double($0) / 3)) }
                 }
-                let hasVideo = arguments.contains("--ui-test-private-video")
+                videoDraft.beginTake()
+                let hasVideo = arguments.contains("--ui-test-private-video") && videoDraft.isVideoEnabledForTake
                 let hasAngles = arguments.contains("--ui-test-angle-metrics")
                 let angleFrameCount = arguments.contains("--ui-test-angle-brief") ? 120 : 600
                 let angleRecording = hasAngles ? FingerTappingAngleRecording(samples: (0..<angleFrameCount).map {
@@ -2720,6 +2723,7 @@ struct MovementSessionFlowView: View {
     }
 
     private func startRecording(step: Int) {
+        videoDraft.beginTake()
         isFinishingRecording = false
         let current = steps[step]
         let attemptID = captureAttemptID
@@ -2788,14 +2792,14 @@ struct MovementSessionFlowView: View {
             startSynthetic()
             #endif
         }
-        if let cameraCapture {
+        if let cameraCapture, videoDraft.isVideoEnabledForTake {
             cameraCapture.startRecordingToTemporaryFile { started in
                 guard captureAttemptID == attemptID else { return }
                 if !started { videoDraft.receive(nil) }
                 r.start()
                 if isFinishingRecording { r.finish() }
             }
-        } else if watchCapture != nil { r.start() }
+        } else if cameraCapture != nil || watchCapture != nil { r.start() }
 
         EventStore.shared.append(
             type: "TASK", tag: "trial_started",
@@ -2803,7 +2807,8 @@ struct MovementSessionFlowView: View {
             details: ["task": current.task.rawValue,
                       "side": current.side.rawValue,
                       "source": activeSignalSource.rawValue,
-                      "mode": stopCondition.mode.rawValue])
+                      "mode": stopCondition.mode.rawValue,
+                      "videoRequested": "\(cameraCapture != nil && videoDraft.isVideoEnabledForTake)"])
     }
 
     private func showCompletedTrialIfReady() {

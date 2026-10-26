@@ -12,6 +12,22 @@ import Foundation
 @testable import vCRGlove
 
 struct TrialRecorderTests {
+    @Test @MainActor func routineGateTracksTheRecorderThroughItsCompletionCallback() async throws {
+        let recorder = TrialRecorder(taskType: .fingerTap, side: .right, source: .camera, stopCondition: .thirtySec)
+        var completed = false
+        recorder.onComplete = { _ in
+            #expect(RoutineRecordingActivity.shared.activeIDs.contains(recorder.routineActivityID))
+            completed = true
+        }
+        recorder.start()
+        for _ in 0..<200 where !recorder.isRecording { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(RoutineRecordingActivity.shared.activeIDs.contains(recorder.routineActivityID))
+        recorder.finish()
+        for _ in 0..<200 where !completed { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(completed)
+        #expect(!RoutineRecordingActivity.shared.activeIDs.contains(recorder.routineActivityID))
+        recorder.onComplete = nil
+    }
 
     @Test @MainActor func cameraUsesGapAwarenessButWatchKeepsExistingAnalysis() async throws {
         for source in [SignalSource.camera, .watchMotion] {

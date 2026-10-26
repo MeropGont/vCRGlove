@@ -138,12 +138,26 @@ final class MovementVideoStore: Sendable {
     }
 }
 
+enum MovementVideoPreference {
+    static let key = "saveMovementVideos"
+
+    static func isEnabled(in defaults: UserDefaults = .standard) -> Bool {
+        defaults.object(forKey: key) == nil || defaults.bool(forKey: key)
+    }
+}
+
 /// Owns an unaccepted movie, including cleanup if its view is destroyed.
 final class MovementVideoDraft: ObservableObject {
     @Published private(set) var url: URL?
     @Published private(set) var unavailable = false
     private(set) var captureStartPTSSeconds: Double?
     private(set) var normalizedHandCrop: CGRect?
+    private(set) var isVideoEnabledForTake = true
+
+    func beginTake(defaults: UserDefaults = .standard) {
+        discard()
+        isVideoEnabledForTake = MovementVideoPreference.isEnabled(in: defaults)
+    }
 
     var messageKey: String? {
         if url != nil { return "Video stays in the app when you save." }
@@ -152,6 +166,10 @@ final class MovementVideoDraft: ObservableObject {
     }
 
     func receive(_ url: URL?, captureStartPTSSeconds: Double? = nil, normalizedHandCrop: CGRect? = nil) {
+        guard isVideoEnabledForTake else {
+            if let url { try? FileManager.default.removeItem(at: url) }
+            return
+        }
         self.normalizedHandCrop = url == nil ? nil : normalizedHandCrop
         if self.url == url {
             self.captureStartPTSSeconds = url == nil ? nil : captureStartPTSSeconds
@@ -208,6 +226,8 @@ final class TaskSessionStore: ObservableObject {
     }()
 
     @Published private(set) var sessions: [MovementSession] = []
+    @Published private(set) var hasLoaded = false
+    @Published private(set) var activityHistoryLoadFailed = false
     @Published private(set) var videoPreparationStates: [UUID: VideoPreparationState] = [:]
     private var videoJobs: [VideoJob] = []
     private var videoWorker: Task<Void, Never>?
@@ -252,7 +272,7 @@ final class TaskSessionStore: ObservableObject {
 
     // MARK: - Write
 
-    func copyExportSnapshot(to destination: URL) async throws -> [String] {
+    func copyExportSnapshot(to destination: URL, includeVideos: Bool = true) async throws -> [String] {
         let source = try fileURL()
         let videos = videoStore
         return try await withCheckedThrowingContinuation { continuation in
@@ -260,7 +280,9 @@ final class TaskSessionStore: ObservableObject {
                 do {
                     let path = "tasks/sessions.jsonl"
                     let exists = try FullDataExporter.copyFile(source, to: destination.appendingPathComponent(path))
-                    try videos.copyExportSnapshot(to: destination.appendingPathComponent("tasks/videos", isDirectory: true))
+                    if includeVideos {
+                        try videos.copyExportSnapshot(to: destination.appendingPathComponent("tasks/videos", isDirectory: true))
+                    }
                     continuation.resume(returning: exists ? [] : [path])
                 } catch { continuation.resume(throwing: error) }
             }
@@ -650,19 +672,24 @@ final class TaskSessionStore: ObservableObject {
             guard let self else { return }
             do {
                 let url = try self.fileURL()
-                guard FileManager.default.fileExists(atPath: url.path) else { return }
-                let text = try String(contentsOf: url, encoding: .utf8)
-                let loaded = text
-                    .split(separator: "\n", omittingEmptySubsequences: true)
-                    .compactMap { line -> MovementSession? in
+                let text = FileManager.default.fileExists(atPath: url.path)
+                    ? try String(contentsOf: url, encoding: .utf8) : ""
+                let lines = text.split(separator: "\n", omittingEmptySubsequences: true)
+                let loaded = lines.compactMap { line -> MovementSession? in
                         guard let data = line.data(using: .utf8) else { return nil }
                         return try? self.decoder.decode(MovementSession.self, from: data)
                     }
                 DispatchQueue.main.async {
                     // Sessions saved while loading (unlikely) stay — prepend disk state.
                     self.sessions = loaded + self.sessions
+                    self.activityHistoryLoadFailed = loaded.count != lines.count
+                    self.hasLoaded = true
                 }
             } catch {
+                DispatchQueue.main.async {
+                    self.activityHistoryLoadFailed = true
+                    self.hasLoaded = true
+                }
                 EventStore.shared.append(
                     type: "TASK", tag: "load_error",
                     message: "Load error: \(error.localizedDescription)")
